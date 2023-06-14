@@ -1,3 +1,10 @@
 CMakeLists.txt
 build
 .vscode
+x64
+Debug
+.vs
+*.sln
+*.vcxproj
+*.filters
+*.user

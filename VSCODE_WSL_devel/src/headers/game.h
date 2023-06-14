@@ -10,8 +10,7 @@ private:
     
     SDL_Window *Main_Window;
     SDL_Renderer *Main_Renderer;
-
-    SDL_Surface *Main_Surface;
+    SDL_Texture *Main_Texture;
     SDL_Surface *Test_Surface;
 public:
     Game();
