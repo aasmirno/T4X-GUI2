@@ -1,4 +1,3 @@
-
 #include "MainWindow.h"
 
 MainWindow::MainWindow() {
@@ -50,7 +49,6 @@ bool MainWindow::Init() {
 	/*
 		OpenGL + SDL setup
 	*/
-
 	// Create window with graphics context
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);	//use double buffer
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);		//set depth buffer bits to 24
@@ -65,8 +63,8 @@ bool MainWindow::Init() {
 		return false;
 	}
 
-	//try create open gl context
-	if((gl_context = SDL_GL_CreateContext(main_window)) == NULL){
+	//try create opengl context
+	if ((gl_context = SDL_GL_CreateContext(main_window)) == NULL) {
 		printf("Error: %s\n", SDL_GetError());
 		return false;
 	}
@@ -80,6 +78,22 @@ bool MainWindow::Init() {
 	//try enable vsync
 	if (SDL_GL_SetSwapInterval(1) != 0) {
 		printf("Error: %s\n", SDL_GetError());
+		return false;
+	}
+
+	/*
+		Glew setup
+	*/
+	//start up glew
+	glewExperimental = GL_TRUE;
+	GLenum glewError = glewInit();
+	if (glewError != GLEW_OK) {
+		printf("glew error: ");
+	}
+
+	//init glew loader
+	if (glew.init() != true) {
+		printf("glew loader error\n");
 		return false;
 	}
 
@@ -103,7 +117,10 @@ int MainWindow::Start() {
 		return -1;
 	}
 
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	//set gl deafult color buffer values
+	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+
 
 	// Setup Dear ImGui context
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -139,22 +156,46 @@ void MainWindow::Loop() {
 
 }
 
+void MainWindow::Render() {
+	glClear(GL_COLOR_BUFFER_BIT);
+	glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 
-void MainWindow::Render() {	
+	/*
+		Glew test
+	*/
+	glUseProgram(glew.getID());
+	glEnableVertexAttribArray(glew.getVpos());
+
+	glBindBuffer(GL_ARRAY_BUFFER, glew.getVBO());
+	glVertexAttribPointer(glew.getVpos(), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glew.getIBO());
+	glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
+
+	glDisableVertexAttribArray(glew.getVpos());
+
+	glUseProgram(NULL);
+
+	//-----------------------------------------------------
+
+
+	/*
+		Imgui rendering
+	*/
 	//create necessary frames
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 
-	{
-		ImGui::ShowDemoWindow();
-	}
+	ImGui::ShowDemoWindow();
 
+	//render imgui components
 	ImGui::Render();
-	glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
-	glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-	glClear(GL_COLOR_BUFFER_BIT);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	//-----------------------------------------------------
+
+	//update window
 	SDL_GL_SwapWindow(main_window);
 }
 

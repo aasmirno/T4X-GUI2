@@ -1,7 +1,4 @@
-
-
 #include "MainWindow.h"
-
 
 // Main code
 int main(int, char**)

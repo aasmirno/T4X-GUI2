@@ -1,10 +1,16 @@
+#vscode and wsl development files
 CMakeLists.txt
 build
 .vscode
-x64
-Debug
+
+#visual studio development files
 .vs
+VS_WIN_DEVEL/Debug/
+!/x64/
+
+/VS_WIN_devel/lib
+
 *.sln
 *.vcxproj
-*.filters
-*.user
+*.vcxproj.*
+
