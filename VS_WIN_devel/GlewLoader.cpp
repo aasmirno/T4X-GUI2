@@ -48,14 +48,13 @@ bool GlewLoader::init() {
 	//VBO data
 	GLfloat vertexData[] =
 	{
-		-0.5f, -0.5f,
-		 0.5f, -0.5f,
-		 0.5f,  0.5f,
-		-0.5f,  0.5f
+		 0.1f, -0.1f,
+		 0.5f,  0.1f,
+		-0.1f,  0.1f
 	};
 
 	//IBO data
-	GLuint indexData[] = { 0, 1, 2, 3 };
+	GLuint indexData[] = { 0, 1, 2 };
 
 	//Create VBO
 	glGenBuffers(1, &gVBO);
