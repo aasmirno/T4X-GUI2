@@ -21,13 +21,17 @@
 */
 class MainWindow {
 private:
-	SDL_Window* main_window;
-	SDL_GLContext gl_context;
-	ImGuiContext* im_context;
+	SDL_Window* main_window;	//sdl window pointer
+	SDL_GLContext gl_context;	//sdl-opengl context
+	ImGuiContext* im_context;	//imgui context
+	GlewLoader glew;	//glew shader loader
 
-	ImVec4 clear_color;
-	bool Running;
-	GlewLoader glew;
+	GLint x = 0;
+	GLint y = 0;
+	GLint cam_rate = 5;
+
+	ImVec4 clear_color;	//background color
+	bool Running;	//run flag
 
 private:
 	bool Init();
@@ -37,6 +41,8 @@ private:
 	void Loop();
 
 	void Cleanup();
+
+	void EventHandle(SDL_Event& event);
 
 public:
 	MainWindow();

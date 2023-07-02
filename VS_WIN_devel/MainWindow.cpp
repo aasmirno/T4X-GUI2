@@ -97,6 +97,9 @@ bool MainWindow::Init() {
 		return false;
 	}
 
+	//install program object
+	glUseProgram(glew.getID());
+
 	/*
 		ImGui setup
 	*/
@@ -134,11 +137,11 @@ int MainWindow::Start() {
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
-			ImGui_ImplSDL2_ProcessEvent(&event);
-			if (event.type == SDL_QUIT)
-				Running = false;
-			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(main_window))
-				Running = false;
+			if (!io.WantCaptureKeyboard && !io.WantCaptureMouse) {
+				ImGui_ImplSDL2_ProcessEvent(&event);
+			}
+
+			EventHandle(event);
 		}
 
 		//render some image
@@ -157,13 +160,13 @@ void MainWindow::Loop() {
 }
 
 void MainWindow::Render() {
+	//clear the buffers
 	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+	glViewport(x, y, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 
 	/*
-		Glew test
+		Glew rendering section
 	*/
-	glUseProgram(glew.getID());
 	glEnableVertexAttribArray(glew.getVpos());
 
 	glBindBuffer(GL_ARRAY_BUFFER, glew.getVBO());
@@ -173,8 +176,6 @@ void MainWindow::Render() {
 	glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
 
 	glDisableVertexAttribArray(glew.getVpos());
-
-	glUseProgram(NULL);
 
 	//-----------------------------------------------------
 
@@ -200,11 +201,32 @@ void MainWindow::Render() {
 }
 
 void MainWindow::Cleanup() {
+	//shutdown imgui
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 
+	glUseProgram(NULL);	//unassign gl program
+
+	//shutdown sdl
 	SDL_GL_DeleteContext(gl_context);
 	SDL_DestroyWindow(main_window);
 	SDL_Quit();
+}
+
+void MainWindow::EventHandle(SDL_Event &event) {
+	if (event.type == SDL_QUIT)
+		Running = false;
+	if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(main_window))
+		Running = false;
+
+	if (event.key.keysym.sym == SDLK_w)
+		y = y + cam_rate;
+	if (event.key.keysym.sym == SDLK_s)
+		y = y - cam_rate;
+	if (event.key.keysym.sym == SDLK_a)
+		x = x - cam_rate;
+	if (event.key.keysym.sym == SDLK_d)
+		x = x + cam_rate;
+
 }
