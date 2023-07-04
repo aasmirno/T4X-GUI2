@@ -1,5 +1,7 @@
 #pragma once
+#include "Menus.h"
 #include "GlewLoader.h"
+#include "Camera.h"
 
 #include <stdio.h>
 #include <iostream>
@@ -21,17 +23,23 @@
 */
 class MainWindow {
 private:
-	SDL_Window* main_window;	//sdl window pointer
-	SDL_GLContext gl_context;	//sdl-opengl context
-	ImGuiContext* im_context;	//imgui context
+	const int WINDOW_W = 1280;
+	const int WINDOW_H = 720;
+	SDL_Window* main_window = NULL;	//sdl window pointer
+	SDL_GLContext gl_context = NULL;	//sdl-opengl context
+	ImGuiContext* im_context = NULL;	//imgui context
+
 	GlewLoader glew;	//glew shader loader
+	Menus menu_handler;
 
-	GLint x = 0;
-	GLint y = 0;
-	GLint cam_rate = 5;
+	Camera cam;	//camera controller
 
-	ImVec4 clear_color;	//background color
-	bool Running;	//run flag
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
+	bool Running = true;	//run flag
+	bool debug = true;
+
+	float projection_scale = 1.0f;
+
 
 private:
 	bool Init();
@@ -43,6 +51,8 @@ private:
 	void Cleanup();
 
 	void EventHandle(SDL_Event& event);
+
+	void DebugMenu();
 
 public:
 	MainWindow();

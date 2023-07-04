@@ -1,12 +1,6 @@
 #include "MainWindow.h"
 
 MainWindow::MainWindow() {
-	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	Running = true;
-	main_window = NULL;
-	gl_context = NULL;
-	im_context = NULL;
-
 }
 
 bool MainWindow::Init() {
@@ -58,7 +52,7 @@ bool MainWindow::Init() {
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
 	//try create sdl window
-	if ((main_window = SDL_CreateWindow("Main Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags)) == NULL) {
+	if ((main_window = SDL_CreateWindow("Main Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, window_flags)) == NULL) {
 		printf("Error: %s\n", SDL_GetError());
 		return false;
 	}
@@ -80,6 +74,11 @@ bool MainWindow::Init() {
 		printf("Error: %s\n", SDL_GetError());
 		return false;
 	}
+
+	//Initialize Projection Matrix
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0.0, WINDOW_W, 0.0, WINDOW_H, 0, 10);
 
 	/*
 		Glew setup
@@ -124,12 +123,10 @@ int MainWindow::Start() {
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 
-
-	// Setup Dear ImGui context
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
+	// Setup Dear ImGui io
+	ImGuiIO& io = ImGui::GetIO();
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Control
 
 	while (Running) {
 
@@ -137,11 +134,18 @@ int MainWindow::Start() {
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
-			if (!io.WantCaptureKeyboard && !io.WantCaptureMouse) {
+			if (event.type == SDL_QUIT)
+				Running = false;
+			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(main_window))
+				Running = false;
+
+			if (io.WantCaptureKeyboard || io.WantCaptureMouse) {
 				ImGui_ImplSDL2_ProcessEvent(&event);
 			}
 
+			//event handler
 			EventHandle(event);
+
 		}
 
 		//render some image
@@ -160,12 +164,18 @@ void MainWindow::Loop() {
 }
 
 void MainWindow::Render() {
-	//clear the buffers
+	//set ortho matrix
+	glMatrixMode(GL_PROJECTION);
+	glOrtho(0, WINDOW_W * projection_scale, 0, WINDOW_H * projection_scale, 0, 10);
+
+	//clear gl buffers
 	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport(x, y, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+
+	//set viewport pos
+	glViewport(cam.getX(), cam.getY(), (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 
 	/*
-		Glew rendering section
+		GL/Glew rendering section
 	*/
 	glEnableVertexAttribArray(glew.getVpos());
 
@@ -174,6 +184,7 @@ void MainWindow::Render() {
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glew.getIBO());
 	glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
+
 
 	glDisableVertexAttribArray(glew.getVpos());
 
@@ -188,7 +199,12 @@ void MainWindow::Render() {
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 
+	//imgui draw commands
 	ImGui::ShowDemoWindow();
+	menu_handler.Draw();
+
+	if (debug)
+		DebugMenu();
 
 	//render imgui components
 	ImGui::Render();
@@ -214,19 +230,35 @@ void MainWindow::Cleanup() {
 	SDL_Quit();
 }
 
-void MainWindow::EventHandle(SDL_Event &event) {
-	if (event.type == SDL_QUIT)
-		Running = false;
-	if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(main_window))
-		Running = false;
+void MainWindow::EventHandle(SDL_Event& event) {
+	bool wantMouse = ImGui::GetIO().WantCaptureMouse;
+	bool wantKey = ImGui::GetIO().WantCaptureKeyboard;
 
-	if (event.key.keysym.sym == SDLK_w)
-		y = y + cam_rate;
-	if (event.key.keysym.sym == SDLK_s)
-		y = y - cam_rate;
-	if (event.key.keysym.sym == SDLK_a)
-		x = x - cam_rate;
-	if (event.key.keysym.sym == SDLK_d)
-		x = x + cam_rate;
+	//camera zoom logic
+	if (event.type == SDL_MOUSEWHEEL && !wantMouse) {
+		if (event.wheel.mouseY < 0) { //scroll back
+			cam.zoomOut();
+		}
+		else if (event.wheel.mouseY > 0) { //scroll forward
+			cam.zoomIn();
+		}
+	}
 
+	//camera wasd movement logic
+	if ((event.key.keysym.sym == SDLK_w ||
+		event.key.keysym.sym == SDLK_s ||
+		event.key.keysym.sym == SDLK_a ||
+		event.key.keysym.sym == SDLK_d) && !wantKey)
+	{
+		cam.move(event.key.keysym.sym);
+	}
+}
+
+void MainWindow::DebugMenu() {
+	ImGui::Begin("Debug");
+	ImGui::Text("cam pos x: (%d) y: (%d)", cam.getX(), cam.getY());
+	ImGui::Text("imgui io flags wantMouse: (%d) wantKeyboard: (%d)", ImGui::GetIO().WantCaptureMouse, ImGui::GetIO().WantCaptureKeyboard);
+	ImGui::Text("ortho matrix| pscale: (%f) w*ps: (%f) h*ps: (%f)", projection_scale, WINDOW_W * projection_scale, WINDOW_H * projection_scale);
+	ImGui::DragFloat("proj", &projection_scale, 0.005f);
+	ImGui::End();
 }
