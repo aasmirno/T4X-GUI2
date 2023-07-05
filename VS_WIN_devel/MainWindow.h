@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include<windows.h> 
 
 #include <gl/glew.h>
 #include "imgui.h"
@@ -23,23 +24,22 @@
 */
 class MainWindow {
 private:
-	const int WINDOW_W = 1280;
-	const int WINDOW_H = 720;
-	SDL_Window* main_window = NULL;	//sdl window pointer
+	//sdl values
+	int WINDOW_W = 1280;
+	int WINDOW_H = 720;
+
+	SDL_Window* main_window = NULL;		//sdl window pointer
 	SDL_GLContext gl_context = NULL;	//sdl-opengl context
 	ImGuiContext* im_context = NULL;	//imgui context
 
-	ShaderManager shaders;	//glew shader loader
-	Menus menu_handler;
-
-	Camera cam;	//camera controller
+	//unit managers
+	ShaderManager shaders;	//shader manager
+	Menus menu_handler;		//imgui menu handler
+	Camera cam;				//camera controller
 
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
 	bool Running = true;	//run flag
-	bool debug = true;
-
-	float projection_scale = 1.0f;
-
+	bool debug = true;		//debug flag
 
 private:
 	bool Init();

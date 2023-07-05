@@ -5,13 +5,18 @@
 #define GL_GLEXT_PROTOTYPES
 #include <gl/glew.h>
 
+/*
+	Shader managment unit
+	Handles:
+		Loading, compiling, and linking shaders
+		providing program id, input and uniform locations
+*/
 class ShaderManager {
 private:
-	const GLfloat MIN_TRANSFORM = 0.1f;	//minimum zoom level
+	GLuint program_id = 0;		//shader program id
 
-	GLuint gProgramID = 0;	//shader program id
-	GLint gVertex2DLocation = -1;	//in vec2 location
-	GLint gTransformLocation = -1;	//in float location
+	GLint vertexin_loc = -1;		//in vec2 location
+	GLint transform_loc = -1;	//in float location
 
 	GLuint gVBO = 0;
 	GLuint gIBO = 0;
@@ -23,13 +28,17 @@ private:
 	GLuint loadFromFile(std::string path, GLenum type);
 
 public:
-	GLfloat transform = 2.0f;
+	/*
+		load and compile shaders
+	*/
 	bool init();
-	GLuint getID();
+
+	//location and id getters
+	GLuint getProgramID();
+
+	GLint getVertexInLoc();
+	GLint getTransformLoc();
+
 	GLuint getVBO();
 	GLuint getIBO();
-	GLint getVpos();
-
-	void setTransform(float new_transform);
-	void updateTransform();
 };

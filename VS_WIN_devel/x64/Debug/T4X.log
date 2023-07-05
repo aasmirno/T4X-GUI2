@@ -1,5 +1,4 @@
-﻿  MainWindow.cpp
-  ShaderManager.cpp
-  T4X.cpp
+﻿  Camera.cpp
+  MainWindow.cpp
   Generating Code...
   T4X.vcxproj -> D:\Software and Tools\C++\T4x\VS_WIN_devel\x64\Debug\T4X.exe

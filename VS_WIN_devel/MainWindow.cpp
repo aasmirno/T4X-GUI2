@@ -5,7 +5,7 @@ MainWindow::MainWindow() {
 
 bool MainWindow::Init() {
 	// Setup SDL
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
 		printf("Error: %s\n", SDL_GetError());
 		return false;
@@ -75,11 +75,6 @@ bool MainWindow::Init() {
 		return false;
 	}
 
-	//Initialize Projection Matrix
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	//glOrtho(0.0, WINDOW_W, 0.0, WINDOW_H, 0, 10);
-
 	/*
 		Glew setup
 	*/
@@ -96,8 +91,8 @@ bool MainWindow::Init() {
 		return false;
 	}
 
-	//install program object
-	glUseProgram(shaders.getID());
+	//use shader program
+	glUseProgram(shaders.getProgramID());
 
 	/*
 		ImGui setup
@@ -111,6 +106,7 @@ bool MainWindow::Init() {
 	ImGui_ImplSDL2_InitForOpenGL(main_window, gl_context);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
+	glViewport(cam.getX(), cam.getY(), WINDOW_W, WINDOW_H);
 	return true;
 }
 
@@ -119,7 +115,7 @@ int MainWindow::Start() {
 		return -1;
 	}
 
-	//set gl deafult color buffer values
+	//set gl default color buffer values
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 
@@ -129,6 +125,7 @@ int MainWindow::Start() {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Control
 
 	while (Running) {
+		SDL_GetWindowSize(main_window, &WINDOW_W, &WINDOW_H);
 
 		//get events with sdl
 		SDL_Event event;
@@ -148,7 +145,7 @@ int MainWindow::Start() {
 
 		}
 
-		//render some image
+		//render graphics
 		Render();
 
 		//conduct game loop
@@ -164,28 +161,22 @@ void MainWindow::Loop() {
 }
 
 void MainWindow::Render() {
-	//set zoom
-	shaders.updateTransform();
-
 	//clear gl buffers
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	//set viewport pos
-	glViewport(cam.getX(), cam.getY(), (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 
 	/*
 		GL/Glew rendering section
 	*/
-	glEnableVertexAttribArray(shaders.getVpos());
+	glEnableVertexAttribArray(shaders.getVertexInLoc());
 
 	glBindBuffer(GL_ARRAY_BUFFER, shaders.getVBO());
-	glVertexAttribPointer(shaders.getVpos(), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
+	glVertexAttribPointer(shaders.getVertexInLoc(), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, shaders.getIBO());
 	glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
 
 
-	glDisableVertexAttribArray(shaders.getVpos());
+	glDisableVertexAttribArray(shaders.getVertexInLoc());
 
 	//-----------------------------------------------------
 
@@ -233,13 +224,19 @@ void MainWindow::EventHandle(SDL_Event& event) {
 	bool wantMouse = ImGui::GetIO().WantCaptureMouse;
 	bool wantKey = ImGui::GetIO().WantCaptureKeyboard;
 
+	//window resize logic
+	if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
+		cam.move(SDLK_m, (GLint)WINDOW_W, (GLint)WINDOW_H);
+	}
+
+
 	//camera zoom logic
 	if (event.type == SDL_MOUSEWHEEL && !wantMouse) {
-		if (event.wheel.mouseY < 0) { //scroll back
-			cam.zoomOut();
+		if (event.wheel.y < 0) { //scroll back
+			cam.zoomOut(shaders.getTransformLoc());
 		}
-		else if (event.wheel.mouseY > 0) { //scroll forward
-			cam.zoomIn();
+		else if (event.wheel.y > 0) { //scroll forward
+			cam.zoomIn(shaders.getTransformLoc());
 		}
 	}
 
@@ -249,15 +246,17 @@ void MainWindow::EventHandle(SDL_Event& event) {
 		event.key.keysym.sym == SDLK_a ||
 		event.key.keysym.sym == SDLK_d) && !wantKey)
 	{
-		cam.move(event.key.keysym.sym);
+		cam.move(event.key.keysym.sym, (GLint)WINDOW_W, (GLint)WINDOW_H);
 	}
+	
+	Sleep(1);
 }
 
 void MainWindow::DebugMenu() {
 	ImGui::Begin("Debug");
-	ImGui::Text("cam pos x: (%d) y: (%d)", cam.getX(), cam.getY());
+	ImGui::Text("window size w: %d h: %d", WINDOW_W, WINDOW_H);
+	ImGui::Text("cam pos x,y: (%d,%d)", cam.getX(), cam.getY());
 	ImGui::Text("imgui io flags wantMouse: (%d) wantKeyboard: (%d)", ImGui::GetIO().WantCaptureMouse, ImGui::GetIO().WantCaptureKeyboard);
-	ImGui::Text("zoom vars| transform: (%f) ", shaders.transform);
-	ImGui::DragFloat("proj", &shaders.transform, 0.005f);
+	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
 	ImGui::End();
 }

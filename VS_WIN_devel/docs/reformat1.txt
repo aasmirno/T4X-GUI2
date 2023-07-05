@@ -1,0 +1,35 @@
+Reformat 1 design document
+
+Functionality
+
+camera pan
+	reqs:
+	cam pos
+	display size
+	glviewport access
+
+camera zoom
+	reqs:
+		transform level
+		shader program id
+		transform uni location
+
+		gl uniform access
+
+gl rendering
+	reqs:
+		in vector location
+		shader program id
+		vbos
+
+
+Structure:
+
+Graphics control:
+	camera controls
+		get shader program values with getters
+		pass to camera
+		camera makes gl calls
+	rendering
+		get shader program values with getters
+		pass to rendering manager

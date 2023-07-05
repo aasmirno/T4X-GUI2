@@ -1,27 +1,11 @@
 #include "ShaderManager.h"
 
-GLuint ShaderManager::getID() { return gProgramID; }
-GLint ShaderManager::getVpos() { return gVertex2DLocation; }
+GLuint ShaderManager::getProgramID() { return program_id; }
+GLint ShaderManager::getVertexInLoc() { return vertexin_loc; }
+GLint ShaderManager::getTransformLoc() { return transform_loc; }
+
 GLuint ShaderManager::getVBO() { return gVBO; }
 GLuint ShaderManager::getIBO() { return gIBO; }
-
-void ShaderManager::updateTransform() {
-	setTransform(transform);
-}
-
-void ShaderManager::setTransform(float new_transform) {
-	//if the zoom level is less than the floor
-	if (new_transform < MIN_TRANSFORM) {
-		transform = MIN_TRANSFORM;
-	}
-	else {
-		transform = new_transform;
-	}
-
-	//set transform
-	glUseProgram(gProgramID);
-	glUniform1f(gTransformLocation, transform);
-}
 
 /*
 	Manage shaders loading process:
@@ -32,36 +16,36 @@ void ShaderManager::setTransform(float new_transform) {
 */
 bool ShaderManager::init() {
 	//create shader pipeline
-	gProgramID = glCreateProgram();
+	program_id = glCreateProgram();
 
 
 	//load and check shaders
 	GLuint vertexShader = loadFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\x64\\Debug\\vert.glvs", GL_VERTEX_SHADER);
 	if (vertexShader == 0) {
-		glDeleteProgram(gProgramID);
-		gProgramID = 0;
+		glDeleteProgram(program_id);
+		program_id = 0;
 		return false;
 	}
-	glAttachShader(gProgramID, vertexShader);
+	glAttachShader(program_id, vertexShader);
 
 	GLuint fragShader = loadFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\x64\\Debug\\frag.glfs", GL_FRAGMENT_SHADER);
 	if (fragShader == 0) {
-		glDeleteProgram(gProgramID);
-		gProgramID = 0;
+		glDeleteProgram(program_id);
+		program_id = 0;
 		return false;
 	}
-	glAttachShader(gProgramID, fragShader);
+	glAttachShader(program_id, fragShader);
 
 
 	//link and check program
-	glLinkProgram(gProgramID);
+	glLinkProgram(program_id);
 	GLint linkSuccess = GL_FALSE;
-	glGetProgramiv(gProgramID, GL_LINK_STATUS, &linkSuccess);
+	glGetProgramiv(program_id, GL_LINK_STATUS, &linkSuccess);
 	if (linkSuccess != GL_TRUE) {
-		printf("Program link error: %d", gProgramID);
+		printf("Program link error: %d", program_id);
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragShader);
-		glDeleteProgram(gProgramID);
+		glDeleteProgram(program_id);
 		return false;
 	}
 
@@ -70,14 +54,14 @@ bool ShaderManager::init() {
 	glDeleteShader(fragShader);
 
 	//assign shader inputs and uniforms and check
-	gVertex2DLocation = 0;
-	glBindAttribLocation(gProgramID, 0, "Vertex2D");	//in vec2
+	vertexin_loc = 0;
+	glBindAttribLocation(program_id, 0, "Vertex2D");	//in vec2
 
-	gTransformLocation = glGetUniformLocation(gProgramID, "transform"); //in transform
+	transform_loc = glGetUniformLocation(program_id, "transform"); //in transform
 
 	//init transform
-	glUseProgram(gProgramID);
-	glUniform1f(gTransformLocation, transform);
+	glUseProgram(program_id);
+	glUniform1f(transform_loc, 1.0f);
 
 	/*
 		Temporarily hardcoded buffer gen
