@@ -1,6 +1,6 @@
 #pragma once
 #include "Menus.h"
-#include "GlewLoader.h"
+#include "ShaderManager.h"
 #include "Camera.h"
 
 #include <stdio.h>
@@ -29,7 +29,7 @@ private:
 	SDL_GLContext gl_context = NULL;	//sdl-opengl context
 	ImGuiContext* im_context = NULL;	//imgui context
 
-	GlewLoader glew;	//glew shader loader
+	ShaderManager shaders;	//glew shader loader
 	Menus menu_handler;
 
 	Camera cam;	//camera controller

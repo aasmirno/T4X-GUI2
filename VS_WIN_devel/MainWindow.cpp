@@ -78,7 +78,7 @@ bool MainWindow::Init() {
 	//Initialize Projection Matrix
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0, WINDOW_W, 0.0, WINDOW_H, 0, 10);
+	//glOrtho(0.0, WINDOW_W, 0.0, WINDOW_H, 0, 10);
 
 	/*
 		Glew setup
@@ -87,17 +87,17 @@ bool MainWindow::Init() {
 	glewExperimental = GL_TRUE;
 	GLenum glewError = glewInit();
 	if (glewError != GLEW_OK) {
-		printf("glew error: ");
+		printf("shaders error: ");
 	}
 
-	//init glew loader
-	if (glew.init() != true) {
-		printf("glew loader error\n");
+	//init shaders loader
+	if (shaders.init() != true) {
+		printf("shaders loader error\n");
 		return false;
 	}
 
 	//install program object
-	glUseProgram(glew.getID());
+	glUseProgram(shaders.getID());
 
 	/*
 		ImGui setup
@@ -164,9 +164,8 @@ void MainWindow::Loop() {
 }
 
 void MainWindow::Render() {
-	//set ortho matrix
-	glMatrixMode(GL_PROJECTION);
-	glOrtho(0, WINDOW_W * projection_scale, 0, WINDOW_H * projection_scale, 0, 10);
+	//set zoom
+	shaders.updateTransform();
 
 	//clear gl buffers
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -177,16 +176,16 @@ void MainWindow::Render() {
 	/*
 		GL/Glew rendering section
 	*/
-	glEnableVertexAttribArray(glew.getVpos());
+	glEnableVertexAttribArray(shaders.getVpos());
 
-	glBindBuffer(GL_ARRAY_BUFFER, glew.getVBO());
-	glVertexAttribPointer(glew.getVpos(), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, shaders.getVBO());
+	glVertexAttribPointer(shaders.getVpos(), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glew.getIBO());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, shaders.getIBO());
 	glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
 
 
-	glDisableVertexAttribArray(glew.getVpos());
+	glDisableVertexAttribArray(shaders.getVpos());
 
 	//-----------------------------------------------------
 
@@ -258,7 +257,7 @@ void MainWindow::DebugMenu() {
 	ImGui::Begin("Debug");
 	ImGui::Text("cam pos x: (%d) y: (%d)", cam.getX(), cam.getY());
 	ImGui::Text("imgui io flags wantMouse: (%d) wantKeyboard: (%d)", ImGui::GetIO().WantCaptureMouse, ImGui::GetIO().WantCaptureKeyboard);
-	ImGui::Text("ortho matrix| pscale: (%f) w*ps: (%f) h*ps: (%f)", projection_scale, WINDOW_W * projection_scale, WINDOW_H * projection_scale);
-	ImGui::DragFloat("proj", &projection_scale, 0.005f);
+	ImGui::Text("zoom vars| transform: (%f) ", shaders.transform);
+	ImGui::DragFloat("proj", &shaders.transform, 0.005f);
 	ImGui::End();
 }

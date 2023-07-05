@@ -1,0 +1,8 @@
+#version 130
+uniform float transform;
+
+in vec2 Vertex2D;
+
+void main() { 
+gl_Position = vec4(Vertex2D.x * transform,Vertex2D.y * transform,0,1.0); 
+}
