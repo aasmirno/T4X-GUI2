@@ -71,7 +71,7 @@ bool Map::loadTextures() {
 	ilInit();
 	ilGenImages(1, &tileset_img);
 	ilBindImage(tileset_img);
-	ilLoadImage("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet.png");
+	ilLoadImage("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png");
 	assert(ilGetInteger(IL_IMAGE_CHANNELS) == 3);	//assert rgb format
 
 	ILubyte* bytes = ilGetData();	//get pixel data
@@ -106,14 +106,10 @@ void Map::draw() {
 	glBindVertexArray(vao_id);
 
 	glm::mat4 proj = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	glm::mat4 scale = glm::scale(proj, glm::vec3(32.0f, 32.0f, 1.0f));
+	glm::mat4 scale = glm::scale(proj, glm::vec3(64.0f, 64.0f, 1.0f));
 	glm::mat4 scale2 = glm::scale(proj, glm::vec3(2.0f/1280, 2.0f/720, 1.0f));
 	proj = scale * scale2;
 	//debug_matrix(proj);
-	
-	uint8_t a= 4;
-	uint8_t b= 255;
-	uint8_t c = a & b;
 
 
 	//set mapsize uniform
