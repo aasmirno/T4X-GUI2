@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+void Camera::setTransformLoc(GLint location) { transform_loc = 0; };
+
 GLint Camera::getX() { return cam_x; }
 GLint Camera::getY() { return cam_y; }
 GLfloat Camera::getZoom(){ return current_transform; }
@@ -27,17 +29,19 @@ void Camera::move(SDL_Keycode key, GLint viewport_x, GLint viewport_y) {
 	glViewport(cam_x, cam_y, viewport_x, viewport_y);
 }
 
-void Camera::zoomIn(GLint transform_loc) {
-	current_transform += zoomRate;
-	updateTransform(transform_loc);
+void Camera::zoomIn() {
+	current_transform += zoom_rate;
+	updateTransform();
 }
 
-void Camera::zoomOut(GLint transform_loc) {
-	current_transform -= zoomRate;
-	updateTransform(transform_loc);
+void Camera::zoomOut() {
+	current_transform -= zoom_rate;
+	updateTransform();
 }
 
-void Camera::updateTransform(GLint transform_loc) {
+void Camera::updateTransform() {
+	assert(transform_loc != -1); //make sure transform uniform location has been set
+
 	if (current_transform < MIN_TRANSFORM) {
 		current_transform = MIN_TRANSFORM;
 	}
@@ -46,5 +50,5 @@ void Camera::updateTransform(GLint transform_loc) {
 		current_transform = MAX_TRANSFORM;
 	}
 
-	glUniform1f(transform_loc, current_transform);
+	//glUniform1f(transform_loc, current_transform);
 }

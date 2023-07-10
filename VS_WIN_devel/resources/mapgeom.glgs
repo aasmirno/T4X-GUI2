@@ -1,0 +1,38 @@
+#version 330 core
+uniform mat4 projection;    //projection matrix
+
+in VS_OUT {         //input block for tile
+    uint tileId;
+} gs_in[];
+
+out vec2 texCoord;
+
+layout (points) in; //define input as single vertex input (map index)
+layout (triangle_strip, max_vertices = 4) out;  //define output as 4 vertices in triangle strip mode 
+
+void main() {
+    uint tileId = gs_in[0].tileId & 255u;   //bitwise & against max
+    float tileX = float(tileId & 15u) / 16.0;   //bitwise & against max 4
+    float tileY = float((tileId >> 4u) & 15u) / 16.0;
+
+    const float B = 1 / 256.0;
+    const float S = 1 / 16.0;
+
+    gl_Position = projection * gl_in[0].gl_Position;
+    texCoord = vec2(tileX + B, tileY + B);
+    EmitVertex();
+
+    gl_Position = projection * (gl_in[0].gl_Position + vec4(1.0, 0.0, 0.0, 0.0));
+    texCoord = vec2(tileX + S - B, tileY + B);
+    EmitVertex();
+
+    gl_Position = projection * (gl_in[0].gl_Position + vec4(0.0, 1.0, 0.0, 0.0));
+    texCoord = vec2(tileX + B, tileY + S - B);
+    EmitVertex();
+
+    gl_Position = projection * (gl_in[0].gl_Position + vec4(1.0, 1.0, 0.0, 0.0));
+    texCoord = vec2(tileX + S - B, tileY + S - B);
+    EmitVertex();
+
+    EndPrimitive();
+}  

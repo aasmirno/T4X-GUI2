@@ -2,43 +2,44 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <assert.h>
+
 #define GL_GLEXT_PROTOTYPES
 #include <gl/glew.h>
 
 /*
-	Shader managment unit
-	Handles:
-		Loading, compiling, and linking shaders
-		providing program id, input and uniform locations
+	Shader management:
+	Manage shaders loading process:
+		creates program
+		loads shaders
+		links program
+	!!MAKE SURE TO LINK INPUTS IN DERIVED CLASSES
 */
 class ShaderManager {
+protected:
+	GLuint program_id = 0;			//shader program id
+
 private:
-	GLuint program_id = 0;		//shader program id
-
-	GLint vertexin_loc = -1;		//in vec2 location
-	GLint transform_loc = -1;	//in float location
-
-	GLuint gVBO = 0;
-	GLuint gIBO = 0;
-
-	/*
-		Load a shader from loader
-			type: GLenum of shader type
-	*/
-	GLuint loadFromFile(std::string path, GLenum type);
+	std::vector<GLint> shaders;		//shader ids
+	void deleteShaders();
 
 public:
+
 	/*
-		load and compile shaders
+		Load a shader from shader file
+		type: GLenum of shader type
+			loads shader
+			compile shader
+			attach shader
 	*/
-	bool init();
+	bool loadFromFile(std::string path, GLenum type);
+
+	/*
+		Link the shader program
+	*/
+	bool linkProgram();
 
 	//location and id getters
 	GLuint getProgramID();
-
-	GLint getVertexInLoc();
-	GLint getTransformLoc();
-
-	GLuint getVBO();
-	GLuint getIBO();
 };

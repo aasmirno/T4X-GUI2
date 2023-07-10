@@ -1,8 +1,8 @@
-#include "MainWindow.h"
+#include "MainController.h"
 
 // Main code
 int main(int, char**)
 {
-	MainWindow game;
+	MainController game;
 	return game.Start();
 }
