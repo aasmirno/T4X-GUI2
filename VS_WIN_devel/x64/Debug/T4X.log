@@ -1,2 +1,6 @@
-﻿  Map.cpp
+﻿  GameControl.cpp
+  MainController.cpp
+  Map.cpp
+  T4X.cpp
+  Generating Code...
   T4X.vcxproj -> D:\Software and Tools\C++\T4x\VS_WIN_devel\x64\Debug\T4X.exe

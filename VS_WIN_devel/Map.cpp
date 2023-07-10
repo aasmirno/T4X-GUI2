@@ -38,8 +38,6 @@ bool Map::genVBO() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);	//bind the buffer to the global array buffer
 	glBufferData(GL_ARRAY_BUFFER, tile_data.size() * sizeof(uint8_t), &tile_ids[0], GL_STATIC_DRAW);	//copy tile ids to the buffer
 	
-	//uint8_t test[100];
-	//glGetBufferSubData(GL_ARRAY_BUFFER, 0, tile_data.size() * sizeof(uint8_t), test);
 	if (vbo_id == -1) {
 		printf("vbo gen error\n");
 		return false;
@@ -76,7 +74,7 @@ bool Map::loadTextures() {
 	ilLoadImage("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet.png");
 	assert(ilGetInteger(IL_IMAGE_CHANNELS) == 3);	//assert rgb format
 
-	ILubyte* bytes = ilGetData();
+	ILubyte* bytes = ilGetData();	//get pixel data
 	glGenTextures(1, &tiletex_id);
 	glBindTexture(GL_TEXTURE_2D, tiletex_id);
 

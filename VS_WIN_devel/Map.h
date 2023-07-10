@@ -37,7 +37,7 @@ public:
 	}
 };
 
-enum TileType : uint8_t { PLAIN, MOUNTAIN, DESERT };
+enum TileType : uint8_t { PLAIN, MOUNTAIN, DESERT , RIVER};
 
 class Tile {
 	int posx;
