@@ -5,8 +5,8 @@ void Camera::setTransformLoc(GLint location) {
 	assert(location != -1);
 };
 
-GLint Camera::getX() { return cam_x; }
-GLint Camera::getY() { return cam_y; }
+float Camera::getX() { return cam_x; }
+float Camera::getY() { return cam_y; }
 GLfloat Camera::getZoom(){ return current_transform; }
 
 void Camera::move(SDL_Keycode key) {
@@ -32,8 +32,10 @@ void Camera::move(SDL_Keycode key) {
 	updateProjection();
 }
 
-void Camera::zoomIn() {
+void Camera::zoomIn(float x, float y) {
 	current_transform += zoom_rate;
+	x -= 0.3f;
+	y -= 0.3f;
 	updateProjection();
 }
 

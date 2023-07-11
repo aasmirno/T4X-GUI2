@@ -24,8 +24,8 @@
 class MainController {
 private:
 	//sdl values
-	int WINDOW_W = 1280;
-	int WINDOW_H = 720;
+	int WINDOW_W = 1900;
+	int WINDOW_H = 1030;
 
 	SDL_Window* main_window = NULL;		//sdl window pointer
 	SDL_GLContext gl_context = NULL;	//sdl-opengl context

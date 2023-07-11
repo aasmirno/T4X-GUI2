@@ -18,7 +18,7 @@
 */
 class Camera {
 private:
-	const GLfloat MIN_TRANSFORM = 5.0f;	//max zoom level
+	const GLfloat MIN_TRANSFORM = 1.0f;	//max zoom level
 	const GLfloat MAX_TRANSFORM = 6.0f;	//min zoom level
 	const GLfloat zoom_rate = 10.0f;		//zoom rate
 
@@ -38,12 +38,12 @@ public:
 	void move(SDL_Keycode key);
 
 	//high level zoom function
-	void zoomIn();
+	void zoomIn(float x, float y);
 	void zoomOut();
 
 	//getters
-	GLint getX();
-	GLint getY();
+	float getX();
+	float getY();
 	GLfloat getZoom();	//returns current_transform
 
 	/*

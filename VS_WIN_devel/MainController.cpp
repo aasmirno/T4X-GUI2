@@ -134,7 +134,7 @@ int MainController::Start() {
 			}
 		}
 		if (ft) {
-			cam.zoomIn();
+			cam.zoomIn(0,0);
 			cam.zoomOut();
 			ft = false;
 		}
@@ -166,7 +166,9 @@ void MainController::EventHandle(SDL_Event& event) {
 			cam.zoomOut();
 		}
 		else if (event.wheel.y > 0) { //scroll forward
-			cam.zoomIn();
+			int x, y;
+			Uint32 buttons = SDL_GetMouseState(&x, &y);
+			cam.zoomIn(x,y);
 		}
 	}
 
@@ -196,7 +198,7 @@ void MainController::Render() {
 	//drawing logic
 	if (draw_game) {
 		if (ft) {
-			cam.zoomIn();
+			cam.zoomIn(0,0);
 			cam.zoomOut();
 		}
 
@@ -256,7 +258,7 @@ void MainController::DebugMenu() {
 	ImGui::Begin("Debug");
 	ImGui::SeparatorText("Window and camera");
 	ImGui::Text("window size w: %d h: %d", WINDOW_W, WINDOW_H);
-	ImGui::Text("cam pos x,y: (%d,%d)", cam.getX(), cam.getY());
+	ImGui::Text("cam pos x,y: (%f,%f)", cam.getX(), cam.getY());
 	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
 	ImGui::SeparatorText("imgui controls");
 	ImGui::Text("imgui io flags wantMouse: %d wantKeyboard: %d", ImGui::GetIO().WantCaptureMouse, ImGui::GetIO().WantCaptureKeyboard);

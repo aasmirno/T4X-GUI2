@@ -1,6 +1,7 @@
 #pragma once
 #include "ShaderManager.h"
 
+#include "imgui.h"
 #include <random>
 #include <IL/il.h>
 #include <assert.h>
@@ -39,6 +40,7 @@ public:
 };
 
 enum TileType : uint8_t { PLAIN, MOUNTAIN, DESERT , RIVER};
+enum ElevationType : uint8_t {L1, L2, L3, L4, L5, L6, L7};
 
 /*
 	Tile class, stores tile info
@@ -98,13 +100,26 @@ public:
 	/*
 		set a tile type at position x,y : zero indexed
 	*/
-	void set(int x, int y, TileType type) {
+	void set(int x, int y, ElevationType type) {
 		assert(initialised == true);
 		assert(x > -1 && x < width);
 		assert(y > -1 && y < height);
 
 		int flat_index = x + y * width;	//get flat index from x,y coords
 		
+		tile_ids[flat_index] = type;
+	}
+
+	/*
+		set a elevation type at position x,y : zero indexed
+	*/
+	void set(int x, int y, TileType type) {
+		assert(initialised == true);
+		assert(x > -1 && x < width);
+		assert(y > -1 && y < height);
+
+		int flat_index = x + y * width;	//get flat index from x,y coords
+
 		tile_data[flat_index].type = type;
 		tile_ids[flat_index] = type;
 	}
@@ -133,15 +148,16 @@ class Map
 {
 private:
 	//metdata constants;
-	const float MNT_HT = 4.3f;
+	float MNT_HT = 0.9f;
 	const float DES_HT = 0.0f;
-	const float PLAIN_HT = 2.6f;
+	float PLAIN_HT = 0.5f;
 	const float OCEAN_HT = 0.0f;
-	const int MAX_RAND = 20;
+	int MAX_RAND = 20;
+	float smoothing_tresh = 0.4f;
 	
 	//map data
-	const int map_width = 257;
-	const int map_height = 257;
+	const int map_width = 513;
+	const int map_height = 513;
 	TileMap tiles;
 
 	//graphics data
@@ -152,12 +168,19 @@ private:
 	GLuint tiletex_id = -1;
 	ILuint tileset_img = -1;
 
+	bool draw_elevation = true;
+
 	float randHeight(int scale);
 
 	/*
 		Generate vbo for tile map
 	*/
 	bool genVBO();
+
+	/*
+		update vbo with tilemap info
+	*/
+	bool updateVBO();
 
 	/*
 		Generate vao for tile map

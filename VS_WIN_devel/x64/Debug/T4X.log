@@ -1,2 +1,3 @@
-﻿  MainController.cpp
+﻿  Map.cpp
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.cpp(16,21): warning C4244: 'return': conversion from 'unsigned int' to 'float', possible loss of data
   T4X.vcxproj -> D:\Software and Tools\C++\T4x\VS_WIN_devel\x64\Debug\T4X.exe
