@@ -32,10 +32,11 @@ private:
 	ImGuiContext* im_context = NULL;	//imgui context
 
 	//unit managers
-	//Camera cam;				//camera controller
+	Camera cam;				//camera controller
 	GameControl game;		//game controller
+	bool ft;
 
-		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
 	bool Running = true;	//run flag
 	bool debug = true;		//debug flag
 
@@ -49,7 +50,7 @@ private:
 	/*
 		Initialise graphical systems and contexts, game control
 	*/
-	bool Init();
+	bool genInit();
 
 	/*
 		Render graphical elements
@@ -85,7 +86,6 @@ private:
 	void DebugMenu();
 	void drawStart();
 	void drawOpts();
-	void drawGameMenu();
 
 public:
 	MainController();

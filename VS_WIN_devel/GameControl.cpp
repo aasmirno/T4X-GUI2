@@ -1,5 +1,9 @@
 #include "GameControl.h"
 
+int GameControl::getMapTransformLoc() {
+	return game_map.getTransformLoc();
+}
+
 bool GameControl::init() {
 	game_map.initialise();
 	return true;

@@ -13,11 +13,12 @@ layout (triangle_strip, max_vertices = 4) out;  //define output as 4 vertices in
 void main() {
     uint tileId = gs_in[0].tileId & 255u;   //bitwise & tile id against max ubyte (11111111)
     float tileX = float(tileId & 15u) / 8.0;   //bitwise & against max 4 (1111)
-    //float tileY = float((tileId >> 4u) & 15u) / 16.0; //always zero if tile types < 8
-    float tileY = 0.0;
+    float tileY = float((tileId >> 4u) & 15u) / 16.0; //always zero if tile types < 15
+    
     const float B = 1 / 256.0;
-    const float S = 1 / 8.0;
+    const float S = 1 / 8.0;    //tex size (1/8.0 = 32 px, 1/16 = 16 px)
 
+    //set positions and texture coordinates
     gl_Position = projection * gl_in[0].gl_Position;
     texCoord = vec2(tileX + B, tileY + B);
     EmitVertex();

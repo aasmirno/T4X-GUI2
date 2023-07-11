@@ -1,4 +1,7 @@
 #pragma once
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+
 #include <assert.h>
 #include <stdio.h>
 #include <iostream>
@@ -15,21 +18,24 @@
 */
 class Camera {
 private:
-	const GLfloat MIN_TRANSFORM = 0.1f;	//max zoom level
+	const GLfloat MIN_TRANSFORM = 5.0f;	//max zoom level
 	const GLfloat MAX_TRANSFORM = 6.0f;	//min zoom level
-	const GLfloat zoom_rate = 0.3f;		//zoom rate
+	const GLfloat zoom_rate = 10.0f;		//zoom rate
 
-	GLint transform_loc = -1;
-	GLfloat current_transform = 1.0f;	//current zoom level
+	GLint transform_loc = -1;	//gl handle for projection matrix uniform
+	
+	GLfloat current_transform = 32.0f;	//current zoom level: starts at 32.0
 
-	GLint cam_x = 0;
-	GLint cam_y = 0;
-	GLint cam_rate = 5;
+	float cam_x = 0;
+	float cam_y = 0;
+	float cam_rate = 0.07f;
 
-	void updateTransform();
+	//inner gl uniform update
+	void updateProjection();
 
 public:
-	void move(SDL_Keycode key, int viewport_x, int viewport_y);
+
+	void move(SDL_Keycode key);
 
 	//high level zoom function
 	void zoomIn();

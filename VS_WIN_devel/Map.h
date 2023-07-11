@@ -1,6 +1,7 @@
 #pragma once
 #include "ShaderManager.h"
 
+#include <random>
 #include <IL/il.h>
 #include <assert.h>
 #include <cstdlib>
@@ -39,16 +40,91 @@ public:
 
 enum TileType : uint8_t { PLAIN, MOUNTAIN, DESERT , RIVER};
 
-class Tile {
+/*
+	Tile class, stores tile info
+*/
+struct Tile {
+	TileType type;
 	int posx;
 	int posy;
 
+	Tile(int x, int y) : posx{ x }, posy{ y }, type{PLAIN} {
+	}
+};
+
+/*
+	Tile map struct, holds tiles and ids
+*/
+class TileMap {
+private:
+	int width = 9;
+	int height = 9;
+	bool initialised = false;
+	std::vector<Tile> tile_data;
+	std::vector<uint8_t> tile_ids;
 public:
-	Tile(int x, int y) : posx{ x }, posy{ y } {
+	void initialise(int width, int height) {
+		this->width = width;
+		this->height = height;
+		tile_data.reserve(width * height);
+		tile_ids.reserve(width * height);
+
+		//init tiles randomly
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				tile_data.push_back(Tile{ x,y });
+				tile_ids.push_back(rand() % 4);
+			}
+		}
+
+		initialised = true;
 	}
 
-	void draw() {
+	/*
+		set a value at position x,y : zero indexed
+	*/
+	void set(int x, int y, Tile t) {
+		assert(initialised == true);
+		assert(x > -1 && x < width);
+		assert(y > -1 && y < height);
 
+		int flat_index = x + y * width;	//get flat index from x,y coords
+
+		//update data and ids
+		tile_data[flat_index] = t;
+		tile_ids[flat_index] = t.type;
+	}
+
+	/*
+		set a tile type at position x,y : zero indexed
+	*/
+	void set(int x, int y, TileType type) {
+		assert(initialised == true);
+		assert(x > -1 && x < width);
+		assert(y > -1 && y < height);
+
+		int flat_index = x + y * width;	//get flat index from x,y coords
+		
+		tile_data[flat_index].type = type;
+		tile_ids[flat_index] = type;
+	}
+
+	/*
+		get a value at position x,y : zero indexed
+	*/
+	Tile get(int x, int y) {
+		assert(initialised == true);
+		assert(x > -1 && x < width);
+		assert(y > -1 && y < height);
+
+		int flat_index = x + y * width;
+		return tile_data[flat_index];
+	}
+
+	uint8_t* getIDArray() {
+		assert(initialised == true);
+		assert(tile_data.size() == tile_ids.size());
+		return &tile_ids[0];
 	}
 };
 
@@ -56,12 +132,17 @@ public:
 class Map
 {
 private:
+	//metdata constants;
+	const float MNT_HT = 4.3f;
+	const float DES_HT = 0.0f;
+	const float PLAIN_HT = 2.6f;
+	const float OCEAN_HT = 0.0f;
+	const int MAX_RAND = 20;
+	
 	//map data
-	const int map_width = 10;
-	const int map_height = 10;
-
-	std::vector<Tile> tile_data;
-	std::vector<uint8_t> tile_ids;
+	const int map_width = 257;
+	const int map_height = 257;
+	TileMap tiles;
 
 	//graphics data
 	MapShader shader;
@@ -70,6 +151,8 @@ private:
 
 	GLuint tiletex_id = -1;
 	ILuint tileset_img = -1;
+
+	float randHeight(int scale);
 
 	/*
 		Generate vbo for tile map
@@ -86,7 +169,13 @@ private:
 	*/
 	bool loadTextures();
 
+	/*
+		Generate a random map
+	*/
+	void tileInit();
+
 public:
+	int getTransformLoc();
 	bool initialise();
 	void draw();
 };

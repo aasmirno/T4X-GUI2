@@ -3,7 +3,7 @@
 MainController::MainController() {
 }
 
-bool MainController::Init() {
+bool MainController::genInit() {
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
@@ -91,6 +91,8 @@ bool MainController::Init() {
 		Internal setup
 	*/
 	//glViewport(cam.getX(), cam.getY(), WINDOW_W, WINDOW_H);
+
+	//check for errors
 	if (glGetError() != GL_NO_ERROR) {
 		printf("opengl error\n");
 		return false;
@@ -101,7 +103,7 @@ bool MainController::Init() {
 
 int MainController::Start() {
 	//try to initialise required systems
-	if (Init() != true) {
+	if (genInit() != true) {
 		return -1;
 	}
 
@@ -112,7 +114,6 @@ int MainController::Start() {
 	//start run loop
 	while (Running) {
 		SDL_GetWindowSize(main_window, &WINDOW_W, &WINDOW_H);
-
 		//get events with sdl
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -131,6 +132,11 @@ int MainController::Start() {
 				//event handler
 				EventHandle(event);
 			}
+		}
+		if (ft) {
+			cam.zoomIn();
+			cam.zoomOut();
+			ft = false;
 		}
 
 		//render graphics
@@ -155,12 +161,12 @@ void MainController::EventHandle(SDL_Event& event) {
 
 
 	//camera zoom logic
-	if (event.type == SDL_MOUSEWHEEL && !wantMouse) {
+	if (event.type == SDL_MOUSEWHEEL && !wantMouse && draw_start != true) {
 		if (event.wheel.y < 0) { //scroll back
-			//cam.zoomOut();
+			cam.zoomOut();
 		}
 		else if (event.wheel.y > 0) { //scroll forward
-			//cam.zoomIn();
+			cam.zoomIn();
 		}
 	}
 
@@ -170,17 +176,15 @@ void MainController::EventHandle(SDL_Event& event) {
 		event.key.keysym.sym == SDLK_a ||
 		event.key.keysym.sym == SDLK_d) && !wantKey)
 	{
-		//cam.move(event.key.keysym.sym, (GLint)WINDOW_W, (GLint)WINDOW_H);
+		cam.move(event.key.keysym.sym);
 	}
 
 	Sleep(1);
 }
 
 void MainController::Render() {
-
 	//clear gl buffers
 	glClear(GL_COLOR_BUFFER_BIT);
-	
 	/*
 		Imgui rendering
 	*/
@@ -189,8 +193,13 @@ void MainController::Render() {
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 
-	//imgui draw commands
+	//drawing logic
 	if (draw_game) {
+		if (ft) {
+			cam.zoomIn();
+			cam.zoomOut();
+		}
+
 		game.Draw();
 	}
 	else {
@@ -239,9 +248,6 @@ void MainController::menuHandler() {
 	if (draw_options)
 		drawOpts();
 
-	if (draw_game)
-		drawGameMenu();
-
 	if (draw_demo)
 		ImGui::ShowDemoWindow();
 }
@@ -250,8 +256,8 @@ void MainController::DebugMenu() {
 	ImGui::Begin("Debug");
 	ImGui::SeparatorText("Window and camera");
 	ImGui::Text("window size w: %d h: %d", WINDOW_W, WINDOW_H);
-	//ImGui::Text("cam pos x,y: (%d,%d)", cam.getX(), cam.getY());
-	//ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
+	ImGui::Text("cam pos x,y: (%d,%d)", cam.getX(), cam.getY());
+	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
 	ImGui::SeparatorText("imgui controls");
 	ImGui::Text("imgui io flags wantMouse: %d wantKeyboard: %d", ImGui::GetIO().WantCaptureMouse, ImGui::GetIO().WantCaptureKeyboard);
 	ImGui::SeparatorText("Game state values");
@@ -275,13 +281,13 @@ void MainController::drawStart() {
 		draw_game = true;
 		draw_start = false;
 		game.init();
+		cam.setTransformLoc(game.getMapTransformLoc());
+		ft = true;
 	}
 
 	//loading button
 	if (ImGui::Button("Load")) {
-		draw_game = true;
-		draw_start = false;
-		game.init();
+
 	}
 
 	//options
@@ -315,23 +321,5 @@ void MainController::drawOpts() {
 
 	//show imgui demo window
 	ImGui::Checkbox("Show ImGui demo window", &draw_demo);
-	ImGui::End();
-}
-
-void MainController::drawGameMenu() {
-	ImGuiWindowFlags flags = 0;
-	flags |= ImGuiWindowFlags_NoMove;
-	flags |= ImGuiWindowFlags_NoResize;
-
-	ImGui::SetNextWindowPos(ImVec2{ 10,10 });
-	ImGui::SetNextWindowSize(ImVec2{300,600});
-
-	ImGui::Begin("Game", NULL, flags);
-
-	if (ImGui::Button("Return to main menu")) {
-		draw_game = false;
-		draw_start = true;
-	}
-
 	ImGui::End();
 }

@@ -11,6 +11,7 @@ private:
 	Map game_map;
 
 public:
+	int getMapTransformLoc();
 	bool init();
 	void Draw();
 

@@ -1,16 +1,97 @@
 #include "Map.h"
 
-bool Map::initialise() {
-	tile_data.reserve(map_width * map_height);
-	tile_ids.reserve(map_width * map_height);
+int Map::getTransformLoc() {
+	return glGetUniformLocation(shader.getProgramID(), "projection");
+}
 
-	//init tiles
-	for (int y = 0; y < map_height; y++) {
+
+float Map::randHeight(int scale) {
+	if (scale <= 0) {
+		scale = 1;
+	}
+	std::random_device rd;
+	std::mt19937 generator(rd());
+
+	std::uniform_int_distribution<std::mt19937::result_type> distribution(0, 0 + scale);
+	return distribution(generator);
+}
+
+/*
+	generate a random map using diamond square algorithm
+*/
+void Map::tileInit() {
+	int random_scale = MAX_RAND;
+
+	std::vector<std::vector<float>> height_map;
+	height_map.resize(map_width);
+	for (auto i = 0; i < height_map.size(); i++) {
+		height_map[i].resize(map_width);
+	}
+	height_map[0][0] = (randHeight(random_scale)) / MAX_RAND;
+	height_map[map_width - 1][0] = (randHeight(random_scale)) / MAX_RAND;
+	height_map[0][map_width - 1] = (randHeight(random_scale)) / MAX_RAND;
+	height_map[map_width - 1][map_width - 1] = (randHeight(random_scale)) / MAX_RAND;
+
+
+
+	for (int iter = map_width - 1; iter > 1; iter /= 2) {
+		random_scale /=  2;
+
+		for (int y = 0; y < map_width - 1; y+= iter) {
+			for (int x = 0; x < map_width - 1; x+=iter) {
+
+				float avg = (height_map[y][x] + height_map[y + iter][x] + height_map[y][x + iter] + height_map[y + iter][x + iter])/4.0f;
+
+				height_map[y+(iter/2)][x + (iter / 2)] = avg + (randHeight(random_scale));
+
+			}
+		}
+
+		for (int y = 0; y < map_width - 1; y += iter) {
+			for (int x = 0; x < map_width - 1; x += iter) {
+				float s0 = height_map[y][x];
+				float s1 = height_map[y][x + iter];
+				float s2 = height_map[y + iter][x];
+				float s3 = height_map[y + iter][x + iter];
+				float cn = height_map[y + (iter / 2)][x + (iter / 2)];
+
+				float d0 = y <= 0 ? (s0 + s1 + cn) / 3.0f : (s0 + s1 + cn + height_map[y - (iter / 2)][x + (iter / 2)]) / 4.0f;
+				float d1 = x <= 0 ? (s0 + cn + s2) / 3.0f : (s0 + cn + s2 + height_map[y + (iter / 2)][x - (iter / 2)]) / 4.0f;
+				float d2 = x >= map_height - 1 - iter ? (s1 + cn + s3) / 3.0f :
+					(s1 + cn + s3 + height_map[y + (iter / 2)][x + iter + (iter / 2)]) / 4.0f;
+				float d3 = y >= map_height - 1 - iter ? (cn + s2 + s3) / 3.0f :
+					(cn + s2 + s3 + height_map[y + iter + (iter / 2)][x + (iter / 2)]) / 4.0f;
+
+				height_map[y][x + (iter / 2)] = d0 + (randHeight(random_scale)) / MAX_RAND;
+				height_map[y + (iter / 2)][x] = d1 + (randHeight(random_scale)) / MAX_RAND;
+				height_map[y + (iter / 2)][x + iter] = d2 + (randHeight(random_scale)) / MAX_RAND;
+				height_map[y + iter][x + (iter / 2)] = d3 + (randHeight(random_scale)) / MAX_RAND;
+
+			}
+		}
+
+	}
+
+	for (int y = 0; y < map_width; y++) {
 		for (int x = 0; x < map_width; x++) {
-			tile_data.push_back(Tile{ x,y });
-			tile_ids.push_back(rand() % 4);
+			if (height_map[y][x] < PLAIN_HT) {
+				tiles.set(x, y, TileType::RIVER);
+			}
+			else if (height_map[y][x] < MNT_HT) {
+				tiles.set(x, y, TileType::PLAIN);
+			}
+			else {
+				tiles.set(x, y, TileType::MOUNTAIN);
+			}
+
 		}
 	}
+}
+
+bool Map::initialise() {
+	tiles.initialise(map_width, map_height);
+	tileInit();
+
 
 	/*
 		graphical init
@@ -31,12 +112,12 @@ bool Map::initialise() {
 
 	return true;
 }
+
 bool Map::genVBO() {
-	assert(tile_ids.size() != 0 && tile_data.size() == tile_ids.size());	//assert ids = number of tiles
 
 	glGenBuffers(1, &vbo_id);	//generate a buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);	//bind the buffer to the global array buffer
-	glBufferData(GL_ARRAY_BUFFER, tile_data.size() * sizeof(uint8_t), &tile_ids[0], GL_STATIC_DRAW);	//copy tile ids to the buffer
+	glBufferData(GL_ARRAY_BUFFER, map_width * map_height * sizeof(uint8_t), tiles.getIDArray(), GL_STATIC_DRAW);	//copy tile ids to the buffer
 	
 	if (vbo_id == -1) {
 		printf("vbo gen error\n");
@@ -91,30 +172,20 @@ bool Map::loadTextures() {
 	return true;
 }
 
-void debug_matrix(glm::mat4& mat) {
-	for (int x = 0; x < 4; x++) {
-		for (int y = 0; y < 4; y++) {
-			printf("%f ", mat[x][y]);
-		}
-		printf("\n");
-	}
-}
-
 void Map::draw() {	
-	glUseProgram(shader.getProgramID());
 	glBindTexture(GL_TEXTURE_2D, tiletex_id);
 	glBindVertexArray(vao_id);
 
-	glm::mat4 proj = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	glm::mat4 scale = glm::scale(proj, glm::vec3(64.0f, 64.0f, 1.0f));
-	glm::mat4 scale2 = glm::scale(proj, glm::vec3(2.0f/1280, 2.0f/720, 1.0f));
-	proj = scale * scale2;
-	//debug_matrix(proj);
+	//glm::mat4 proj = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	//glm::mat4 scale = glm::scale(proj, glm::vec3(64.0f, 64.0f, 1.0f));
+	//glm::mat4 scale2 = glm::scale(proj, glm::vec3(2.0f/1280, 2.0f/720, 1.0f));
+	//proj = scale * scale2;
+	////debug_matrix(proj);
 
 
-	//set mapsize uniform
+	////set mapsize uniform
 	glUniform2i(glGetUniformLocation(shader.getProgramID(), "mapSize"), map_width, map_height);
-	glUniformMatrix4fv(glGetUniformLocation(shader.getProgramID(), "projection"), 1, false, &proj[0][0]);
+	//glUniformMatrix4fv(glGetUniformLocation(shader.getProgramID(), "projection"), 1, false, &proj[0][0]);
 
 	//draw
 	glUseProgram(shader.getProgramID());
