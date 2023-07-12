@@ -4,152 +4,9 @@ int Map::getTransformLoc() {
 	return glGetUniformLocation(shader.getProgramID(), "projection");
 }
 
-
-float Map::randHeight(int scale) {
-	if (scale <= 0) {
-		scale = 1;
-	}
-	std::random_device rd;
-	std::mt19937 generator(rd());
-
-	std::uniform_int_distribution<std::mt19937::result_type> distribution(0, 0 + scale);
-	return distribution(generator);
-}
-
-/*
-	generate a random map using diamond square algorithm
-*/
-void Map::tileInit() {
-	int random_scale = MAX_RAND;
-	float max_height = 0.0f;
-
-	std::vector<std::vector<float>> height_map;
-	height_map.resize(map_width);
-	for (auto i = 0; i < height_map.size(); i++) {
-		height_map[i].resize(map_width);
-	}
-	height_map[0][0] = (randHeight(random_scale)) / MAX_RAND;
-	height_map[map_width - 1][0] = (randHeight(random_scale)) / MAX_RAND;
-	height_map[0][map_width - 1] = (randHeight(random_scale)) / MAX_RAND;
-	height_map[map_width - 1][map_width - 1] = (randHeight(random_scale)) / MAX_RAND;
-
-	if (height_map[0][0] > max_height) {
-		max_height = height_map[0][0];
-	}
-	if (height_map[map_width - 1][0] > max_height) {
-		max_height = height_map[map_width - 1][0];
-	}
-	if (height_map[0][map_width - 1] > max_height) {
-		max_height = height_map[0][map_width - 1];
-	}
-	if (height_map[map_width - 1][map_width - 1] > max_height) {
-		max_height = height_map[map_width - 1][map_width - 1];
-	}
-
-
-	for (int iter = map_width - 1; iter > 1; iter /= 2) {
-		random_scale /= 2;
-
-		for (int y = 0; y < map_width - 1; y += iter) {
-			for (int x = 0; x < map_width - 1; x += iter) {
-
-				float avg = (height_map[y][x] + height_map[y + iter][x] + height_map[y][x + iter] + height_map[y + iter][x + iter]) / 4.0f;
-
-				height_map[y + (iter / 2)][x + (iter / 2)] = avg + (randHeight(random_scale));
-
-				if (height_map[y + (iter / 2)][x + (iter / 2)] > max_height) {
-					max_height = height_map[y + (iter / 2)][x + (iter / 2)];
-				}
-
-			}
-		}
-
-		for (int y = 0; y < map_width - 1; y += iter) {
-			for (int x = 0; x < map_width - 1; x += iter) {
-				float s0 = height_map[y][x];
-				float s1 = height_map[y][x + iter];
-				float s2 = height_map[y + iter][x];
-				float s3 = height_map[y + iter][x + iter];
-				float cn = height_map[y + (iter / 2)][x + (iter / 2)];
-
-				float d0 = y <= 0 ? (s0 + s1 + cn) / 3.0f : (s0 + s1 + cn + height_map[y - (iter / 2)][x + (iter / 2)]) / 4.0f;
-				float d1 = x <= 0 ? (s0 + cn + s2) / 3.0f : (s0 + cn + s2 + height_map[y + (iter / 2)][x - (iter / 2)]) / 4.0f;
-				float d2 = x >= map_height - 1 - iter ? (s1 + cn + s3) / 3.0f :
-					(s1 + cn + s3 + height_map[y + (iter / 2)][x + iter + (iter / 2)]) / 4.0f;
-				float d3 = y >= map_height - 1 - iter ? (cn + s2 + s3) / 3.0f :
-					(cn + s2 + s3 + height_map[y + iter + (iter / 2)][x + (iter / 2)]) / 4.0f;
-
-				height_map[y][x + (iter / 2)] = d0 + (randHeight(random_scale)) / MAX_RAND;
-				height_map[y + (iter / 2)][x] = d1 + (randHeight(random_scale)) / MAX_RAND;
-				height_map[y + (iter / 2)][x + iter] = d2 + (randHeight(random_scale)) / MAX_RAND;
-				height_map[y + iter][x + (iter / 2)] = d3 + (randHeight(random_scale)) / MAX_RAND;
-
-				if (height_map[y][x + (iter / 2)] > max_height) {
-					max_height = height_map[y][x + (iter / 2)];
-				}
-				if (height_map[y + (iter / 2)][x] > max_height) {
-					max_height = height_map[y + (iter / 2)][x];
-				}
-				if (height_map[y + (iter / 2)][x + iter] > max_height) {
-					max_height = height_map[y + (iter / 2)][x + iter];
-				}
-				if (height_map[y + iter][x + (iter / 2)] > max_height) {
-					max_height = height_map[y + iter][x + (iter / 2)];
-				}
-			}
-		}
-
-	}
-
-
-	for (int y = 0; y < map_width; y++) {
-		for (int x = 0; x < map_width; x++) {
-			height_map[y][x] = height_map[y][x] / max_height;
-
-			if (draw_elevation) {
-				if (height_map[y][x] < (1.0f/7.0f)) {
-					tiles.set(x, y, ElevationType::L1);
-				}
-				else if (height_map[y][x] < (2.0f / 7.0f)) {
-					tiles.set(x, y, ElevationType::L2);
-				}
-				else if (height_map[y][x] < (3.0f / 7.0f)) {
-					tiles.set(x, y, ElevationType::L3);
-				}
-				else if (height_map[y][x] < (4.0f / 7.0f)) {
-					tiles.set(x, y, ElevationType::L4);
-				}
-				else if (height_map[y][x] < (5.0f / 7.0f)) {
-					tiles.set(x, y, ElevationType::L5);
-				}
-				else if (height_map[y][x] < (6.0f / 7.0f)) {
-					tiles.set(x, y, ElevationType::L6);
-				}
-				else {
-					tiles.set(x, y, ElevationType::L7);
-				}
-			}
-			else {
-				if ((height_map[y][x] - smoothing_tresh) < PLAIN_HT) {
-					tiles.set(x, y, TileType::RIVER);
-				}
-				else if (height_map[y][x] < MNT_HT) {
-					tiles.set(x, y, TileType::PLAIN);
-				}
-				else {
-					tiles.set(x, y, TileType::MOUNTAIN);
-				}
-			}
-		}
-	}
-
-
-
-}
-
 bool Map::initialise() {
 	tiles.initialise(map_width, map_height);
-	tileInit();
+	tileRefresh();
 
 	/*
 		graphical init
@@ -170,6 +27,254 @@ bool Map::initialise() {
 
 	return true;
 }
+
+/*
+* Map generation section
+------------------------------------------------------------------------------
+*/
+int Map::randHeight(int scale) {
+	if (scale <= 0) {
+		scale = 1;
+	}
+	std::random_device rd;
+	std::mt19937 generator(rd());
+
+	std::uniform_int_distribution<std::mt19937::result_type> distribution(0, 0 + scale);
+	return distribution(generator);
+}
+
+//refresh the height map
+void Map::tileRefresh() {
+	height_map.clear();
+	height_map.resize(map_width);	//resize the height map for memory saving
+	for (auto i = 0; i < height_map.size(); i++) {
+		height_map[i].resize(map_width);
+	}
+	assignTiles();
+}
+
+void Map::addPerlin() {
+	FastNoiseLite noise;
+	noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+
+	if (fractal_ridge) {
+		noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
+	}
+
+	//generate 1st octave perlin noise
+	std::random_device rd;
+	noise.SetSeed(rd());
+	noise.SetFrequency(perlin_freq);
+	for (int y = 0; y < map_height; y++)
+	{
+		for (int x = 0; x < map_width; x++)
+		{
+			height_map[y][x] += ((noise.GetNoise((float)x, (float)y) + 1.0) * octave_weight);
+		}
+	}
+	//normaliseHeightMap();
+}
+
+void Map::subPerlin() {
+	FastNoiseLite noise;
+	noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+
+	if (fractal_ridge) {
+		noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
+	}
+
+	//generate 1st octave perlin noise
+	std::random_device rd;
+	noise.SetSeed(rd());
+	noise.SetFrequency(perlin_freq);
+	for (int y = 0; y < map_height; y++)
+	{
+		for (int x = 0; x < map_width; x++)
+		{
+			height_map[y][x] -= ((noise.GetNoise((float)x, (float)y) + 1.0) * octave_weight);
+		}
+	}
+	//normaliseHeightMap();
+}
+
+void Map::normaliseHeightMap() {
+	float max_height = 0.0f;
+	//normalise heights
+	for (int y = 0; y < map_width; y++) {
+		for (int x = 0; x < map_width; x++) {
+			if (height_map[y][x] > max_height) {
+				max_height = height_map[y][x];
+			}
+		}
+	}
+
+	//normalise heights
+	for (int y = 0; y < map_width; y++) {
+		for (int x = 0; x < map_width; x++) {
+			height_map[y][x] = height_map[y][x] / (max_height + 1);
+		}
+	}
+}
+
+void Map::assignTiles() {
+	for (int y = 0; y < map_width; y++) {
+		for (int x = 0; x < map_width; x++) {
+			float normalised_height = height_map[y][x];
+			if (draw_elevation) {	//if elevation is to be drawn use ids in range {0,8}
+				if (normalised_height < (1.0f / 7.0f)) {
+					tiles.set(x, y, ElevationType::L1);
+				}
+				else if (normalised_height < (2.0f / 7.0f)) {
+					tiles.set(x, y, ElevationType::L2);
+				}
+				else if (normalised_height < (3.0f / 7.0f)) {
+					tiles.set(x, y, ElevationType::L3);
+				}
+				else if (normalised_height < (4.0f / 7.0f)) {
+					tiles.set(x, y, ElevationType::L4);
+				}
+				else if (normalised_height < (5.0f / 7.0f)) {
+					tiles.set(x, y, ElevationType::L5);
+				}
+				else if (normalised_height < (6.0f / 7.0f)) {
+					tiles.set(x, y, ElevationType::L6);
+				}
+				else if (normalised_height < (6.5f / 7.0f)) {
+					tiles.set(x, y, ElevationType::L7);
+				}
+				else {
+					tiles.set(x, y, ElevationType::L8);
+				}
+			}
+			else {	//use textures tile set in range {0,8}
+				
+				if (normalised_height < ocean_level) {
+					tiles.set(x, y, TileType::OCEAN);
+				}
+				else if (normalised_height < (1.0f / 6.0f)) {
+					tiles.set(x, y, TileType::BEACH);
+				}
+				else if (normalised_height < (2.0f / 6.0f)) {
+					tiles.set(x, y, TileType::BEACH);
+				}
+				else if (normalised_height < (3.0f / 6.0f)) {
+					tiles.set(x, y, TileType::FOREST);
+				}
+				else if (normalised_height < (4.0f / 6.0f)) {
+					tiles.set(x, y, TileType::FOREST);
+				}
+				else if (normalised_height < (5.0f / 6.0f)) {
+					tiles.set(x, y, TileType::MOUNTAIN);
+				}
+				else{
+					tiles.set(x, y, TileType::PEAK);
+				}
+			}
+		}
+	}
+}
+
+bool Map::coordCheck(int x, int y) {
+	if (x < 0 || x >= map_width) {
+		return false;
+	}
+	if (y < 0 || y >= map_height) {
+		return false;
+	}
+	return true;
+}
+
+void Map::erodeHydro() {
+	int num_droplets = 1000;
+	for (num_droplets; num_droplets > 0; num_droplets--) {
+		int x, y;
+
+		//choose a random point
+		x = rand()%map_width;
+		y = rand()%map_height;
+		float erosion = 0.3;
+
+		bool flowing = true;
+		int num_tiles = 0;
+
+		//generate droplet and run down hill
+		while (flowing) {
+			if (tiles.get(x,y).type == TileType::OCEAN) {
+				height_map[y][x] += (erosion * num_tiles);
+				flowing = false;
+			}
+			else {
+
+				//find greatest gradient
+				int nextx = x;
+				int nexty = y;
+				float lowest_height = height_map[y][x];
+
+				if (coordCheck(x - 1, y - 1) && height_map[y - 1][x - 1] < lowest_height) {
+					nextx = x - 1;
+					nexty = y - 1;
+					lowest_height = height_map[y - 1][x - 1];
+				}
+				if (coordCheck(x - 1, y) && height_map[y][x - 1] < lowest_height) {
+					nextx = x - 1;
+					nexty = y;
+					lowest_height = height_map[y][x - 1];
+				}
+				if (coordCheck(x - 1, y + 1) && height_map[y + 1][x - 1] < lowest_height) {
+					nextx = x - 1;
+					nexty = y + 1;
+					lowest_height = height_map[y + 1][x - 1];
+				}
+
+				if (coordCheck(x, y - 1) && height_map[y - 1][x] < lowest_height) {
+					nextx = x;
+					nexty = y - 1;
+					lowest_height = height_map[y - 1][x];
+				}
+				if (coordCheck(x, y + 1) && height_map[y + 1][x] < lowest_height) {
+					nextx = x;
+					nexty = y + 1;
+					lowest_height = height_map[y + 1][x];
+				}
+
+				if (coordCheck(x + 1, y - 1) && height_map[y - 1][x + 1] < lowest_height) {
+					nextx = x + 1;
+					nexty = y - 1;
+					lowest_height = height_map[y - 1][x + 1];
+				}
+				if (coordCheck(x + 1, y) && height_map[y][x + 1] < lowest_height) {
+					nextx = x + 1;
+					nexty = y;
+					lowest_height = height_map[y][x + 1];
+				}
+				if (coordCheck(x + 1, y + 1) && height_map[y + 1][x + 1] < lowest_height) {
+					nextx = x + 1;
+					nexty = y + 1;
+					lowest_height = height_map[y + 1][x + 1];
+				}
+
+				//if no lowest point end flow
+				if (x == nextx && y == nexty) {
+					flowing = false;
+				}
+				else {
+					//erode
+					height_map[y][x] -= erosion;
+					num_tiles++;
+					x = nextx;
+					y = nexty;
+				}
+
+
+			}
+		}
+	}
+}
+
+/*
+* Graphics Section
+------------------------------------------------------------------------------
+*/
 
 bool Map::updateVBO() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);	//bind the buffer to the global array buffer
@@ -245,20 +350,57 @@ void Map::draw() {
 	glBindTexture(GL_TEXTURE_2D, tiletex_id);
 	glBindVertexArray(vao_id);
 
-	ImGui::Begin("internal map debug");
+	ImGui::SetNextWindowSize(ImVec2{ 350,400 });
+	ImGui::Begin("internal map debug", NULL, ImGuiWindowFlags_NoResize);	//begin imgui window
+
 	ImGui::SeparatorText("generation algo testing");
-	ImGui::SliderInt("starting random range", &MAX_RAND, 0, 100);
-	ImGui::SeparatorText("tile type thresholds");
-	ImGui::SliderFloat("plain float", &PLAIN_HT, 0.0f, 1.0f, "%.4f");
-	ImGui::SliderFloat("smoothing float", &smoothing_tresh, 0.0f, 1.0f, "%.4f");
-	if (ImGui::Button("regen map")) {
-		loadTextures();
-		tileInit();
+	ImGui::Text("mapsize: %d,%d", map_width, map_height);
+	ImGui::SliderFloat("perlin freq", &perlin_freq, 0.0001f, 0.05f);
+	ImGui::SliderFloat("fractal gain", &fractal_gain, 0.2f, 0.8f);
+	ImGui::SliderFloat("octave weight", &octave_weight, 0.0f, 1.0f);
+	if (ImGui::Button("Toggle fractal ridged")) {
+		fractal_ridge = !fractal_ridge;
+	}
+	ImGui::SameLine();
+	ImGui::Text("%d", fractal_ridge);
+
+	if (ImGui::Button("add perlin")) {
+		addPerlin();
+		assignTiles();
 		updateVBO();
 	}
 	ImGui::SameLine();
-	ImGui::Checkbox("draw elevation", &draw_elevation);
-	ImGui::End();
+	if (ImGui::Button("sub perlin")) {
+		subPerlin();
+		assignTiles();
+		updateVBO();
+	}
+
+	if (ImGui::Button("erode hydro")) {
+		erodeHydro();
+		assignTiles();
+		updateVBO();
+	}
+
+	ImGui::SeparatorText("tile type thresholds");
+	ImGui::SliderFloat("ocean level", &ocean_level, 0.0f, 0.99f);
+	ImGui::SliderFloat("mountain min level", &min_mountain, 0.0f, 1.0f);
+
+	if (ImGui::Button("refresh map")) {
+		loadTextures();
+		tileRefresh();
+		updateVBO();
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Toggle Elevation on current map")) {
+		draw_elevation = !draw_elevation;
+		loadTextures();
+		assignTiles();
+		updateVBO();
+	}
+
+	ImGui::End();//---------------------------------------------------------end imgui window
 
 	//glm::mat4 proj = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	//glm::mat4 scale = glm::scale(proj, glm::vec3(64.0f, 64.0f, 1.0f));

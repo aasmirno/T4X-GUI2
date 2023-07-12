@@ -1,3 +1,15 @@
 ﻿  Map.cpp
-D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.cpp(16,21): warning C4244: 'return': conversion from 'unsigned int' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(159,22): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(160,23): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.cpp(72,68): warning C4244: '+=': conversion from 'double' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.cpp(94,68): warning C4244: '-=': conversion from 'double' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.cpp(195,17): warning C4305: 'initializing': truncation from 'double' to 'float'
   T4X.vcxproj -> D:\Software and Tools\C++\T4x\VS_WIN_devel\x64\Debug\T4X.exe

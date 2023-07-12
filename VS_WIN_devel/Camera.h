@@ -18,13 +18,13 @@
 */
 class Camera {
 private:
-	const GLfloat MIN_TRANSFORM = 1.0f;	//max zoom level
-	const GLfloat MAX_TRANSFORM = 6.0f;	//min zoom level
-	const GLfloat zoom_rate = 10.0f;		//zoom rate
+	const float MIN_TRANSFORM = 1.0f;	//max zoom level
+	const float MAX_TRANSFORM = 6.0f;	//min zoom level
+	const float zoom_rate = 5.0f;		//zoom rate
 
 	GLint transform_loc = -1;	//gl handle for projection matrix uniform
 	
-	GLfloat current_transform = 32.0f;	//current zoom level: starts at 32.0
+	float current_transform = 32.0f;	//current zoom level: starts at 32.0
 
 	float cam_x = 0;
 	float cam_y = 0;
@@ -34,17 +34,17 @@ private:
 	void updateProjection();
 
 public:
-
+	void reset();
 	void move(SDL_Keycode key);
 
 	//high level zoom function
-	void zoomIn(float x, float y);
+	void zoomIn();
 	void zoomOut();
 
 	//getters
 	float getX();
 	float getY();
-	GLfloat getZoom();	//returns current_transform
+	float getZoom();	//returns current_transform
 
 	/*
 		Set transform uniform location

@@ -1,14 +1,21 @@
 #pragma once
+//internal libraries
 #include "ShaderManager.h"
 
+//map generation libraries
+#include "FastNoiseLite.h"
+
+//graphics libraries
 #include "imgui.h"
-#include <random>
 #include <IL/il.h>
-#include <assert.h>
-#include <cstdlib>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
+
+//cstd libraries
+#include <random>
+#include <assert.h>
+#include <cstdlib>
 #include <vector>
 
 class MapShader :
@@ -39,8 +46,8 @@ public:
 	}
 };
 
-enum TileType : uint8_t { PLAIN, MOUNTAIN, DESERT , RIVER};
-enum ElevationType : uint8_t {L1, L2, L3, L4, L5, L6, L7};
+enum TileType : uint8_t { OCEAN, BEACH, PLAIN, FOREST, BLANK1, BLANK2, MOUNTAIN, PEAK};
+enum ElevationType : uint8_t {L1, L2, L3, L4, L5, L6, L7, L8};
 
 /*
 	Tile class, stores tile info
@@ -147,14 +154,18 @@ public:
 class Map
 {
 private:
-	//metdata constants;
-	float MNT_HT = 0.9f;
-	const float DES_HT = 0.0f;
-	float PLAIN_HT = 0.5f;
-	const float OCEAN_HT = 0.0f;
-	int MAX_RAND = 20;
-	float smoothing_tresh = 0.4f;
-	
+	//map generation constants;
+	uint8_t algorithm = 0;	//0 = diamond square, 1 = perlin
+	float perlin_freq = 0.2;	//perlin frequency
+	float fractal_gain = 0.2;	//ridge fractal gain
+	float octave_weight = 1.0f;	//octave weight
+	bool fractal_ridge = false;
+
+	float min_mountain = 0.9f;
+	float ocean_level = 0.5f;
+	bool draw_elevation = true;
+	std::vector<std::vector<float>> height_map;
+
 	//map data
 	const int map_width = 513;
 	const int map_height = 513;
@@ -168,9 +179,24 @@ private:
 	GLuint tiletex_id = -1;
 	ILuint tileset_img = -1;
 
-	bool draw_elevation = true;
+	/*
+		map gen methods
+	*/
+	//assign textures based on current heigthmap
+	void assignTiles();
 
-	float randHeight(int scale);
+	int randHeight(int scale);
+	
+	void normaliseHeightMap();
+
+	//add a perlin noise map to the height map;
+	void addPerlin();
+	void subPerlin();
+
+	//simulate hydro erosion
+	void erodeHydro();
+	bool coordCheck(int x, int y);
+
 
 	/*
 		Generate vbo for tile map
@@ -195,7 +221,7 @@ private:
 	/*
 		Generate a random map
 	*/
-	void tileInit();
+	void tileRefresh();
 
 public:
 	int getTransformLoc();

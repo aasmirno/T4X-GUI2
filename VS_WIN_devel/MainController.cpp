@@ -134,7 +134,7 @@ int MainController::Start() {
 			}
 		}
 		if (ft) {
-			cam.zoomIn(0,0);
+			cam.zoomIn();
 			cam.zoomOut();
 			ft = false;
 		}
@@ -161,24 +161,24 @@ void MainController::EventHandle(SDL_Event& event) {
 
 
 	//camera zoom logic
-	if (event.type == SDL_MOUSEWHEEL && !wantMouse && draw_start != true) {
-		if (event.wheel.y < 0) { //scroll back
-			cam.zoomOut();
+	if (draw_game) {
+		if (event.type == SDL_MOUSEWHEEL && !wantMouse && draw_start != true) {
+			if (event.wheel.y < 0) { //scroll back
+				cam.zoomOut();
+			}
+			else if (event.wheel.y > 0) { //scroll forward
+				cam.zoomIn();
+			}
 		}
-		else if (event.wheel.y > 0) { //scroll forward
-			int x, y;
-			Uint32 buttons = SDL_GetMouseState(&x, &y);
-			cam.zoomIn(x,y);
-		}
-	}
 
-	//camera wasd movement logic
-	if ((event.key.keysym.sym == SDLK_w ||
-		event.key.keysym.sym == SDLK_s ||
-		event.key.keysym.sym == SDLK_a ||
-		event.key.keysym.sym == SDLK_d) && !wantKey)
-	{
-		cam.move(event.key.keysym.sym);
+		//camera wasd movement logic
+		if ((event.key.keysym.sym == SDLK_w ||
+			event.key.keysym.sym == SDLK_s ||
+			event.key.keysym.sym == SDLK_a ||
+			event.key.keysym.sym == SDLK_d) && !wantKey)
+		{
+			cam.move(event.key.keysym.sym);
+		}
 	}
 
 	Sleep(1);
@@ -198,7 +198,7 @@ void MainController::Render() {
 	//drawing logic
 	if (draw_game) {
 		if (ft) {
-			cam.zoomIn(0,0);
+			cam.zoomIn();
 			cam.zoomOut();
 		}
 
@@ -260,8 +260,13 @@ void MainController::DebugMenu() {
 	ImGui::Text("window size w: %d h: %d", WINDOW_W, WINDOW_H);
 	ImGui::Text("cam pos x,y: (%f,%f)", cam.getX(), cam.getY());
 	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
+	if (ImGui::Button("reset cam")) {
+		cam.reset();
+	}
+
 	ImGui::SeparatorText("imgui controls");
 	ImGui::Text("imgui io flags wantMouse: %d wantKeyboard: %d", ImGui::GetIO().WantCaptureMouse, ImGui::GetIO().WantCaptureKeyboard);
+
 	ImGui::SeparatorText("Game state values");
 	ImGui::Text("loadRequest: %d", false);
 	ImGui::End();
