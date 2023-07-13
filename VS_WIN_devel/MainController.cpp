@@ -222,7 +222,7 @@ void MainController::Render() {
 }
 
 void MainController::GameLoop() {
-
+	game.loop();
 }
 
 void MainController::Cleanup() {

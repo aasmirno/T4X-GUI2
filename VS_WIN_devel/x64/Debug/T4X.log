@@ -1,15 +1,150 @@
-﻿  Map.cpp
-D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(159,22): warning C4305: 'initializing': truncation from 'double' to 'float'
-D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(160,23): warning C4305: 'initializing': truncation from 'double' to 'float'
-D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.cpp(72,68): warning C4244: '+=': conversion from 'double' to '_Ty', possible loss of data
+﻿  GameControl.cpp
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(12,14): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(13,15): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(74,79): warning C4244: '+=': conversion from 'double' to '_Ty', possible loss of data
           with
           [
               _Ty=float
           ]
-D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.cpp(94,68): warning C4244: '-=': conversion from 'double' to '_Ty', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(102,79): warning C4244: '-=': conversion from 'double' to '_Ty', possible loss of data
           with
           [
               _Ty=float
           ]
-D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.cpp(195,17): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(167,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(168,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(197,63): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(197,55): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(261,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(262,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(263,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(264,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(295,20): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(303,29): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=GLint
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(15,13): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(64,13): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(73,1): warning C4305: '+=': truncation from 'double' to '_Ty'
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(145,24): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(161,22): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(163,23): warning C4305: 'initializing': truncation from 'double' to 'float'
+  MainController.cpp
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(12,14): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(13,15): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(74,79): warning C4244: '+=': conversion from 'double' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(102,79): warning C4244: '-=': conversion from 'double' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(167,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(168,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(197,63): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(197,55): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(261,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(262,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(263,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(264,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(295,20): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(303,29): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=GLint
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(15,13): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(64,13): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(73,1): warning C4305: '+=': truncation from 'double' to '_Ty'
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(145,24): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(161,22): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(163,23): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Map.cpp
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(12,14): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(13,15): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(74,79): warning C4244: '+=': conversion from 'double' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(102,79): warning C4244: '-=': conversion from 'double' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(167,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(168,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(197,63): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(197,55): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(261,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(262,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(263,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(264,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(295,20): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(303,29): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=GLint
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(15,13): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(64,13): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(73,1): warning C4305: '+=': truncation from 'double' to '_Ty'
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(145,24): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(161,22): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(163,23): warning C4305: 'initializing': truncation from 'double' to 'float'
+  T4X.cpp
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(12,14): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(13,15): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(74,79): warning C4244: '+=': conversion from 'double' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(102,79): warning C4244: '-=': conversion from 'double' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(167,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(168,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(197,63): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(197,55): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(261,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(262,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(263,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(264,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(295,20): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(303,29): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=GLint
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(15,13): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(64,13): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\TempMap.h(73,1): warning C4305: '+=': truncation from 'double' to '_Ty'
+          with
+          [
+              _Ty=float
+          ]
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(145,24): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(161,22): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(163,23): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Generating Code...
   T4X.vcxproj -> D:\Software and Tools\C++\T4x\VS_WIN_devel\x64\Debug\T4X.exe

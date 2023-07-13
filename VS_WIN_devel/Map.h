@@ -1,9 +1,8 @@
 #pragma once
 //internal libraries
 #include "ShaderManager.h"
-
-//map generation libraries
-#include "FastNoiseLite.h"
+#include "HeightMap.h"
+#include "TempMap.h"
 
 //graphics libraries
 #include "imgui.h"
@@ -13,7 +12,6 @@
 #include <glm/ext.hpp>
 
 //cstd libraries
-#include <random>
 #include <assert.h>
 #include <cstdlib>
 #include <vector>
@@ -143,6 +141,10 @@ public:
 		return tile_data[flat_index];
 	}
 
+	int getSize() {
+		return tile_data.size();
+	}
+
 	uint8_t* getIDArray() {
 		assert(initialised == true);
 		assert(tile_data.size() == tile_ids.size());
@@ -154,30 +156,47 @@ public:
 class Map
 {
 private:
-	//map generation constants;
-	uint8_t algorithm = 0;	//0 = diamond square, 1 = perlin
-	float perlin_freq = 0.2;	//perlin frequency
-	float fractal_gain = 0.2;	//ridge fractal gain
-	float octave_weight = 1.0f;	//octave weight
-	bool fractal_ridge = false;
 
-	float min_mountain = 0.9f;
+	//map generation constants;
+	float perlin_freq = 0.2;	//perlin frequency
+	float octave_weight = 1.0f;	//octave weight
+	float fractal_gain = 0.2;	//fractal gain
+	bool fractal_ridge = false;	//fractal toggle
+
+	//temp constants;
+	TempMap t_map;
+	int sunx = 0;
+	int suny = 0;
+	bool compute_temp = true;
+
+	//tile assignment values
+	float land_range = 1.0f;
 	float ocean_level = 0.5f;
-	bool draw_elevation = true;
-	std::vector<std::vector<float>> height_map;
+	float beach_height = 0.2f;
+
+	float plain_percentile = 0.1f;
+	float forest_percentile = 0.3f;
+	float mountain_percentile = 0.9f;
 
 	//map data
 	const int map_width = 513;
 	const int map_height = 513;
 	TileMap tiles;
+	HeightMap h_map;
 
 	//graphics data
+	bool draw_elevation = false;
+	bool draw_temp = false;
+
 	MapShader shader;
-	GLuint vbo_id = -1;
-	GLuint vao_id = -1;
 
 	GLuint tiletex_id = -1;
-	ILuint tileset_img = -1;
+	GLuint tile_vbo_id = -1;
+	GLuint tile_vao_id = -1;
+
+	GLuint overlay_id = -1;
+	GLuint temp_vbo_id = -1;
+	GLuint temp_vao_id = -1;
 
 	/*
 		map gen methods
@@ -185,45 +204,23 @@ private:
 	//assign textures based on current heigthmap
 	void assignTiles();
 
-	int randHeight(int scale);
-	
-	void normaliseHeightMap();
+	//create a vbo
+	bool genVBO(GLuint* vbo_id);
 
-	//add a perlin noise map to the height map;
-	void addPerlin();
-	void subPerlin();
+	//copy data into a vbo
+	bool updateVBO(GLuint vbo_id, int size, uint8_t* data);
 
-	//simulate hydro erosion
-	void erodeHydro();
-	bool coordCheck(int x, int y);
-
-
-	/*
-		Generate vbo for tile map
-	*/
-	bool genVBO();
-
-	/*
-		update vbo with tilemap info
-	*/
-	bool updateVBO();
-
-	/*
-		Generate vao for tile map
-	*/
-	bool genVAO();
+	//create a vao and assign a vbo
+	bool genVAO(GLuint* vao_id, GLuint vbo_id);
 
 	/*
 		Load tile textures
 	*/
 	bool loadTextures();
 
-	/*
-		Generate a random map
-	*/
-	void tileRefresh();
-
 public:
+	//loop map logic once
+	void loop();
 	int getTransformLoc();
 	bool initialise();
 	void draw();

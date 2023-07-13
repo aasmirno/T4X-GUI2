@@ -8,9 +8,12 @@
 class GameControl
 {
 private:
+	bool paused = true;
 	Map game_map;
+	int turn = 0;
 
 public:
+	void loop();
 	int getMapTransformLoc();
 	bool init();
 	void Draw();

@@ -40,7 +40,7 @@ void Camera::reset() {
 
 void Camera::zoomIn() {
 	current_transform += zoom_rate;
-	cam_x -= 0.3 ;
+	cam_x -= 0.3;
 	cam_y -= 0.3;
 	updateProjection();
 }
@@ -49,6 +49,13 @@ void Camera::zoomOut() {
 	current_transform -= zoom_rate;
 	cam_x += 0.3;
 	cam_y += 0.3;
+
+	if (current_transform < MIN_TRANSFORM) {
+		current_transform = MIN_TRANSFORM;
+		cam_x -= 0.3;
+		cam_y -= 0.3;
+
+	}
 	updateProjection();
 }
 
@@ -62,8 +69,6 @@ void debug_matrix(glm::mat4& mat) {
 }
 
 void Camera::updateProjection() {
-	if (current_transform < MIN_TRANSFORM)
-		current_transform = MIN_TRANSFORM;
 
 	assert(transform_loc != -1); //make sure transform uniform location has been set
 
