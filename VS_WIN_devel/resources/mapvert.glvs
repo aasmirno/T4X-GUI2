@@ -15,8 +15,8 @@ void main()
     //get x and y floats from vertex index and map size
         //eg tile at index 1: x=1/10=0.2 y=11%10 = 0
         //index 10: x=10/10=1 y=10%10 = 1
-    float x = float(i / mapSize.x); //float(i & 15);
-    float y = float(i % mapSize.y); //float((i >> 4) & 15);
+    float x = float(i % mapSize.x); //float(i & 15);
+    float y = float(i / mapSize.x); //float((i >> 4) & 15);
   
     gl_Position = vec4(x, y, 0, 1);
     

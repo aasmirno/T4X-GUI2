@@ -7,6 +7,9 @@
 class HeightMap
 {
 private:
+	enum ElevationType : uint8_t { L1, L2, L3, L4, L5, L6, L7, L8 };
+
+	std::vector<uint8_t> height_map_ids;
 	std::vector<float> height_map;
 	float max_height = 0.0f;
 	int width = 0.0f;
@@ -36,22 +39,78 @@ public:
 	//get height at (x,y)
 	float getHeight(int x, int y) {
 		if (coordCheck(x, y)) {
-			return height_map[y * height + x];
+			return height_map[y * width + x];
 		}
 		return 0.0f;
 	}
 
+	//get raw height map vector
+	std::vector<float>& getHeightMap() {
+		return height_map;
+	}
+
+	//assign ids and return id array
+	uint8_t* getIDArray() {
+		//assign ids
+		for (size_t index = 0; index < height_map.size(); index++) {
+			//if max height is 0 (no elevation), assign 0.0f otherwise normalise
+			float normalised_height = height_map[index];
+
+			if (normalised_height < 1.0f / 8.0f) {
+				height_map_ids[index] = L1;
+			}
+			else if (normalised_height < 2.0f / 8.0f) {
+				height_map_ids[index] = L2;
+			}
+			else if (normalised_height < 3.0f / 8.0f) {
+				height_map_ids[index] = L3;
+			}
+			else if (normalised_height < 4.0f / 8.0f) {
+				height_map_ids[index] = L4;
+			}
+			else if (normalised_height < 5.0f / 8.0f) {
+				height_map_ids[index] = L5;
+			}
+			else if (normalised_height < 6.0f / 8.0f) {
+				height_map_ids[index] = L6;
+			}
+			else if (normalised_height < 7.0f / 8.0f) {
+				height_map_ids[index] = L7;
+			}
+			else{
+				height_map_ids[index] = L8;
+			}
+		}
+
+		return &height_map_ids[0];
+	}
+
+	//check coordinate against bounds
+	bool coordCheck(int x, int y) {
+		if (x < 0 || x >= width) {
+			return false;
+		}
+		if (y < 0 || y >= height) {
+			return false;
+		}
+		return true;
+	}
+
+	//initialise height map to 0.0f
 	void init(int size_x, int size_y) {
 		width = size_x;
 		height = size_y;
 		refresh();
 	}
 
-	//refresh the height map
+	//refresh the height map to 0.0f
 	void refresh() {
 		max_height = 0;
 		height_map.clear();
-		height_map.resize(height * width);	//resize the height map for memory saving
+		height_map.resize(height * width);
+
+		height_map_ids.clear();
+		height_map_ids.resize(height * width);
 	}
 
 	//add perlin noise to current height map
@@ -67,19 +126,11 @@ public:
 		std::random_device rd;
 		noise.SetSeed(rd());
 		noise.SetFrequency(perlin_freq);
-		for (int y = 0; y < height; y++)
+		for (size_t index = 0; index < height_map.size(); index++)
 		{
-			for (int x = 0; x < width; x++)
-			{
-				height_map[y * height + x] += ((noise.GetNoise((float)x, (float)y) + 1.0) * octave_weight);
-
-				//limit at 0.0f;
-				if (height_map[y * height + x] < 0) {
-					height_map[y * height + x] = 0;
-				}
-			}
+			height_map[index] += ((noise.GetNoise((float)(index % width), (float)(index / height)) + 1.0) * octave_weight);
 		}
-		max_height += 2.0f;
+
 	}
 
 	//subtract perlin noise from current height map
@@ -95,61 +146,23 @@ public:
 		std::random_device rd;
 		noise.SetSeed(rd());
 		noise.SetFrequency(perlin_freq);
-		for (int y = 0; y < height; y++)
+		for (size_t index = 0; index < height_map.size(); index++)
 		{
-			for (int x = 0; x < width; x++)
-			{
-				height_map[y * height + x] -= ((noise.GetNoise((float)x, (float)y) + 1.0) * octave_weight);
+			height_map[index] -= ((noise.GetNoise((float)(index % width), (float)(index / height)) + 1.0) * octave_weight);
 
-				//limit at 0.0f
-				if (height_map[y * height + x] < 0) {
-					height_map[y * height + x] = 0;
-				}
-			}
-		}
-
-		if (max_height > 0) {
-			max_height -= 2.0f;
-		}
-	}
-
-	//check coordinate against bounds
-	bool coordCheck(int x, int y) {
-		if (x < 0 || x >= width) {
-			return false;
-		}
-		if (y < 0 || y >= height) {
-			return false;
-		}
-		return true;
-	}
-
-	//normalise heights into 0 to 1 range
-	void normaliseHeightMap() {
-		float max_height = 0.0f;
-		//find max heights
-		for (int y = 0; y < width; y++) {
-			for (int x = 0; x < width; x++) {
-				if (height_map[y * height + x] > max_height) {
-					max_height = height_map[y * height + x];
-				}
-			}
-		}
-
-		//normalise heights
-		for (int y = 0; y < width; y++) {
-			for (int x = 0; x < width; x++) {
-				height_map[y * height + x] = height_map[y * height + x] / (max_height + 1);
+			//limit at 0.0f
+			if (height_map[index] < 0) {
+				height_map[index] = 0;
 			}
 		}
 	}
+
 
 	struct Droplet {
 		float height;
 		float gradientX;
 		float gradientY;
 	};
-
 
 	void erode() {
 		InitializeBrushIndices(erosionRadius);
@@ -213,10 +226,10 @@ public:
 
 					// Add the sediment to the four nodes of the current cell using bilinear interpolation
 					// Deposition is not distributed over a radius (like erosion) so that it can fill small pits
-					if (dropletIndex > 0 && dropletIndex < height*width) {
+					if (dropletIndex > 0 && dropletIndex < height * width) {
 						height_map[dropletIndex] += amountToDeposit * (1 - cellOffsetX) * (1 - cellOffsetY);
 					}
-					if (dropletIndex + 1 > 0 && dropletIndex +1 < height * width) {
+					if (dropletIndex + 1 > 0 && dropletIndex + 1 < height * width) {
 						height_map[dropletIndex + 1] += amountToDeposit * cellOffsetX * (1 - cellOffsetY);
 					}
 					if (dropletIndex + width > 0 && dropletIndex + width < height * width) {
@@ -259,8 +272,8 @@ public:
 
 		int nodeIndexNW = coordY * height + coordX;    //x,y
 		float heightNW = (nodeIndexNW >= 0 && nodeIndexNW < width * height) ? height_map[nodeIndexNW] : 0.0; //x,y
-		float heightNE = (nodeIndexNW+1 >= 0 && nodeIndexNW+1 < width * height) ? height_map[nodeIndexNW+1] : 0.0; //x+1,y
-		float heightSW = (nodeIndexNW+width  >= 0 && nodeIndexNW + width < width * height) ? height_map[nodeIndexNW+width] : 0.0;
+		float heightNE = (nodeIndexNW + 1 >= 0 && nodeIndexNW + 1 < width * height) ? height_map[nodeIndexNW + 1] : 0.0; //x+1,y
+		float heightSW = (nodeIndexNW + width >= 0 && nodeIndexNW + width < width * height) ? height_map[nodeIndexNW + width] : 0.0;
 		float heightSE = (nodeIndexNW + width + 1 >= 0 && nodeIndexNW + width + 1 < width * height) ? height_map[nodeIndexNW + width + 1] : 0.0;
 
 		float gradientX = (heightNE - heightNW) * (1 - y) + (heightSE - heightSW) * y;

@@ -3,6 +3,7 @@
 #include "ShaderManager.h"
 #include "HeightMap.h"
 #include "TempMap.h"
+#include "TileMap.h"
 
 //graphics libraries
 #include "imgui.h"
@@ -44,167 +45,63 @@ public:
 	}
 };
 
-enum TileType : uint8_t { OCEAN, BEACH, PLAIN, FOREST, BLANK1, BLANK2, MOUNTAIN, PEAK};
-enum ElevationType : uint8_t {L1, L2, L3, L4, L5, L6, L7, L8};
-
-/*
-	Tile class, stores tile info
-*/
-struct Tile {
-	TileType type;
-	int posx;
-	int posy;
-
-	Tile(int x, int y) : posx{ x }, posy{ y }, type{PLAIN} {
-	}
-};
-
-/*
-	Tile map struct, holds tiles and ids
-*/
-class TileMap {
-private:
-	int width = 9;
-	int height = 9;
-	bool initialised = false;
-	std::vector<Tile> tile_data;
-	std::vector<uint8_t> tile_ids;
-public:
-	void initialise(int width, int height) {
-		this->width = width;
-		this->height = height;
-		tile_data.reserve(width * height);
-		tile_ids.reserve(width * height);
-
-		//init tiles randomly
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				tile_data.push_back(Tile{ x,y });
-				tile_ids.push_back(rand() % 4);
-			}
-		}
-
-		initialised = true;
-	}
-
-	/*
-		set a value at position x,y : zero indexed
-	*/
-	void set(int x, int y, Tile t) {
-		assert(initialised == true);
-		assert(x > -1 && x < width);
-		assert(y > -1 && y < height);
-
-		int flat_index = x + y * width;	//get flat index from x,y coords
-
-		//update data and ids
-		tile_data[flat_index] = t;
-		tile_ids[flat_index] = t.type;
-	}
-
-	/*
-		set a tile type at position x,y : zero indexed
-	*/
-	void set(int x, int y, ElevationType type) {
-		assert(initialised == true);
-		assert(x > -1 && x < width);
-		assert(y > -1 && y < height);
-
-		int flat_index = x + y * width;	//get flat index from x,y coords
-		
-		tile_ids[flat_index] = type;
-	}
-
-	/*
-		set a elevation type at position x,y : zero indexed
-	*/
-	void set(int x, int y, TileType type) {
-		assert(initialised == true);
-		assert(x > -1 && x < width);
-		assert(y > -1 && y < height);
-
-		int flat_index = x + y * width;	//get flat index from x,y coords
-
-		tile_data[flat_index].type = type;
-		tile_ids[flat_index] = type;
-	}
-
-	/*
-		get a value at position x,y : zero indexed
-	*/
-	Tile get(int x, int y) {
-		assert(initialised == true);
-		assert(x > -1 && x < width);
-		assert(y > -1 && y < height);
-
-		int flat_index = x + y * width;
-		return tile_data[flat_index];
-	}
-
-	int getSize() {
-		return tile_data.size();
-	}
-
-	uint8_t* getIDArray() {
-		assert(initialised == true);
-		assert(tile_data.size() == tile_ids.size());
-		return &tile_ids[0];
-	}
-};
-
-
 class Map
 {
 private:
+	//simulation speed parameters
+	int counter = 5;
+	int speed = 10;
 
-	//map generation constants;
+	//tile map parameters
+	TileMap tiles;
+	float ocean_level = 0.5f;
+	float beach_height = 0.2f;
+	float mountain_height = 0.9f;
+	float foothill_height = 0.2f;
+
+	//height map generation parameters
+	HeightMap h_map;
 	float perlin_freq = 0.2;	//perlin frequency
 	float octave_weight = 1.0f;	//octave weight
 	float fractal_gain = 0.2;	//fractal gain
 	bool fractal_ridge = false;	//fractal toggle
 
-	//temp constants;
+	//temperature map parameters
 	TempMap t_map;
 	int sunx = 0;
-	int suny = 0;
+	int equator = 0;
+	float solar_intensity = 0.5;
+	float radiation_factor = 0.1;
+	int drop_off = 1;
 	bool compute_temp = true;
 
-	//tile assignment values
-	float land_range = 1.0f;
-	float ocean_level = 0.5f;
-	float beach_height = 0.2f;
-
-	float plain_percentile = 0.1f;
-	float forest_percentile = 0.3f;
-	float mountain_percentile = 0.9f;
-
 	//map data
-	const int map_width = 513;
-	const int map_height = 513;
-	TileMap tiles;
-	HeightMap h_map;
+	const int map_width = 500;
+	const int map_height = 500;
 
-	//graphics data
+	//graphics data booleans
+	bool draw_textures = true;
 	bool draw_elevation = false;
-	bool draw_temp = false;
 
+	bool draw_air_temp = false;
+	bool draw_surface_temp = false;
+	bool draw_clouds = false;
+
+	//graphics handles
 	MapShader shader;
 
-	GLuint tiletex_id = -1;
-	GLuint tile_vbo_id = -1;
-	GLuint tile_vao_id = -1;
+	GLuint base_texture_id = -1;	//base texture handle
+	GLuint base_vbo_id = -1;	//base texture vertex buffer object handle
+	GLuint base_vao_id = -1;	//base texture array object handle
 
-	GLuint overlay_id = -1;
-	GLuint temp_vbo_id = -1;
-	GLuint temp_vao_id = -1;
+	GLuint overlay_texture_id = -1;	//overlay texture handle
+	GLuint overlay_vbo_id = -1;	//overlay vertex buffer object handle
+	GLuint overlay_vao_id = -1;	//overlay vertex array object handle
 
 	/*
-		map gen methods
+		graphical methods
 	*/
-	//assign textures based on current heigthmap
-	void assignTiles();
-
-	//create a vbo
+	//create a vbo buffer
 	bool genVBO(GLuint* vbo_id);
 
 	//copy data into a vbo
@@ -213,16 +110,29 @@ private:
 	//create a vao and assign a vbo
 	bool genVAO(GLuint* vao_id, GLuint vbo_id);
 
+	//load texture file into a texture handle
+	bool loadTextures(std::string texture_path, GLuint &texture_handle);
+
 	/*
-		Load tile textures
+		imgui drawing functions
 	*/
-	bool loadTextures();
+	//draw debug menu
+	void drawDebug();
+
+	//draw overhead display menu
+	void drawDisplay();
 
 public:
 	//loop map logic once
 	void loop();
+	
+	//get tranform uniform location
 	int getTransformLoc();
+
+	//initialise game map
 	bool initialise();
+
+	//draw graphical elements
 	void draw();
 };
 
