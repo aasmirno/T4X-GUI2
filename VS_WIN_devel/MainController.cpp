@@ -258,11 +258,13 @@ void MainController::DebugMenu() {
 	ImGui::Begin("Debug");
 	ImGui::SeparatorText("Window and camera");
 	ImGui::Text("window size w: %d h: %d", WINDOW_W, WINDOW_H);
+	if (draw_game) {
+		if (ImGui::Button("reset cam")) {
+			cam.reset();
+		}
+	}
 	ImGui::Text("cam pos x,y: (%f,%f)", cam.getX(), cam.getY());
 	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
-	if (ImGui::Button("reset cam")) {
-		cam.reset();
-	}
 
 	ImGui::SeparatorText("imgui controls");
 	ImGui::Text("imgui io flags wantMouse: %d wantKeyboard: %d", ImGui::GetIO().WantCaptureMouse, ImGui::GetIO().WantCaptureKeyboard);

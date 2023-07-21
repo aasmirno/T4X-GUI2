@@ -44,14 +44,31 @@ bool Map::initialise() {
 */
 void Map::loop() {
 	if (counter <= 0) {
-		t_map.remapCapacities(h_map.getHeightMap(), ocean_level);
+		auto begin = std::chrono::high_resolution_clock::now();
+		auto end = std::chrono::high_resolution_clock::now();
+		remap_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+
 		sunx++;
-		if (sunx >= map_width * 2) {
-			sunx = 0;
+		if (sunx >= map_width / 2 + map_width) {
+			sunx = -map_width / 2;
 		}
+
+		begin = std::chrono::high_resolution_clock::now();
 		//do temp calculations
-		if (compute_temp)
-			t_map.update(sunx, equator, solar_intensity, radiation_factor, drop_off, h_map.getHeightMap(), ocean_level);
+		if (compute_temp) {
+			float* vecy = t_map.update(sunx, equator, solar_intensity, radiation_factor, drop_off, h_map.getHeightMap(), ocean_level);
+			sim_times[0] = vecy[0];
+			sim_times[1] = vecy[1];
+			sim_times[2] = vecy[2];
+			sim_times[3] = vecy[3];
+			sim_times[4] = vecy[4];
+			sim_times[5] = vecy[5];
+			sim_times[6] = vecy[6];
+		}
+		end = std::chrono::high_resolution_clock::now();
+		weather = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+
+		//update textures
 		if (draw_air_temp) {
 			updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint8_t), t_map.getIDArray(0));
 		}
@@ -61,6 +78,10 @@ void Map::loop() {
 		else if (draw_clouds) {
 			updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint8_t), t_map.getIDArray(2));
 		}
+		else if (draw_pressure) {
+			updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint8_t), t_map.getIDArray(3));
+		}
+
 		counter = speed;
 	}
 	else
@@ -113,13 +134,13 @@ bool Map::genVAO(GLuint* vao_id, GLuint vbo_id) {
 	return true;
 }
 
-bool Map::loadTextures(std::string texture_path, GLuint &texture_handle) {
+bool Map::loadTextures(std::string texture_path, GLuint& texture_handle) {
 	//create an openil image
 	ILuint img = -1;
 	ilInit();
 	ilGenImages(1, &img);	//gen img buffer
 	ilBindImage(img);	//bind created image
-	
+
 	if (texture_handle == -1) {	//check if texture is already generated
 		glGenTextures(1, &texture_handle);	//generate a texture
 	}
@@ -154,6 +175,7 @@ void Map::draw() {
 	drawDebug();
 	t_map.drawDebug();
 	drawDisplay();
+	drawSimulationValues();
 
 	/*
 		opengl rendering
@@ -167,7 +189,7 @@ void Map::draw() {
 	glDrawArrays(GL_POINTS, 0, map_width * map_height);
 
 	//bind and draw overlay textures
-	if (draw_air_temp || draw_surface_temp || draw_clouds) {
+	if (draw_air_temp || draw_surface_temp || draw_clouds || draw_pressure) {
 		glBindTexture(GL_TEXTURE_2D, overlay_texture_id);
 		glBindVertexArray(overlay_vao_id);
 		glDrawArrays(GL_POINTS, 0, map_width * map_height);
@@ -181,7 +203,6 @@ void Map::drawDebug() {
 		//refresh internal maps
 		h_map.refresh();
 		t_map.refresh();
-		t_map.remapCapacities(h_map.getHeightMap(), ocean_level);
 		tiles.refresh();
 		sunx = 0;
 
@@ -191,8 +212,9 @@ void Map::drawDebug() {
 
 		//load textured tiles into base handle
 		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png", base_texture_id);
+
 		//update base vbo
-		updateVBO(base_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height));	//update base vbo
+		updateVBO(base_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height));
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("refresh temp/weather")) {
@@ -234,7 +256,7 @@ void Map::drawDebug() {
 
 	if (ImGui::Button("erode hydro")) {
 		h_map.erode();
-		
+
 	}
 
 	ImGui::SeparatorText("tile type thresholds");
@@ -244,10 +266,10 @@ void Map::drawDebug() {
 	ImGui::SliderFloat("mountain min level", &foothill_height, 0.0f, 1.0f);
 
 	ImGui::SeparatorText("temp map factors");
-	ImGui::SliderFloat("solar intensity", &solar_intensity, 0.0f, 100.0f);
+	ImGui::SliderFloat("solar intensity", &solar_intensity, 0.0f, 50.0f);
 	ImGui::SliderInt("equator", &equator, 0, map_height);
-	ImGui::SliderFloat("radiation factor", &radiation_factor, 0.0f, 1.0f);
-	ImGui::SliderInt("intensity gradient", &drop_off, 0, 5);
+	ImGui::SliderFloat("radiation factor", &radiation_factor, 0.5f, 0.6f);
+	ImGui::SliderInt("intensity gradient", &drop_off, 0, 500);
 
 	ImGui::Text("added: %f, lost %f", t_map.getAdded(), t_map.getRadiated());
 	ImGui::End();
@@ -259,7 +281,8 @@ void Map::drawDisplay() {
 	flags |= ImGuiWindowFlags_NoResize;
 	flags |= ImGuiWindowFlags_NoTitleBar;
 
-	ImGui::SetNextWindowSize(ImVec2(700, 58));
+	ImGui::SetNextWindowPos(ImVec2{ 340,10 });
+	ImGui::SetNextWindowSize(ImVec2(350, 85));
 	ImGui::Begin("Display", NULL, flags);
 
 	if (ImGui::Button("-"))
@@ -291,33 +314,21 @@ void Map::drawDisplay() {
 		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSetElevation32.png", base_texture_id);	//load tile textures
 		updateVBO(base_vbo_id, tiles.getSize(), h_map.getIDArray());	//update base vbo
 	}
-	ImGui::SameLine();
-	ImGui::Text("|");
-	ImGui::SameLine();
+
 	if (ImGui::Button("No overlay")) {
 		draw_air_temp = false;
 		draw_surface_temp = false;
 		draw_clouds = false;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Draw air temp")) {
-		//update graphical flags
-		draw_air_temp = true;
-		draw_surface_temp = false;
-		draw_clouds = false;
-
-		//load overlay texture
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png", overlay_texture_id);
-		//update overlay vbo
-		updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(0));
+		draw_pressure = false;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Draw surface temp")) {
 		draw_air_temp = false;
 		draw_surface_temp = true;
 		draw_clouds = false;
+		draw_pressure = false;
 
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png", overlay_texture_id);	//load tile textures
+		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png", overlay_texture_id);	//load temp tex
 		updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(1));
 	}
 	ImGui::SameLine();
@@ -325,10 +336,35 @@ void Map::drawDisplay() {
 		draw_air_temp = false;
 		draw_surface_temp = false;
 		draw_clouds = true;
+		draw_pressure = false;
 
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayClouds32.png", overlay_texture_id);	//load tile textures
+		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayClouds32.png", overlay_texture_id);	//load cloud tex
 		updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(2));
 	}
+
+
+	ImGui::End();
+}
+
+void Map::drawSimulationValues() {
+	ImGuiWindowFlags flags = 0;
+	flags |= ImGuiWindowFlags_NoMove;
+	flags |= ImGuiWindowFlags_NoResize;
+	flags |= ImGuiWindowFlags_NoTitleBar;
+
+	ImGui::SetNextWindowPos(ImVec2{ 10, 620 });
+	ImGui::SetNextWindowSize(ImVec2(350, 200));
+	ImGui::Begin("Simulation Values", NULL, flags);
+	ImGui::Text("Simulation run time");
+	ImGui::Text("temperature map - capacity remap: %fms", remap_time);
+	ImGui::Text("temperature map - update: %fms", weather);
+	ImGui::Text("	wind update: %fms", sim_times[0]);
+	ImGui::Text("	solar heat: %fms", sim_times[1]);
+	ImGui::Text("	evap update: %fms", sim_times[2]);
+	ImGui::Text("	cloud update: %fms", sim_times[3]);
+	ImGui::Text("	ground to air update: %fms", sim_times[4]);
+	ImGui::Text("	radiate update: %fms", sim_times[5]);
+	ImGui::Text("	pressure gradient update: %fms", sim_times[6]);
 
 
 	ImGui::End();

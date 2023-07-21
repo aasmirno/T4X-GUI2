@@ -16,6 +16,7 @@
 #include <assert.h>
 #include <cstdlib>
 #include <vector>
+#include <chrono>
 
 class MapShader :
 	public ShaderManager
@@ -52,6 +53,10 @@ private:
 	int counter = 5;
 	int speed = 10;
 
+	float remap_time = 0.0f;
+	float weather = 0.0f;
+	float sim_times[7] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+
 	//tile map parameters
 	TileMap tiles;
 	float ocean_level = 0.5f;
@@ -68,7 +73,7 @@ private:
 
 	//temperature map parameters
 	TempMap t_map;
-	int sunx = 0;
+	int sunx = -250;
 	int equator = 0;
 	float solar_intensity = 0.5;
 	float radiation_factor = 0.1;
@@ -76,8 +81,8 @@ private:
 	bool compute_temp = true;
 
 	//map data
-	const int map_width = 500;
-	const int map_height = 500;
+	const int map_width = 600;
+	const int map_height = 600;
 
 	//graphics data booleans
 	bool draw_textures = true;
@@ -86,6 +91,7 @@ private:
 	bool draw_air_temp = false;
 	bool draw_surface_temp = false;
 	bool draw_clouds = false;
+	bool draw_pressure = false;
 
 	//graphics handles
 	MapShader shader;
@@ -121,6 +127,8 @@ private:
 
 	//draw overhead display menu
 	void drawDisplay();
+
+	void drawSimulationValues();
 
 public:
 	//loop map logic once
