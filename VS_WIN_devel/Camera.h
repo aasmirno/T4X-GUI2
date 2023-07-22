@@ -26,8 +26,8 @@ private:
 	
 	float current_transform = 32.0f;	//current zoom level: starts at 32.0
 
-	float cam_x = 0;
-	float cam_y = 0;
+	float cam_x = 0.0f;
+	float cam_y = 0.0f;
 	float cam_rate = 0.07f;
 
 	//inner gl uniform update
@@ -35,7 +35,9 @@ private:
 
 public:
 	void reset();
-	void move(SDL_Keycode key);
+	
+	//void move functions
+	void move(SDL_Event& event);
 
 	//high level zoom function
 	void zoomIn();
@@ -44,6 +46,9 @@ public:
 	//getters
 	float getX();
 	float getY();
+	float getWindowX(int window_width);
+	float getWindowY(int window_height);
+
 	float getZoom();	//returns current_transform
 
 	/*

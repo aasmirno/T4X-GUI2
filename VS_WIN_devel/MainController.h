@@ -33,6 +33,10 @@ private:
 
 	//unit managers
 	Camera cam;				//camera controller
+	int mouse_x = 0;
+	int mouse_y = 0;
+	bool mouse1_pressed = false;
+
 	GameControl game;		//game controller
 	bool ft;
 

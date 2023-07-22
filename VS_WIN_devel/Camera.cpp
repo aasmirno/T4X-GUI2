@@ -7,26 +7,41 @@ void Camera::setTransformLoc(GLint location) {
 
 float Camera::getX() { return cam_x; }
 float Camera::getY() { return cam_y; }
+
+float Camera::getWindowX(int window_width) {
+	return (cam_x * window_width / 2) + window_width / 2;
+}
+
+float Camera::getWindowY(int window_height) {
+	return (cam_y * window_height / 2) + window_height / 2;
+}
+
 float Camera::getZoom() { return current_transform; }
 
-void Camera::move(SDL_Keycode key) {
+void Camera::move(SDL_Event& event) {
 
-	switch (key) {
-	case SDLK_w:
-		cam_y += cam_rate;
-		break;
-	case SDLK_s:
-		cam_y -= cam_rate;
-		break;
-	case SDLK_a:
-		cam_x += cam_rate;
-		break;
-	case SDLK_d:
-		cam_x -= cam_rate;
-		break;
-	default:
-		printf("bad key\n");
-		break;
+	if (event.type == SDL_MOUSEMOTION) {
+		cam_x += event.motion.xrel * 0.001;
+		cam_y += event.motion.yrel * 0.001;
+	}
+	else if (event.type == SDL_KEYDOWN) {
+		switch (event.key.keysym.sym) {
+		case SDLK_w:
+			cam_y += cam_rate;
+			break;
+		case SDLK_s:
+			cam_y -= cam_rate;
+			break;
+		case SDLK_a:
+			cam_x += cam_rate;
+			break;
+		case SDLK_d:
+			cam_x -= cam_rate;
+			break;
+		default:
+			printf("bad key\n");
+			break;
+		}
 	}
 
 	updateProjection();
@@ -39,33 +54,36 @@ void Camera::reset() {
 }
 
 void Camera::zoomIn() {
+	float scale_change = current_transform + zoom_rate - current_transform;
 	current_transform += zoom_rate;
-	cam_x -= 0.3;
-	cam_y -= 0.3;
+	cam_x -= 0.5 * scale_change;
+	cam_y -= 0.5 * scale_change;
 	updateProjection();
 }
 
 void Camera::zoomOut() {
-	current_transform -= zoom_rate;
-	cam_x += 0.3;
-	cam_y += 0.3;
-
-	if (current_transform < MIN_TRANSFORM) {
+	if (current_transform <= MIN_TRANSFORM) {
 		current_transform = MIN_TRANSFORM;
-		cam_x -= 0.3;
-		cam_y -= 0.3;
-
+	}
+	else {
+		float scale_change = current_transform + zoom_rate - current_transform;
+		current_transform -= zoom_rate;
+		cam_x += 0.5 * scale_change;
+		cam_y += 0.5 * scale_change;
 	}
 	updateProjection();
 }
 
 void debug_matrix(glm::mat4& mat) {
+	glm::mat4 inv = mat;
+	glm::inverse(inv);
 	for (int x = 0; x < 4; x++) {
 		for (int y = 0; y < 4; y++) {
-			printf("%f ", mat[x][y]);
+			printf("%f ", inv[x][y]);
 		}
 		printf("\n");
 	}
+
 }
 
 void Camera::updateProjection() {

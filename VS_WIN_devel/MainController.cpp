@@ -126,17 +126,13 @@ int MainController::Start() {
 
 			//send events to imgui if required
 			if (io.WantCaptureKeyboard || io.WantCaptureMouse) {
+				mouse1_pressed = false;
 				ImGui_ImplSDL2_ProcessEvent(&event);
 			}
 			else {
 				//event handler
 				EventHandle(event);
 			}
-		}
-		if (ft) {
-			cam.zoomIn();
-			cam.zoomOut();
-			ft = false;
 		}
 
 		//render graphics
@@ -160,8 +156,9 @@ void MainController::EventHandle(SDL_Event& event) {
 	}
 
 
-	//camera zoom logic
+	//camera movement logic
 	if (draw_game) {
+		//zoom logic
 		if (event.type == SDL_MOUSEWHEEL && !wantMouse && draw_start != true) {
 			if (event.wheel.y < 0) { //scroll back
 				cam.zoomOut();
@@ -171,13 +168,34 @@ void MainController::EventHandle(SDL_Event& event) {
 			}
 		}
 
+		//camera mouse movement logic
+		if (event.type == SDL_MOUSEBUTTONDOWN ) {
+			if (event.button.button == SDL_BUTTON_LEFT) {	//left click (m1)
+				mouse1_pressed = true;
+			}
+			else if (event.button.button == SDL_BUTTON_RIGHT) {	//right click (m2)
+
+			}
+		}
+		if (event.type == SDL_MOUSEBUTTONUP) {
+			if (event.button.button == SDL_BUTTON_LEFT) {	//left click (m1)
+				mouse1_pressed = false;
+			}
+			else if (event.button.button == SDL_BUTTON_RIGHT) {	//right click (m2)
+
+			}
+		}
+		if (mouse1_pressed && !wantMouse && event.type == SDL_MOUSEMOTION) {
+			cam.move(event);
+		}
+
 		//camera wasd movement logic
 		if ((event.key.keysym.sym == SDLK_w ||
 			event.key.keysym.sym == SDLK_s ||
 			event.key.keysym.sym == SDLK_a ||
 			event.key.keysym.sym == SDLK_d) && !wantKey)
 		{
-			cam.move(event.key.keysym.sym);
+			cam.move(event);
 		}
 	}
 
@@ -197,11 +215,6 @@ void MainController::Render() {
 
 	//drawing logic
 	if (draw_game) {
-		if (ft) {
-			cam.zoomIn();
-			cam.zoomOut();
-		}
-
 		game.Draw();
 	}
 	else {
@@ -256,21 +269,29 @@ void MainController::menuHandler() {
 
 void MainController::DebugMenu() {
 	ImGui::Begin("Debug");
-	ImGui::SeparatorText("Window and camera");
+
+	ImGui::SeparatorText("Window");
 	ImGui::Text("window size w: %d h: %d", WINDOW_W, WINDOW_H);
+
+	ImGui::SeparatorText("camera values");
+
+	SDL_GetMouseState(&mouse_x, &mouse_y);
 	if (draw_game) {
 		if (ImGui::Button("reset cam")) {
 			cam.reset();
 		}
 	}
-	ImGui::Text("cam pos x,y: (%f,%f)", cam.getX(), cam.getY());
+	ImGui::Text("mouse pos (%d,%d), (%f,%f)", mouse_x, mouse_y, ((float)mouse_x - WINDOW_W / 2) / (WINDOW_W / 2), ((float)mouse_y - WINDOW_H / 2) / (WINDOW_H / 2));
+	ImGui::Text("cam pos (org) xm,ym: (%f,%f), xw,yw (%f,%f)", cam.getX(), cam.getY(), cam.getWindowX(WINDOW_W), cam.getWindowY(WINDOW_H));
+	ImGui::Text("map_pos (1,0): %f,%f", cam.getX() + 1 * cam.getZoom() + (int)(WINDOW_W / 2), cam.getY() + 0 * cam.getZoom() + (int)(WINDOW_H / 2));
+	ImGui::Text("dist mpos to: origin(%f,%f), 0,0 (%d,%d)", mouse_x - cam.getX(), mouse_y - cam.getY(), mouse_x - (int)(WINDOW_W/2), mouse_y - (int)(WINDOW_H/2));
 	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
+	ImGui::Text("relation: (%f,%f)", cam.getX() / cam.getZoom(), cam.getY() / cam.getZoom());
+	ImGui::Text("mouse1_pressed: %d", mouse1_pressed);
 
 	ImGui::SeparatorText("imgui controls");
 	ImGui::Text("imgui io flags wantMouse: %d wantKeyboard: %d", ImGui::GetIO().WantCaptureMouse, ImGui::GetIO().WantCaptureKeyboard);
 
-	ImGui::SeparatorText("Game state values");
-	ImGui::Text("loadRequest: %d", false);
 	ImGui::End();
 }
 
@@ -291,7 +312,6 @@ void MainController::drawStart() {
 		draw_start = false;
 		game.init();
 		cam.setTransformLoc(game.getMapTransformLoc());
-		ft = true;
 	}
 
 	//loading button
