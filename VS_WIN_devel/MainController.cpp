@@ -114,6 +114,8 @@ int MainController::Start() {
 	//start run loop
 	while (Running) {
 		SDL_GetWindowSize(main_window, &WINDOW_W, &WINDOW_H);
+		SDL_GetMouseState(&mouse_x, &mouse_y);
+
 		//get events with sdl
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -164,7 +166,7 @@ void MainController::EventHandle(SDL_Event& event) {
 				cam.zoomOut();
 			}
 			else if (event.wheel.y > 0) { //scroll forward
-				cam.zoomIn();
+				cam.zoomIn(cam.windowToCam(mouse_x, WINDOW_W), cam.windowToCam(mouse_y, WINDOW_H));
 			}
 		}
 
@@ -275,18 +277,22 @@ void MainController::DebugMenu() {
 
 	ImGui::SeparatorText("camera values");
 
-	SDL_GetMouseState(&mouse_x, &mouse_y);
 	if (draw_game) {
 		if (ImGui::Button("reset cam")) {
 			cam.reset();
 		}
 	}
-	ImGui::Text("mouse pos (%d,%d), (%f,%f)", mouse_x, mouse_y, ((float)mouse_x - WINDOW_W / 2) / (WINDOW_W / 2), ((float)mouse_y - WINDOW_H / 2) / (WINDOW_H / 2));
+	ImGui::Text("mouse pos window(%d,%d), cam(%f,%f), map(%d, %d)", mouse_x, mouse_y, cam.windowToCam(mouse_x, WINDOW_W), cam.windowToCam(mouse_y, WINDOW_H), cam.windowToTileX(mouse_x, WINDOW_W), cam.windowToTileY(mouse_y, WINDOW_H));
 	ImGui::Text("cam pos (org) xm,ym: (%f,%f), xw,yw (%f,%f)", cam.getX(), cam.getY(), cam.getWindowX(WINDOW_W), cam.getWindowY(WINDOW_H));
-	ImGui::Text("map_pos (1,0): %f,%f", cam.getX() + 1 * cam.getZoom() + (int)(WINDOW_W / 2), cam.getY() + 0 * cam.getZoom() + (int)(WINDOW_H / 2));
+	float dx = cam.windowToCam(mouse_x, WINDOW_W) - cam.getX();
+	float dy = cam.windowToCam(mouse_y, WINDOW_H) - cam.getY();
+	float r1x = dx / 6000;
+	float r1y = dy / 6000;
+
+	ImGui::Text("dif dx,dy(%f,%f), /x,/y(%f,%f), /z(%f,%f)", dx, dy, r1x, r1y, r1x / cam.getZoom(), r1y / cam.getZoom());
+	ImGui::Text("cam_pos (1,2): %f,%f", cam.getX() + (0.001562 * cam.getZoom()) * 1, cam.getY() + (0.002778 * cam.getZoom()) * 2);
 	ImGui::Text("dist mpos to: origin(%f,%f), 0,0 (%d,%d)", mouse_x - cam.getX(), mouse_y - cam.getY(), mouse_x - (int)(WINDOW_W/2), mouse_y - (int)(WINDOW_H/2));
 	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
-	ImGui::Text("relation: (%f,%f)", cam.getX() / cam.getZoom(), cam.getY() / cam.getZoom());
 	ImGui::Text("mouse1_pressed: %d", mouse1_pressed);
 
 	ImGui::SeparatorText("imgui controls");

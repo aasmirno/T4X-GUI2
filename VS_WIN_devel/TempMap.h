@@ -219,7 +219,7 @@ public:
 				//calculate total solar energy applied at tile
 				float dist_from_center = std::sqrt(std::pow(pos_y - sun_y, 2) + std::pow(pos_x - sun_x, 2));
 
-				float applied_heat = intensity;// / std::max(dist_from_center, 1.0f);
+				float applied_heat = intensity / std::max(dist_from_center, 1.0f);
 
 				//calculate cloud reflection
 				if (cloud_map[pos_y * width + pos_x].moisture > 0.0f) {
@@ -357,14 +357,14 @@ public:
 		times[5] = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 
 		//update temperature tracker
-		temp_graph[temp_graph_index] = ground_map[(height / 2) * width + 50].current_energy;
-		temp_graph2[temp_graph_index] = ground_map[51].current_energy;
+		//temp_graph[temp_graph_index] = ground_map[(height / 2) * width + 50].current_energy;
+		//temp_graph2[temp_graph_index] = ground_map[51].current_energy;
 		temp_graph_index++;
 		if (temp_graph_index >= 1000) {
 			temp_graph_index = 0;
 		}
 		iterations++;
-
+		/*
 		if (ground_map[(height / 2) * width + 50].current_energy < min_t) {
 			min_t = ground_map[(height / 2) * width + 50].current_energy;
 			counter_to_min++;
@@ -375,7 +375,7 @@ public:
 			counter_to_max++;
 			counter_to_min = 0;
 		}
-
+		*/
 		return times;
 	}
 
@@ -393,7 +393,7 @@ public:
 		ImGui::Separator();
 		ImGui::PlotLines("equator temp", temp_graph, IM_ARRAYSIZE(temp_graph), 0, 0, -500.0f, 500.0f, ImVec2(0, 80.0f));
 		ImGui::PlotLines("equator temp", temp_graph2, IM_ARRAYSIZE(temp_graph2), 0, 0, -300.0f, 300.0f, ImVec2(0, 80.0f));
-		ImGui::Text("g temp: %f at (50, %d)", ground_map[(height / 2) * width + 50].current_energy, (height / 2));
+		//ImGui::Text("g temp: %f at (50, %d)", ground_map[(height / 2) * width + 50].current_energy, (height / 2));
 		ImGui::Text("min temp: %f, max temp: %f", min_t, max_t);
 		ImGui::Text("ctmx: %d, ctmn: %d, diff: %f, diff: %f", counter_to_max, counter_to_min, max_t - min_t, abs(max_t - (max_t - min_t)));
 		ImGui::End();

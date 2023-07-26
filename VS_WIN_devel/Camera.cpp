@@ -53,11 +53,10 @@ void Camera::reset() {
 	updateProjection();
 }
 
-void Camera::zoomIn() {
-	float scale_change = current_transform + zoom_rate - current_transform;
+void Camera::zoomIn(float mouse_x, float mouse_y) {
 	current_transform += zoom_rate;
-	cam_x -= 0.5 * scale_change;
-	cam_y -= 0.5 * scale_change;
+	cam_x -= mouse_x;
+	cam_y -= mouse_y;
 	updateProjection();
 }
 
@@ -66,12 +65,11 @@ void Camera::zoomOut() {
 		current_transform = MIN_TRANSFORM;
 	}
 	else {
-		float scale_change = current_transform + zoom_rate - current_transform;
 		current_transform -= zoom_rate;
-		cam_x += 0.5 * scale_change;
-		cam_y += 0.5 * scale_change;
+		cam_x += 0.00781 * zoom_rate;
+		cam_y += 0.02778 * zoom_rate;
+		updateProjection();
 	}
-	updateProjection();
 }
 
 void debug_matrix(glm::mat4& mat) {

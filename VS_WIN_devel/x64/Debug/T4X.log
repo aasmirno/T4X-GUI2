@@ -1,11 +1,13 @@
 ﻿  Camera.cpp
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.h(51,15): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.h(56,15): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
 D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.cpp(24,30): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
 D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.cpp(25,30): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.cpp(59,15): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.cpp(60,15): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.cpp(71,16): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.cpp(72,16): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.cpp(69,20): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.cpp(70,20): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
   MainController.cpp
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.h(51,15): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.h(56,15): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
 D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(15,14): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(16,15): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(131,98): warning C4244: '+=': conversion from 'double' to '_Ty', possible loss of data
@@ -66,6 +68,8 @@ D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(69,22): warning C4305: 'initial
 D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(71,23): warning C4305: 'initializing': truncation from 'double' to 'float'
 D:\Software and Tools\C++\T4x\VS_WIN_devel\Map.h(79,27): warning C4305: 'initializing': truncation from 'double' to 'float'
   T4X.cpp
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.h(51,15): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+D:\Software and Tools\C++\T4x\VS_WIN_devel\Camera.h(56,15): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
 D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(15,14): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(16,15): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 D:\Software and Tools\C++\T4x\VS_WIN_devel\HeightMap.h(131,98): warning C4244: '+=': conversion from 'double' to '_Ty', possible loss of data

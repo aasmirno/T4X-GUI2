@@ -3,6 +3,7 @@
 #include <glm/ext.hpp>
 
 #include <assert.h>
+#include <cmath>
 #include <stdio.h>
 #include <iostream>
 #include <gl/glew.h>
@@ -36,11 +37,30 @@ private:
 public:
 	void reset();
 	
+	//coordinate helpers
+	/*
+		win_coord: window coordinate
+		win_scale: window size axis
+	*/
+	float windowToCam(int win_coord, int win_scale) {
+		return (float)(win_coord - (win_scale / 2)) / (win_scale / 2);
+	}
+
+	int windowToTileX(int win_coord, int win_scale) {
+		//constants calibrated on 6000 tile map
+		return floor((windowToCam(win_coord, win_scale) - cam_x) / (0.001562 * current_transform));
+	}
+
+	int windowToTileY(int win_coord, int win_scale) {
+		//constants calibrated on 6000 tile map
+		return floor((windowToCam(win_coord, win_scale) - cam_y) / (0.002778 * current_transform));
+	}
+
 	//void move functions
 	void move(SDL_Event& event);
 
 	//high level zoom function
-	void zoomIn();
+	void zoomIn(float mouse_x, float mouse_y);
 	void zoomOut();
 
 	//getters
