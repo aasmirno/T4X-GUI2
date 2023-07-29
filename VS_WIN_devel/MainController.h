@@ -38,17 +38,20 @@ private:
 	bool mouse1_pressed = false;
 
 	GameControl game;		//game controller
-	bool ft;
 
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
 	bool Running = true;	//run flag
-	bool debug = true;		//debug flag
+	bool debug = false;		//debug flag
 
 	//Imgui drawing flags
-	bool draw_demo = true;
+	bool draw_demo = false;
 	bool draw_start = true;
 	bool draw_options = false;
+	bool draw_pause = false;
+
+	//game running flag
 	bool draw_game = false;
+	bool exit_flag = false;
 
 private:
 	/*
@@ -87,10 +90,14 @@ private:
 	/*
 		Imgui menus
 	*/
+	//draw imgui debug menu
 	void DebugMenu();
+	//draw start menu
 	void drawStart();
+	//draw options menu
 	void drawOpts();
-
+	//draw game pause menu
+	void drawPauseMenu();
 public:
 	MainController();
 	int Start();

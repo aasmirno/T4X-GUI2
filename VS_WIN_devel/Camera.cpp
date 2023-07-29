@@ -47,9 +47,12 @@ void Camera::move(SDL_Event& event) {
 	updateProjection();
 }
 
-void Camera::reset() {
-	cam_x = 0.0f;
-	cam_y = 0.0f;
+void Camera::reset(int x, int x_scale, int y, int y_scale) {
+	cam_x = windowToCam(x, x_scale);
+	cam_y = windowToCam(y, y_scale);
+	current_transform = MIN_TRANSFORM;
+
+
 	updateProjection();
 }
 
@@ -61,7 +64,8 @@ void Camera::zoomIn(float mouse_x, float mouse_y) {
 }
 
 void Camera::zoomOut() {
-	if (current_transform <= MIN_TRANSFORM) {
+	current_transform -= zoom_rate;
+	if (current_transform < MIN_TRANSFORM) {
 		current_transform = MIN_TRANSFORM;
 	}
 	else {

@@ -87,6 +87,12 @@ bool MainController::genInit() {
 	ImGui_ImplSDL2_InitForOpenGL(main_window, gl_context);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
+	//set style
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowPadding = ImVec2(0, 0);
+	style.ItemSpacing = ImVec2(4,1);
+
+
 	/*
 		Internal setup
 	*/
@@ -115,6 +121,12 @@ int MainController::Start() {
 	while (Running) {
 		SDL_GetWindowSize(main_window, &WINDOW_W, &WINDOW_H);
 		SDL_GetMouseState(&mouse_x, &mouse_y);
+		if (exit_flag) {
+			draw_start = true;
+			draw_game = false;
+			exit_flag = false;
+		}
+
 
 		//get events with sdl
 		SDL_Event event;
@@ -126,14 +138,29 @@ int MainController::Start() {
 			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(main_window))
 				Running = false;
 
-			//send events to imgui if required
-			if (io.WantCaptureKeyboard || io.WantCaptureMouse) {
-				mouse1_pressed = false;
-				ImGui_ImplSDL2_ProcessEvent(&event);
+			//options menu
+			if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_ESCAPE] && draw_game) {
+				if (!draw_pause) {
+					draw_pause = true;
+				}
+				else {
+					game.unPause();
+					draw_pause = false;
+				}
 			}
-			else {
-				//event handler
-				EventHandle(event);
+
+			if (!game.getFrozen()) {
+				//send events to imgui if required
+				if (io.WantCaptureKeyboard || io.WantCaptureMouse) {
+					mouse1_pressed = false;
+					ImGui_ImplSDL2_ProcessEvent(&event);
+				}
+				else {
+					//event handler
+					EventHandle(event);
+				}
+			} else if(mouse_x >= WINDOW_W / 2 - 200 && mouse_y >= WINDOW_H / 2 - 200 && mouse_x < WINDOW_W / 2 + 200 && mouse_y < WINDOW_H / 2 + 200){
+				ImGui_ImplSDL2_ProcessEvent(&event);
 			}
 		}
 
@@ -148,8 +175,10 @@ int MainController::Start() {
 }
 
 void MainController::EventHandle(SDL_Event& event) {
+	std::cout << event.key.keysym.sym << std::endl;
 	bool wantMouse = ImGui::GetIO().WantCaptureMouse;
 	bool wantKey = ImGui::GetIO().WantCaptureKeyboard;
+	const Uint8* keyboard_state_array = SDL_GetKeyboardState(NULL);
 
 	//window resize logic
 	if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
@@ -160,6 +189,7 @@ void MainController::EventHandle(SDL_Event& event) {
 
 	//camera movement logic
 	if (draw_game) {
+
 		//zoom logic
 		if (event.type == SDL_MOUSEWHEEL && !wantMouse && draw_start != true) {
 			if (event.wheel.y < 0) { //scroll back
@@ -218,6 +248,8 @@ void MainController::Render() {
 	//drawing logic
 	if (draw_game) {
 		game.Draw();
+		if (draw_pause)
+			drawPauseMenu();
 	}
 	else {
 		menuHandler();
@@ -260,11 +292,11 @@ void MainController::Cleanup() {
 
 //handle menu drawing logic
 void MainController::menuHandler() {
+
 	if (draw_start)
 		drawStart();
 	if (draw_options)
 		drawOpts();
-
 	if (draw_demo)
 		ImGui::ShowDemoWindow();
 }
@@ -279,7 +311,7 @@ void MainController::DebugMenu() {
 
 	if (draw_game) {
 		if (ImGui::Button("reset cam")) {
-			cam.reset();
+			cam.reset(340, WINDOW_W, 106, WINDOW_H);
 		}
 	}
 	ImGui::Text("mouse pos window(%d,%d), cam(%f,%f), map(%d, %d)", mouse_x, mouse_y, cam.windowToCam(mouse_x, WINDOW_W), cam.windowToCam(mouse_y, WINDOW_H), cam.windowToTileX(mouse_x, WINDOW_W), cam.windowToTileY(mouse_y, WINDOW_H));
@@ -302,37 +334,41 @@ void MainController::DebugMenu() {
 }
 
 void MainController::drawStart() {
-	assert(draw_options == false);
+	assert(draw_options == false && draw_game == false);
 
 	ImGuiWindowFlags flags = 0;
 	flags |= ImGuiWindowFlags_NoMove;
 	flags |= ImGuiWindowFlags_NoResize;
+	flags |= ImGuiWindowFlags_NoCollapse;
 
-	ImGui::SetNextWindowPos(ImVec2{ 10,10 });
+	ImGui::SetNextWindowPos(ImVec2{ (float)WINDOW_W /2 - 200,(float)WINDOW_H/2 -200});
+	ImGui::SetNextWindowSize(ImVec2{400,400});
 
 	ImGui::Begin("Main Menu", NULL, flags);
 
 	//new button
-	if (ImGui::Button("New Game")) {
+	if (ImGui::Button("New Game", ImVec2{ 400,30 })) {
 		draw_game = true;
 		draw_start = false;
-		game.init();
+		game.init(exit_flag);
 		cam.setTransformLoc(game.getMapTransformLoc());
+		cam.reset(340, WINDOW_W, 106, WINDOW_H);
+		
 	}
 
 	//loading button
-	if (ImGui::Button("Load")) {
+	if (ImGui::Button("Load Game", ImVec2{ 400,30 })) {
 
 	}
 
 	//options
-	if (ImGui::Button("Options")) {
+	if (ImGui::Button("Options", ImVec2{ 400,30 })) {
 		draw_options = true;
 		draw_start = false;
 	}
 
 	//exit
-	if (ImGui::Button("Exit")) {
+	if (ImGui::Button("Exit", ImVec2{ 400,30 })) {
 		Running = false;
 	}
 
@@ -343,18 +379,49 @@ void MainController::drawOpts() {
 	ImGuiWindowFlags flags = 0;
 	flags |= ImGuiWindowFlags_NoMove;
 	flags |= ImGuiWindowFlags_NoResize;
-
-	ImGui::SetNextWindowPos(ImVec2{ 10,10 });
+	flags |= ImGuiWindowFlags_NoCollapse;
+	
+	ImGui::SetNextWindowPos(ImVec2{ (float)WINDOW_W / 2 - 200,(float)WINDOW_H / 2 - 200 });
+	ImGui::SetNextWindowSize(ImVec2{ 400,400 });
 
 	ImGui::Begin("Options", NULL, flags);
 
-	//go back to main menu
-	if (ImGui::Button("Back")) {
-		draw_options = false;
-		draw_start = true;
-	}
+	//show internal debug
+	ImGui::Checkbox("Show internal debug menu", &debug);
 
 	//show imgui demo window
 	ImGui::Checkbox("Show ImGui demo window", &draw_demo);
+	//go back to main menu
+	if (ImGui::Button("Back", ImVec2{ 400,30 })) {
+		draw_options = false;
+		draw_start = true;
+	}
+	ImGui::End();
+}
+
+void MainController::drawPauseMenu() {
+	game.Pause();
+	ImGuiWindowFlags flags = 0;
+	flags |= ImGuiWindowFlags_NoMove;
+	flags |= ImGuiWindowFlags_NoResize;
+	flags |= ImGuiWindowFlags_NoCollapse;
+
+	ImGui::SetNextWindowPos(ImVec2{ (float)WINDOW_W / 2 - 200,(float)WINDOW_H / 2 - 200 });
+
+	ImGui::SetNextWindowSize(ImVec2{ 400,400 });
+	ImGui::Begin("Options", NULL, flags);
+
+	//show internal debug
+	ImGui::Checkbox("Show internal debug menu", &debug);
+
+	//show imgui demo window
+	ImGui::Checkbox("Show ImGui demo window", &draw_demo);
+	//go back to main menu
+	if (ImGui::Button("Exit to main Menu", ImVec2{ 400,30 })) {
+		draw_game = false;
+		draw_start = true;
+		draw_pause = false;
+		game.unPause();
+	}
 	ImGui::End();
 }

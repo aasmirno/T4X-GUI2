@@ -1,5 +1,14 @@
 #include "GameControl.h"
 
+void GameControl::exitMenus() {
+	assert(back_flag != nullptr);
+	*back_flag = true;
+}
+
+void GameControl::saveState() {
+	//TODO: save game
+}
+
 int GameControl::getMapTransformLoc() {
 	return game_map.getTransformLoc();
 }
@@ -11,7 +20,13 @@ void GameControl::loop() {
 	}
 }
 
-bool GameControl::init() {
+bool GameControl::init(bool& game_active_flag) {
+	back_flag = &game_active_flag;
+
+	paused = true;
+	frozen = false;
+
+
 	game_map.initialise();
 	return true;
 }
@@ -19,8 +34,33 @@ bool GameControl::init() {
 void GameControl::Draw() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	game_map.draw();
+	if (game_menu_active) {
+		gameMenu();
+	}
+	else if (save_menu_active) {
+		saveMenu();
+	}
+	else if (map_creation_active) {
+		mapCreationMenu();
+	}
+}
 
+void GameControl::saveMenu() {
+	ImGui::Begin("Save");
+	ImGui::Text("Game not saved");
+	if(ImGui::Button("Save and Exit")) {
+		saveState();
+		exitMenus();
+	}
+
+	if (ImGui::Button("Exit without saving")) {
+		exitMenus();
+	}
+	ImGui::End();
+
+}
+
+void GameControl::gameMenu() {
 	ImGuiWindowFlags flags = 0;
 	flags |= ImGuiWindowFlags_NoMove;
 	flags |= ImGuiWindowFlags_NoResize;
@@ -36,6 +76,26 @@ void GameControl::Draw() {
 	ImGui::SameLine();
 	ImGui::Text("%d", paused);
 
-	ImGui::End();
+	if (ImGui::Button("Exit to Main Menu")) {
+		save_menu_active = true;
+		game_menu_active = false;
+		paused = true;
+	}
 
+	ImGui::End();
+}
+
+void GameControl::Pause() {
+	frozen = true;
+	paused = true;
+}
+
+void GameControl::unPause() {
+	frozen = false;
+}
+
+void GameControl::mapCreationMenu() {
+	game_map.draw();
+	game_map.drawDisplay();
+	game_map.drawCreationMenu();
 }

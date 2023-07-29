@@ -85,73 +85,71 @@ private:
 
 
 public:
+
+
 	//return and array of texture ids: 0 = air temp, 1 = surf temp
 	uint8_t* getIDArray(uint8_t type) {
 		for (size_t i = 0; i < ground_map.size(); i++) {
-			assignID(i, type);
+			//assign ground_temp map
+			if (type == 1) {
+				if (ground_map[i].current_energy < (1.0f / 8.0f) * 30.0f) {
+					ids[i] = T1;
+				}
+				else if (ground_map[i].current_energy < (2.0f / 8.0f) * 30.0f) {
+					ids[i] = T2;
+				}
+				else if (ground_map[i].current_energy < (3.0f / 8.0f) * 30.0f) {
+					ids[i] = T3;
+				}
+				else if (ground_map[i].current_energy < (4.0f / 8.0f) * 30.0f) {
+					ids[i] = T4;
+				}
+				else if (ground_map[i].current_energy < (5.0f / 8.0f) * 30.0f) {
+					ids[i] = T5;
+				}
+				else if (ground_map[i].current_energy < (6.0f / 8.0f) * 30.0f) {
+					ids[i] = T6;
+				}
+				else if (ground_map[i].current_energy < (7.0f / 8.0f) * 30.0f) {
+					ids[i] = T7;
+				}
+				else {
+					ids[i] = T8;
+				}
+			}
+			//assign cloud cover map
+			else if (type == 2) {
+				if (cloud_map[i].moisture < (1.0f / 8.0f)) {
+					ids[i] = T1;
+				}
+				else if (cloud_map[i].moisture < (2.0f / 8.0f)) {
+					ids[i] = T2;
+				}
+				else if (cloud_map[i].moisture < (3.0f / 8.0f)) {
+					ids[i] = T3;
+				}
+				else if (cloud_map[i].moisture < (4.0f / 8.0f)) {
+					ids[i] = T4;
+				}
+				else if (cloud_map[i].moisture < (5.0f / 8.0f)) {
+					ids[i] = T5;
+				}
+				else if (cloud_map[i].moisture < (6.0f / 8.0f)) {
+					ids[i] = T6;
+				}
+				else if (cloud_map[i].moisture < (7.0f / 8.0f)) {
+					ids[i] = T7;
+				}
+				else {
+					ids[i] = T8;
+				}
+			}
 		}
 
 		return &ids[0];
 	}
 
-	void assignID(int i, uint8_t type) {
-		//assign ground_temp map
-		if (type == 1) {
-			if (ground_map[i].current_energy < (1.0f / 8.0f) * 30.0f) {
-				ids[i] = T1;
-			}
-			else if (ground_map[i].current_energy < (2.0f / 8.0f) * 30.0f) {
-				ids[i] = T2;
-			}
-			else if (ground_map[i].current_energy < (3.0f / 8.0f) * 30.0f) {
-				ids[i] = T3;
-			}
-			else if (ground_map[i].current_energy < (4.0f / 8.0f) * 30.0f) {
-				ids[i] = T4;
-			}
-			else if (ground_map[i].current_energy < (5.0f / 8.0f) * 30.0f) {
-				ids[i] = T5;
-			}
-			else if (ground_map[i].current_energy < (6.0f / 8.0f) * 30.0f) {
-				ids[i] = T6;
-			}
-			else if (ground_map[i].current_energy < (7.0f / 8.0f) * 30.0f) {
-				ids[i] = T7;
-			}
-			else {
-				ids[i] = T8;
-			}
-		}
-		//assign cloud cover map
-		else if (type == 2) {
-			if (cloud_map[i].moisture < (1.0f / 8.0f)) {
-				ids[i] = T1;
-			}
-			else if (cloud_map[i].moisture < (2.0f / 8.0f)) {
-				ids[i] = T2;
-			}
-			else if (cloud_map[i].moisture < (3.0f / 8.0f)) {
-				ids[i] = T3;
-			}
-			else if (cloud_map[i].moisture < (4.0f / 8.0f)) {
-				ids[i] = T4;
-			}
-			else if (cloud_map[i].moisture < (5.0f / 8.0f)) {
-				ids[i] = T5;
-			}
-			else if (cloud_map[i].moisture < (6.0f / 8.0f)) {
-				ids[i] = T6;
-			}
-			else if (cloud_map[i].moisture < (7.0f / 8.0f)) {
-				ids[i] = T7;
-			}
-			else {
-				ids[i] = T8;
-			}
-		}
-
-	}
-
+	//initialise map
 	void init(int size_x, int size_y) {
 		width = size_x;
 		height = size_y;
@@ -174,7 +172,7 @@ public:
 	}
 
 	void refresh() {
-		//reset temp graph
+		//reset temp graph and data
 		for (int i = 0; i < 1000; i++) {
 			temp_graph[i] = 0.0f;
 		}
@@ -188,7 +186,6 @@ public:
 		counter_to_max = 0;
 		counter_to_min = 0;
 
-
 		//clear ids vector
 		ids.clear();
 		ids.resize(width * height);
@@ -201,6 +198,7 @@ public:
 		cloud_map.clear();
 		cloud_map.resize(width * height);
 
+		//assign id array
 		getIDArray(0);
 	}
 

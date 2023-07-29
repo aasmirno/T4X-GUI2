@@ -28,7 +28,7 @@ bool Map::initialise() {
 
 	//generate base texture buffers
 	genVBO(&base_vbo_id);	//generate base texture buffer
-	updateVBO(base_vbo_id, map_height * map_width * sizeof(uint8_t), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height)); //load tile texture ids into base buffer
+	updateVBO(base_vbo_id, map_height * map_width * sizeof(uint8_t), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height,0)); //load tile texture ids into base buffer
 	genVAO(&base_vao_id, base_vbo_id);	//generate base texture vao
 
 	//generate overlay buffers
@@ -39,7 +39,7 @@ bool Map::initialise() {
 }
 
 /*
-* Gameplay Section
+* Gameplay and utility Section
 ------------------------------------------------------------------------------
 */
 void Map::loop() {
@@ -66,7 +66,7 @@ void Map::loop() {
 			sim_times[6] = vecy[6];
 		}
 		end = std::chrono::high_resolution_clock::now();
-		weather = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+		weather_update_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 
 		//update textures
 		if (draw_air_temp) {
@@ -88,6 +88,36 @@ void Map::loop() {
 	{
 		counter--;
 	}
+}
+
+void Map::autoGenerate() {
+	//refresh internal maps
+	h_map.refresh();
+	t_map.refresh();
+	tiles.refresh();
+	sunx = 0;
+
+	//reset graphical flags
+	draw_surface_temp, draw_air_temp = false;
+
+	//first addition
+	perlin_freq = 0.004;
+	fractal_ridge = false;
+	octave_weight = 0.4f;
+	h_map.addPerlin(perlin_freq, fractal_ridge, octave_weight);
+
+	//second addition
+	perlin_freq = 0.01f;
+	fractal_ridge = false;	
+	octave_weight = 0.1f;
+	h_map.addPerlin(perlin_freq, fractal_ridge, octave_weight);
+
+	//detailing
+	for (int i = 0; i < 10; i++) {
+		h_map.addPerlin(0.05f, true, 0.01f);
+		h_map.subPerlin(0.05f, false, 0.006f);
+	}
+
 }
 
 /*
@@ -170,14 +200,6 @@ bool Map::loadTextures(std::string texture_path, GLuint& texture_handle) {
 
 void Map::draw() {
 	/*
-		imgui menus
-	*/
-	drawDebug();
-	t_map.drawDebug();
-	drawDisplay();
-	drawSimulationValues();
-
-	/*
 		opengl rendering
 	*/
 	glUniform2i(glGetUniformLocation(shader.getProgramID(), "mapSize"), map_width, map_height); //set mapsize uniform
@@ -189,13 +211,43 @@ void Map::draw() {
 	glDrawArrays(GL_POINTS, 0, map_width * map_height);
 
 	//bind and draw overlay textures
-	if (draw_air_temp || draw_surface_temp || draw_clouds || draw_pressure) {
+	if (draw_air_temp || draw_surface_temp || draw_clouds || draw_resources) {
 		glBindTexture(GL_TEXTURE_2D, overlay_texture_id);
 		glBindVertexArray(overlay_vao_id);
 		glDrawArrays(GL_POINTS, 0, map_width * map_height);
 	}
 }
 
+void Map::updateBase() {
+	if (draw_elevation) {
+		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSetElevation32.png", base_texture_id);	//load tile textures
+		updateVBO(base_vbo_id, t_map.getSize(), h_map.getIDArray());	//update elevation
+	}
+	else if (draw_textures) {
+		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png", base_texture_id);
+		updateVBO(base_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height, 0));	//update tile textures
+	}
+}
+
+void Map::updateOverlay() {
+	if (draw_surface_temp) {
+		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png", overlay_texture_id);	//load temp tex
+		updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(1));
+	}
+	else if (draw_clouds) {
+		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayClouds32.png", overlay_texture_id);	//load cloud tex
+		updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(2));
+	}
+	else if (draw_resources) {
+		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayResource32.png", overlay_texture_id);	//load resource tex
+		updateVBO(overlay_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height, 1));
+	}
+}
+
+/*
+* imgui section
+------------------------------------------------------------------------------
+*/
 void Map::drawDebug() {
 	ImGui::SetNextWindowSize(ImVec2{ 450,600 });
 	ImGui::Begin("internal map debug", NULL, ImGuiWindowFlags_NoResize);	//begin imgui window
@@ -207,17 +259,16 @@ void Map::drawDebug() {
 		sunx = 0;
 
 		//reset graphical flags
-		draw_elevation, draw_surface_temp, draw_air_temp = false;
-		draw_textures = true;
+		draw_surface_temp, draw_air_temp = false;
 
 		//load textured tiles into base handle
 		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png", base_texture_id);
 
 		//update base vbo
-		updateVBO(base_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height));
+		updateBase();
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("refresh temp/weather")) {
+	if (ImGui::Button("refresh temp/weather_update_time")) {
 		t_map.refresh();
 		sunx = 0;
 	}
@@ -236,34 +287,22 @@ void Map::drawDebug() {
 
 	if (ImGui::Button("add perlin")) {
 		h_map.addPerlin(perlin_freq, fractal_ridge, octave_weight);	//apply perlin noise
-		if (draw_elevation) {
-			updateVBO(base_vbo_id, t_map.getSize(), h_map.getIDArray());	//update elevation
-		}
-		else if (draw_textures) {
-			updateVBO(base_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height));	//update tile textures
-		}
+		updateBase();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("sub perlin")) {
 		h_map.subPerlin(perlin_freq, fractal_ridge, octave_weight);
-		if (draw_elevation) {
-			updateVBO(base_vbo_id, t_map.getSize(), h_map.getIDArray());	//update elevation
-		}
-		else if (draw_textures) {
-			updateVBO(base_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height));	//update tile textures
-		}
+		updateBase();
 	}
 
 	if (ImGui::Button("erode hydro")) {
 		h_map.erode();
-
 	}
 
 	ImGui::SeparatorText("tile type thresholds");
 	ImGui::SliderFloat("ocean level", &ocean_level, 0.0f, 1.0f);
 	ImGui::SliderFloat("beach height", &beach_height, 0.0f, 1.0f);
 	ImGui::SliderFloat("mountain min level", &mountain_height, 0.0f, 1.0f);
-	ImGui::SliderFloat("mountain min level", &foothill_height, 0.0f, 1.0f);
 
 	ImGui::SeparatorText("temp map factors");
 	ImGui::SliderFloat("solar intensity", &solar_intensity, 0.0f, 50.0f);
@@ -276,16 +315,19 @@ void Map::drawDebug() {
 }
 
 void Map::drawDisplay() {
+	ImVec2 button_size = ImVec2(130, 20);
+
 	ImGuiWindowFlags flags = 0;
 	flags |= ImGuiWindowFlags_NoMove;
 	flags |= ImGuiWindowFlags_NoResize;
 	flags |= ImGuiWindowFlags_NoTitleBar;
 
 	ImGui::SetNextWindowPos(ImVec2{ 340,10 });
-	ImGui::SetNextWindowSize(ImVec2(350, 85));
+	ImGui::SetNextWindowSize(ImVec2(540, 66));
 	ImGui::Begin("Display", NULL, flags);
 
-	if (ImGui::Button("-"))
+	ImGui::SameLine(0, 4);
+	if (ImGui::Button("-", ImVec2(20, 20)))
 	{
 		speed--;
 		speed = speed < 0 ? 0 : speed;
@@ -293,7 +335,7 @@ void Map::drawDisplay() {
 	ImGui::SameLine();
 	ImGui::Text("simulation speed: %d", speed);
 	ImGui::SameLine();
-	if (ImGui::Button("+"))
+	if (ImGui::Button("+", ImVec2(20, 20)))
 	{
 		speed++;
 		speed = speed > 100 ? 100 : speed;
@@ -301,46 +343,46 @@ void Map::drawDisplay() {
 	ImGui::SameLine();
 	ImGui::Text("| Sun pos: %d,%d", sunx, equator);
 
-	if (ImGui::Button("Draw tiles")) {
+	ImGui::Text("");
+	ImGui::SameLine(0, 4);
+	if (ImGui::Button("Draw tiles", button_size)) {
 		draw_textures = true;
 		draw_elevation = false;
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png", base_texture_id);	//load tile textures
-		updateVBO(base_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height));	//update base vbo
+		updateBase();
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Draw elevation")) {
+	if (ImGui::Button("Draw elevation", button_size)) {
 		draw_textures = false;
 		draw_elevation = true;
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSetElevation32.png", base_texture_id);	//load tile textures
-		updateVBO(base_vbo_id, tiles.getSize(), h_map.getIDArray());	//update base vbo
+		updateBase();
 	}
 
-	if (ImGui::Button("No overlay")) {
-		draw_air_temp = false;
-		draw_surface_temp = false;
-		draw_clouds = false;
-		draw_pressure = false;
+	ImGui::Text("");
+	ImGui::SameLine(0, 4);
+	if (ImGui::Button("No overlay", button_size)) {
+		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Draw surface temp")) {
-		draw_air_temp = false;
+	if (ImGui::Button("Draw surface temp", button_size)) {
+		draw_air_temp = false, draw_clouds = false, draw_pressure = false;
 		draw_surface_temp = true;
-		draw_clouds = false;
-		draw_pressure = false;
-
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png", overlay_texture_id);	//load temp tex
-		updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(1));
+		updateOverlay();
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Draw cloud cover")) {
-		draw_air_temp = false;
-		draw_surface_temp = false;
+	if (ImGui::Button("Draw cloud cover", button_size)) {
+		draw_air_temp = false, draw_surface_temp = false, draw_pressure = false;
 		draw_clouds = true;
-		draw_pressure = false;
 
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayClouds32.png", overlay_texture_id);	//load cloud tex
-		updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(2));
+		updateOverlay();
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("Draw resources", button_size)) {
+		draw_air_temp = false, draw_surface_temp = false, draw_pressure = false, draw_clouds = false;
+		draw_resources = true;
+
+		updateOverlay();
+	}
+
 
 
 	ImGui::End();
@@ -357,7 +399,7 @@ void Map::drawSimulationValues() {
 	ImGui::Begin("Simulation Values", NULL, flags);
 	ImGui::Text("Simulation run time");
 	ImGui::Text("temperature map - capacity remap: %fms", remap_time);
-	ImGui::Text("temperature map - update: %fms", weather);
+	ImGui::Text("temperature map - update: %fms", weather_update_time);
 	ImGui::Text("	wind update: %fms", sim_times[0]);
 	ImGui::Text("	solar heat: %fms", sim_times[1]);
 	ImGui::Text("	evap update: %fms", sim_times[2]);
@@ -365,6 +407,111 @@ void Map::drawSimulationValues() {
 	ImGui::Text("	ground to air update: %fms", sim_times[4]);
 	ImGui::Text("	radiate update: %fms", sim_times[5]);
 	ImGui::Text("	pressure gradient update: %fms", sim_times[6]);
+
+	ImGui::End();
+}
+
+void Map::drawCreationMenu() {
+	ImGuiWindowFlags flags = 0;
+	flags |= ImGuiWindowFlags_NoMove;
+	flags |= ImGuiWindowFlags_NoResize;
+	flags |= ImGuiWindowFlags_NoCollapse;
+
+	ImGui::SetNextWindowPos(ImVec2{ 10,10 });
+	ImGui::SetNextWindowSize(ImVec2{ 300,700 });
+
+	ImGui::Begin("Map Creation", NULL, flags);
+	ImGui::SameLine(4, 0);
+	ImGui::TextWrapped("The parameters below can be used to create a custom game map. Alternatively, a map can be generated using a preset algorithm with the \"Auto Generate\" button");
+	ImGui::Text("");
+	ImGui::SeparatorText("Heightmap parameters");
+
+	ImGui::PushItemWidth(150);
+	ImGui::SliderFloat("Noise Frequency", &perlin_freq, 0.0001f, 0.05f);
+	ImGui::SameLine(); GUIutils::HoverTip("change noise level of detail");
+
+	ImGui::PushItemWidth(150);
+	ImGui::SliderFloat("Weight", &octave_weight, 0.0f, 1.0f);
+	ImGui::SameLine(); GUIutils::HoverTip("change noise weight multiplier");
+
+	//Fractal Choices
+	if (ImGui::Button("Toggle Ridged Fractal Noise", ImVec2{ 200, 30 })) {
+		fractal_ridge = !fractal_ridge;
+	}
+	ImGui::SameLine();
+	if (fractal_ridge) {
+		ImGui::Text("Active", ImVec2{ 40, 30 });
+	}
+	else {
+		ImGui::Text("Inactive");
+	}
+	ImGui::SameLine(); GUIutils::HoverTip("activate or deactivate fractal step for noise generation");
+	ImGui::Text("");
+
+	//Add noise
+	if (ImGui::Button("Add Noise", ImVec2{ 148, 30 })) {
+		h_map.addPerlin(perlin_freq, fractal_ridge, octave_weight);	//apply perlin noise
+		updateBase();
+	}
+	ImGui::SameLine();
+	//subtract noise
+	if (ImGui::Button("Subtract Noise", ImVec2{ 148,30 })) {
+		h_map.subPerlin(perlin_freq, fractal_ridge, octave_weight);
+		updateBase();
+	}
+
+	//refresh map button
+	if (ImGui::Button("Reset Map", ImVec2{ 300,30 })) {
+		//refresh internal maps
+		h_map.refresh();
+		t_map.refresh();
+		tiles.refresh();
+		sunx = 0;
+
+		//reset graphical flags
+		draw_surface_temp = false, draw_air_temp = false;
+
+		//load textured tiles into base handle
+		//loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png", base_texture_id);
+
+		//update base vbo
+		updateBase();
+	}
+	ImGui::Separator();
+	if (ImGui::Button("Auto Generate", ImVec2{ 300,30 })) {
+		autoGenerate();
+		updateBase();
+	}
+
+	ImGui::SeparatorText("World parameters");
+	ImGui::SliderFloat("Sea Level", &ocean_level, 0.0f, 1.0f);
+	ImGui::SliderFloat("Mountain Height", &mountain_height, ocean_level, 1.0f);
+	ImGui::Text(""); ImGui::Text("");
+	ImGui::SeparatorText("Options");
+	if (ImGui::Button("Continue", ImVec2{ 300,30 })) {
+
+	}
+
+	if (ImGui::Button("Save Height Map", ImVec2{ 300,30 })) {
+
+	}
+
+	ImGui::Text(""); ImGui::Text("");
+	ImGui::SeparatorText("Resource parameters");
+
+	ImGui::Text("");
+	ImGui::SameLine(4,0);
+	ImGui::Text("Abundance");
+	ImGui::PushItemWidth(150); ImGui::SliderFloat("Iron", &iron_ab, 0.0f, 1.0f);
+	ImGui::PushItemWidth(150); ImGui::SliderFloat("Chromium", &chrom_ab, 0.0f, 1.0f);
+	ImGui::PushItemWidth(150); ImGui::SliderFloat("Copper", &copper_ab, 0.0f, 1.0f);
+	ImGui::PushItemWidth(150); ImGui::SliderFloat("Oil", &oil_ab, 0.0f, 1.0f);
+	ImGui::PushItemWidth(150); ImGui::SliderFloat("Coal", &coal_ab, 0.0f, 1.0f);
+
+	ImGui::SameLine(); GUIutils::HoverTip("change noise level of detail");
+	if (ImGui::Button("Generate Resources", ImVec2{ 300,30 })) {
+		tiles.genResources(h_map.getHeightMap(), iron_ab, chrom_ab, copper_ab, oil_ab, coal_ab);
+	}
 
 
 	ImGui::End();

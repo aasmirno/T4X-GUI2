@@ -12,8 +12,8 @@ private:
 	std::vector<uint8_t> height_map_ids;
 	std::vector<float> height_map;
 	float max_height = 0.0f;
-	int width = 0.0f;
-	int height = 0.0f;
+	int width = 0;
+	int height = 0;
 
 	std::vector<std::vector<int>> erosionBrushIndices;
 	std::vector<std::vector<float>> erosionBrushWeights;
@@ -116,7 +116,7 @@ public:
 	//add perlin noise to current height map
 	void addPerlin(float perlin_freq, bool fractal_ridge, float octave_weight) {
 		FastNoiseLite noise;
-		noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
 
 		if (fractal_ridge) {
 			noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
@@ -136,7 +136,7 @@ public:
 	//subtract perlin noise from current height map
 	void subPerlin(float perlin_freq, bool fractal_ridge, float octave_weight) {
 		FastNoiseLite noise;
-		noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
 
 		if (fractal_ridge) {
 			noise.SetFractalType(FastNoiseLite::FractalType_Ridged);

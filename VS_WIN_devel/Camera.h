@@ -35,7 +35,7 @@ private:
 	void updateProjection();
 
 public:
-	void reset();
+	void reset(int x, int x_scale, int y, int y_scale);
 	
 	//coordinate helpers
 	/*

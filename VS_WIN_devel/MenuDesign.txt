@@ -1,0 +1,38 @@
+Main controller menus
+Main Menu
+	-> New Game
+	-> Load Game
+	-> Options
+	-> Exit
+
+New Game
+	-> World Creation
+		-> Game Menus::World Creation
+	-> Load World
+		-> File picker 
+			-> Back
+			-> Game Menus::Game Creation
+	-> Back
+
+Load Game
+	-> File Picker
+	-> Back
+
+
+Game Menus
+World Creation
+	- Parameters
+	- Controls
+	-> Finish 
+		-> Game Creation
+
+Game Creation
+	- Parameters
+	- Controls
+	-> Finish
+		-> Game Menu
+	-> Exit
+		-> Main Menu
+
+Game Menu
+	-> 

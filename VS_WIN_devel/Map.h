@@ -4,6 +4,7 @@
 #include "HeightMap.h"
 #include "TempMap.h"
 #include "TileMap.h"
+#include "ImguiUtils.h"
 
 //graphics libraries
 #include "imgui.h"
@@ -54,15 +55,19 @@ private:
 	int speed = 10;
 
 	float remap_time = 0.0f;
-	float weather = 0.0f;
+	float weather_update_time = 0.0f;
 	float sim_times[7] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 
 	//tile map parameters
 	TileMap tiles;
 	float ocean_level = 0.5f;
-	float beach_height = 0.2f;
+	float beach_height = 0.02f;
 	float mountain_height = 0.9f;
-	float foothill_height = 0.2f;
+	float iron_ab = 0.0f;
+	float chrom_ab = 0.0f;
+	float copper_ab = 0.0f;
+	float oil_ab = 0.0f;
+	float coal_ab = 0.0f;
 
 	//height map generation parameters
 	HeightMap h_map;
@@ -92,6 +97,7 @@ private:
 	bool draw_surface_temp = false;
 	bool draw_clouds = false;
 	bool draw_pressure = false;
+	bool draw_resources = false;
 
 	//graphics handles
 	MapShader shader;
@@ -103,6 +109,12 @@ private:
 	GLuint overlay_texture_id = -1;	//overlay texture handle
 	GLuint overlay_vbo_id = -1;	//overlay vertex buffer object handle
 	GLuint overlay_vao_id = -1;	//overlay vertex array object handle
+
+	/*
+		Game methods
+	*/
+	//automatically generate a game map
+	void autoGenerate();
 
 	/*
 		graphical methods
@@ -119,16 +131,10 @@ private:
 	//load texture file into a texture handle
 	bool loadTextures(std::string texture_path, GLuint &texture_handle);
 
-	/*
-		imgui drawing functions
-	*/
-	//draw debug menu
-	void drawDebug();
-
-	//draw overhead display menu
-	void drawDisplay();
-
-	void drawSimulationValues();
+	//update base buffer
+	void updateBase();
+	//update overlay buffer
+	void updateOverlay();
 
 public:
 	//loop map logic once
@@ -140,7 +146,23 @@ public:
 	//initialise game map
 	bool initialise();
 
-	//draw graphical elements
+	//draw texture elements only
 	void draw();
+
+	/*
+		imgui drawing functions
+	*/
+	//draw debug menu
+	void drawDebug();
+
+	//draw overhead display menu
+	void drawDisplay();
+
+	//draw simulation runtime values
+	void drawSimulationValues();
+
+	//draw map creation menu
+	void drawCreationMenu();
+
 };
 
