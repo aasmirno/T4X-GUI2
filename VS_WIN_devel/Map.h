@@ -93,6 +93,7 @@ private:
 	bool draw_textures = true;
 	bool draw_elevation = false;
 
+	bool draw_pv = false;
 	bool draw_air_temp = false;
 	bool draw_surface_temp = false;
 	bool draw_clouds = false;

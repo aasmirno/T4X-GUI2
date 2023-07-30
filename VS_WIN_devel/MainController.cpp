@@ -314,7 +314,7 @@ void MainController::DebugMenu() {
 			cam.reset(340, WINDOW_W, 106, WINDOW_H);
 		}
 	}
-	ImGui::Text("mouse pos window(%d,%d), cam(%f,%f), map(%d, %d)", mouse_x, mouse_y, cam.windowToCam(mouse_x, WINDOW_W), cam.windowToCam(mouse_y, WINDOW_H), cam.windowToTileX(mouse_x, WINDOW_W), cam.windowToTileY(mouse_y, WINDOW_H));
+	ImGui::Text("mouse pos window(%d,%d), cam(%f,%f), map(%d, %d), index(%d)", mouse_x, mouse_y, cam.windowToCam(mouse_x, WINDOW_W), cam.windowToCam(mouse_y, WINDOW_H), cam.windowToTileX(mouse_x, WINDOW_W), cam.windowToTileY(mouse_y, WINDOW_H), cam.windowToTileY(mouse_y, WINDOW_H)*600 + cam.windowToTileX(mouse_x, WINDOW_W));
 	ImGui::Text("cam pos (org) xm,ym: (%f,%f), xw,yw (%f,%f)", cam.getX(), cam.getY(), cam.getWindowX(WINDOW_W), cam.getWindowY(WINDOW_H));
 	float dx = cam.windowToCam(mouse_x, WINDOW_W) - cam.getX();
 	float dy = cam.windowToCam(mouse_y, WINDOW_H) - cam.getY();

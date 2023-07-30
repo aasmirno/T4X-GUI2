@@ -104,18 +104,18 @@ void Map::autoGenerate() {
 	perlin_freq = 0.004;
 	fractal_ridge = false;
 	octave_weight = 0.4f;
-	h_map.addPerlin(perlin_freq, fractal_ridge, octave_weight);
+	h_map.addNoise(perlin_freq, fractal_ridge, octave_weight);
 
 	//second addition
 	perlin_freq = 0.01f;
 	fractal_ridge = false;	
 	octave_weight = 0.1f;
-	h_map.addPerlin(perlin_freq, fractal_ridge, octave_weight);
+	h_map.addNoise(perlin_freq, fractal_ridge, octave_weight);
 
 	//detailing
 	for (int i = 0; i < 10; i++) {
-		h_map.addPerlin(0.05f, true, 0.01f);
-		h_map.subPerlin(0.05f, false, 0.006f);
+		h_map.addNoise(0.05f, true, 0.01f);
+		h_map.subNoise(0.05f, false, 0.006f);
 	}
 
 }
@@ -205,13 +205,15 @@ void Map::draw() {
 	glUniform2i(glGetUniformLocation(shader.getProgramID(), "mapSize"), map_width, map_height); //set mapsize uniform
 	glUseProgram(shader.getProgramID());	//use shader program
 
+	drawDebug();
+
 	//bind and draw base textures
 	glBindTexture(GL_TEXTURE_2D, base_texture_id);
 	glBindVertexArray(base_vao_id);
 	glDrawArrays(GL_POINTS, 0, map_width * map_height);
 
 	//bind and draw overlay textures
-	if (draw_air_temp || draw_surface_temp || draw_clouds || draw_resources) {
+	if (draw_air_temp || draw_surface_temp || draw_clouds || draw_resources || draw_pv) {
 		glBindTexture(GL_TEXTURE_2D, overlay_texture_id);
 		glBindVertexArray(overlay_vao_id);
 		glDrawArrays(GL_POINTS, 0, map_width * map_height);
@@ -241,6 +243,10 @@ void Map::updateOverlay() {
 	else if (draw_resources) {
 		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayResource32.png", overlay_texture_id);	//load resource tex
 		updateVBO(overlay_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height, 1));
+	}
+	else if (draw_pv) {
+		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png", overlay_texture_id);	//load temp tex
+		updateVBO(overlay_vbo_id, tiles.getSize(), h_map.getPlateVoronoi());
 	}
 }
 
@@ -286,12 +292,12 @@ void Map::drawDebug() {
 	ImGui::Text("%d", fractal_ridge);
 
 	if (ImGui::Button("add perlin")) {
-		h_map.addPerlin(perlin_freq, fractal_ridge, octave_weight);	//apply perlin noise
+		h_map.addNoise(perlin_freq, fractal_ridge, octave_weight);	//apply perlin noise
 		updateBase();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("sub perlin")) {
-		h_map.subPerlin(perlin_freq, fractal_ridge, octave_weight);
+		h_map.subNoise(perlin_freq, fractal_ridge, octave_weight);
 		updateBase();
 	}
 
@@ -311,6 +317,16 @@ void Map::drawDebug() {
 	ImGui::SliderInt("intensity gradient", &drop_off, 0, 500);
 
 	ImGui::Text("added: %f, lost %f", t_map.getAdded(), t_map.getRadiated());
+	if (ImGui::Button("tectonic generation")) {
+		h_map.initialisePlates();
+		updateBase();
+	}
+
+	if (ImGui::Button("draw pv")) {
+		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false;
+		draw_pv = true;
+		updateOverlay();
+	}
 	ImGui::End();
 }
 
@@ -360,31 +376,28 @@ void Map::drawDisplay() {
 	ImGui::Text("");
 	ImGui::SameLine(0, 4);
 	if (ImGui::Button("No overlay", button_size)) {
-		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false;
+		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false, draw_pv = false;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Draw surface temp", button_size)) {
-		draw_air_temp = false, draw_clouds = false, draw_pressure = false;
+		draw_air_temp = false, draw_clouds = false, draw_pressure = false, draw_pv = false;
 		draw_surface_temp = true;
 		updateOverlay();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Draw cloud cover", button_size)) {
-		draw_air_temp = false, draw_surface_temp = false, draw_pressure = false;
+		draw_air_temp = false, draw_surface_temp = false, draw_pressure = false, draw_pv = false;
 		draw_clouds = true;
 
 		updateOverlay();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Draw resources", button_size)) {
-		draw_air_temp = false, draw_surface_temp = false, draw_pressure = false, draw_clouds = false;
+		draw_air_temp = false, draw_surface_temp = false, draw_pressure = false, draw_clouds = false, draw_pv = false;
 		draw_resources = true;
 
 		updateOverlay();
 	}
-
-
-
 	ImGui::End();
 }
 
@@ -450,13 +463,13 @@ void Map::drawCreationMenu() {
 
 	//Add noise
 	if (ImGui::Button("Add Noise", ImVec2{ 148, 30 })) {
-		h_map.addPerlin(perlin_freq, fractal_ridge, octave_weight);	//apply perlin noise
+		h_map.addNoise(perlin_freq, fractal_ridge, octave_weight);	//apply perlin noise
 		updateBase();
 	}
 	ImGui::SameLine();
 	//subtract noise
 	if (ImGui::Button("Subtract Noise", ImVec2{ 148,30 })) {
-		h_map.subPerlin(perlin_freq, fractal_ridge, octave_weight);
+		h_map.subNoise(perlin_freq, fractal_ridge, octave_weight);
 		updateBase();
 	}
 

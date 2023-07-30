@@ -52,7 +52,6 @@ void Camera::reset(int x, int x_scale, int y, int y_scale) {
 	cam_y = windowToCam(y, y_scale);
 	current_transform = MIN_TRANSFORM;
 
-
 	updateProjection();
 }
 

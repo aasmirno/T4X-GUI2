@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <queue>
 #include <random>
 #include <cmath>
 #include "FastNoiseLite.h"
@@ -15,6 +16,23 @@ private:
 	int width = 0;
 	int height = 0;
 
+	//tectonics parameters
+	struct Plate {
+		int origin;	//flat index origin
+		std::vector<int> indicies;	//points belonging to plate
+
+		struct MotionVector {	//Motion vector
+			float magnitude;
+			uint8_t dir;
+		};
+
+		MotionVector vector;
+	};
+
+	std::vector<uint8_t> voronoi_ids;
+	std::vector<Plate> plates;
+
+	//erosion params
 	std::vector<std::vector<int>> erosionBrushIndices;
 	std::vector<std::vector<float>> erosionBrushWeights;
 	int erosionRadius = 1;
@@ -77,12 +95,42 @@ public:
 			else if (normalised_height < 7.0f / 8.0f) {
 				height_map_ids[index] = L7;
 			}
-			else{
+			else {
 				height_map_ids[index] = L8;
 			}
 		}
 
+		for (int i = 0; i < plate_origins.size(); i++) {
+			height_map_ids[plate_origins[i]] = L8;
+		}
+
+
 		return &height_map_ids[0];
+	}
+
+	//create voronoi id diagram from plate origin points
+	uint8_t* getPlateVoronoi() {
+		std::random_device rd;
+		std::mt19937 mt(rd());
+
+		std::uniform_real_distribution<> diffusion(0, 10.0f);
+		voronoi_ids.clear();
+		voronoi_ids.resize(width * height);
+		//brute force algortihm, should be fine as it is only run once and with relatively small input sizes
+		for (size_t index = 0; index < height_map.size(); index++) {
+			int closest_plate_org = 0;
+			float dist = 10000000000.0f;
+			for (size_t i = 0; i < plates.size(); i++) {
+				if (coordDist(index, plates[i].origin) + (float)diffusion(mt) < dist) {
+					closest_plate_org = i;
+					dist = coordDist(index, plates[i].origin);
+				}
+			}
+
+			voronoi_ids[index] = closest_plate_org;
+		}
+
+		return &voronoi_ids[0];
 	}
 
 	//check coordinate against bounds
@@ -94,6 +142,22 @@ public:
 			return false;
 		}
 		return true;
+	}
+
+	//euclidean distance between flat indices
+	float coordDist(int i1, int i2) {
+		return std::sqrt(pow(i1%width - i2%width, 2) + pow(i1/width - i2/width, 2));
+	}
+
+	//check plate origin: returns false if valid org
+	bool orgCheck(int org) {
+		//check existing origins and lengths
+		for (size_t i = 0; i < plate_origins.size(); i++) {
+			if (org == plate_origins[i] || coordDist(plate_origins[i], org) < 100) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	//initialise height map to 0.0f
@@ -113,8 +177,11 @@ public:
 		height_map_ids.resize(height * width);
 	}
 
-	//add perlin noise to current height map
-	void addPerlin(float perlin_freq, bool fractal_ridge, float octave_weight) {
+	/*
+	* Noise utility methods
+	*/
+	//add noise to current height map
+	void addNoise(float perlin_freq, bool fractal_ridge, float octave_weight) {
 		FastNoiseLite noise;
 		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
 
@@ -133,8 +200,8 @@ public:
 
 	}
 
-	//subtract perlin noise from current height map
-	void subPerlin(float perlin_freq, bool fractal_ridge, float octave_weight) {
+	//subtract noise from current height map
+	void subNoise(float perlin_freq, bool fractal_ridge, float octave_weight) {
 		FastNoiseLite noise;
 		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
 
@@ -157,7 +224,105 @@ public:
 		}
 	}
 
+	//find local maximum
+	int findMaximum() {
+		std::random_device rd;
+		std::mt19937 mt(rd());
 
+		std::uniform_real_distribution<> coordx(0, width - 3);
+		std::uniform_real_distribution<> coordy(0, height - 3);
+		int search_x = (int)coordx(mt);
+		int search_y = (int)coordy(mt);
+		bool changed = true;
+
+		printf("start (%d,%d)\n", search_x, search_y);
+
+		//find vertical max
+		while (changed) {
+			float curr_height = height_map[search_y * width + search_x];
+			if (search_y - 1 > 0 && height_map[(search_y - 1) * width + search_x] > curr_height) { //check north neighbor
+				changed = true;
+				search_y -= 1;
+			}
+			else if (search_y + 1 < height && height_map[(search_y + 1) * width + search_x] > curr_height) {
+				changed = true;
+				search_y += 1;
+			}
+			else if (search_x - 1 > 0 && height_map[search_y * width + (search_x - 1)] > curr_height) {
+				changed = true;
+				search_x -= 1;
+			}
+			else if (search_x + 1 < width && height_map[search_y * width + (search_x + 1)] > curr_height) {
+				changed = true;
+				search_x += 1;
+			}
+			else {
+				changed = false;
+			}
+		}
+
+		printf("end (%d,%d)\n", search_x, search_y);
+
+		return search_y * width + search_x;
+	}
+
+	/*
+		Tectonic map generation section
+	*/
+	//initialise plates: noise + sectioning + randomise direction vectors
+	void initialisePlates() {
+		refresh();
+
+		FastNoiseLite noise;
+		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+
+		//generate noise
+		std::random_device rd;
+		noise.SetSeed(rd());
+		noise.SetFrequency(0.004);
+		for (size_t index = 0; index < height_map.size(); index++)
+		{
+			height_map[index] += ((noise.GetNoise((float)(index % width), (float)(index / height)) + 1.0) * 0.3);
+		}
+
+		//find n local maximums, assign as plate origins
+		int n = 6;
+		int plate_org = findMaximum();
+		plates.clear();
+		plates.push_back(Plate{plate_org});
+		//create remaining plates
+		for (int i = 0; i < n - 1; i++) {
+			plate_org = findMaximum();
+			while (orgCheck(plate_org)) {
+				plate_org = findMaximum();
+			}
+			plates.push_back(Plate{ plate_org });
+		}
+
+		//create plate structs using voronoi method
+		for (size_t index = 0; index < height_map.size(); index++) {
+			int closest_plate_index = 0;
+			float dist = 10000000000.0f;
+			//find closest plate
+			for (size_t i = 0; i < plates.size(); i++) {
+				if (coordDist(index, plates[i].origin) < dist) {
+					closest_plate_index = i;
+					dist = coordDist(index, plates[i].origin);
+				}
+			}
+			//assign point to plate
+			plates[closest_plate_index].indicies.push_back(index);
+		}
+
+
+	}
+
+	//run tectonic sim
+
+
+	/*
+		Erosion section
+	*/
 	struct Droplet {
 		float height;
 		float gradientX;
