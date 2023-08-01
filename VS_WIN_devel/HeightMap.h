@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include <unordered_map>
+#include <stack>
 #include <queue>
 #include <random>
 #include <cmath>
@@ -9,7 +11,7 @@ class HeightMap
 {
 private:
 	enum ElevationType : uint8_t { L1, L2, L3, L4, L5, L6, L7, L8 };
-
+	enum Direction { L, R, U, D };
 	std::vector<uint8_t> height_map_ids;
 	std::vector<float> height_map;
 	float max_height = 0.0f;
@@ -19,7 +21,9 @@ private:
 	//tectonics parameters
 	struct Plate {
 		int origin;	//flat index origin
-		std::vector<int> indicies;	//points belonging to plate
+		std::unordered_map<int, int> indicies;	//points belonging to plate
+		std::unordered_map<int, int> neighbors; //list of neighbors
+		std::vector < std::pair<int, Direction> > boundary_points; //list of boundary points <index, direction>
 
 		struct MotionVector {	//Motion vector
 			float magnitude;
@@ -27,6 +31,16 @@ private:
 		};
 
 		MotionVector vector;
+
+		void assignVector() {
+			std::random_device rd;
+			std::mt19937 mt(rd());
+
+			std::uniform_real_distribution<> rand(0, 9);
+			vector.dir = (int)rand(mt);
+			vector.magnitude = rand(mt) / 8.0f;
+
+		}
 	};
 
 	std::vector<uint8_t> voronoi_ids;
@@ -100,10 +114,16 @@ public:
 			}
 		}
 
-		for (int i = 0; i < plate_origins.size(); i++) {
-			height_map_ids[plate_origins[i]] = L8;
-		}
+		for (int i = 0; i < plates.size(); i++) {
+			//draw plate origin in white
+			height_map_ids[plates[i].origin] = L8;
 
+			//draw plate boundaries in white
+			for (auto pair : plates[i].boundary_points) {
+				height_map_ids[pair.first] = L8;
+			}
+
+		}
 
 		return &height_map_ids[0];
 	}
@@ -121,7 +141,7 @@ public:
 			int closest_plate_org = 0;
 			float dist = 10000000000.0f;
 			for (size_t i = 0; i < plates.size(); i++) {
-				if (coordDist(index, plates[i].origin) + (float)diffusion(mt) < dist) {
+				if (coordDist(index, plates[i].origin) < dist) {
 					closest_plate_org = i;
 					dist = coordDist(index, plates[i].origin);
 				}
@@ -131,33 +151,6 @@ public:
 		}
 
 		return &voronoi_ids[0];
-	}
-
-	//check coordinate against bounds
-	bool coordCheck(int x, int y) {
-		if (x < 0 || x >= width) {
-			return false;
-		}
-		if (y < 0 || y >= height) {
-			return false;
-		}
-		return true;
-	}
-
-	//euclidean distance between flat indices
-	float coordDist(int i1, int i2) {
-		return std::sqrt(pow(i1%width - i2%width, 2) + pow(i1/width - i2/width, 2));
-	}
-
-	//check plate origin: returns false if valid org
-	bool orgCheck(int org) {
-		//check existing origins and lengths
-		for (size_t i = 0; i < plate_origins.size(); i++) {
-			if (org == plate_origins[i] || coordDist(plate_origins[i], org) < 100) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	//initialise height map to 0.0f
@@ -178,7 +171,7 @@ public:
 	}
 
 	/*
-	* Noise utility methods
+	* Utility methods
 	*/
 	//add noise to current height map
 	void addNoise(float perlin_freq, bool fractal_ridge, float octave_weight) {
@@ -266,8 +259,29 @@ public:
 		return search_y * width + search_x;
 	}
 
+	//check coordinate against bounds
+	bool coordCheck(int x, int y) {
+		if (x < 0 || x >= width) {
+			return false;
+		}
+		if (y < 0 || y >= height) {
+			return false;
+		}
+		return true;
+	}
+
+	//euclidean distance between flat indices
+	float coordDist(int i1, int i2) {
+		return std::sqrt(pow(i1 % width - i2 % width, 2) + pow(i1 / width - i2 / width, 2));
+	}
+
+	//find the equation for a line between 2 flat indices
+	int* lineEquation(int i1, int i2) {
+
+	}
+
 	/*
-		Tectonic map generation section
+		Tectonic map generation section and utilities
 	*/
 	//initialise plates: noise + sectioning + randomise direction vectors
 	void initialisePlates() {
@@ -311,11 +325,107 @@ public:
 				}
 			}
 			//assign point to plate
-			plates[closest_plate_index].indicies.push_back(index);
+			plates[closest_plate_index].indicies.insert({index,0});
 		}
 
+		//refresh vornoi ids
+		getPlateVoronoi();
 
+		//assign neighbors and boundaries
+		assignNeighbors();
+
+		//assign plate random vectors
+		for (auto plate : plates) {
+			plate.assignVector();
+		}
 	}
+
+	//check plate origin: returns false if valid org
+	bool orgCheck(int org) {
+		//check existing origins and lengths
+		for (size_t i = 0; i < plates.size(); i++) {
+			if (org == plates[i].origin || coordDist(plates[i].origin, org) < 100) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	//assign plate neighbors using dfs
+	void assignNeighbors() {
+		//iterate each plate
+		for (size_t i = 0; i < plates.size(); i++) {
+			//run dfs from origin
+			std::stack<int> dfs_stack;
+			dfs_stack.push(plates[i].origin);
+			std::unordered_map<int, int> visited;
+
+			while (!dfs_stack.empty()) {
+				//get coordinate
+				int curr_index = dfs_stack.top();
+				dfs_stack.pop();
+
+				int currX = curr_index % width;
+				int currY = curr_index / width;
+
+				//check left (check bounds and check visited)
+				if (coordCheck(currX - 1, currY)  && visited.find(currY * width + (currX - 1)) == visited.end()) {
+					//if the index is in the same plate, add it to the stack
+					if (plates[i].indicies.find(currY * width + (currX - 1)) != plates[i].indicies.end()) {
+						dfs_stack.push(currY * width + (currX - 1));
+					}
+					//else the index belongs to a neighbor, mark it as such
+					else {
+						plates[i].neighbors[voronoi_ids[currY * width + (currX - 1)]];
+						plates[i].boundary_points.push_back({ curr_index, L });
+					}
+				}
+
+				//check right
+				if (coordCheck(currX + 1, currY) && visited.find(currY * width + (currX + 1)) == visited.end()) {
+					//if the index is in the same plate, add it to the stack
+					if (plates[i].indicies.find(currY * width + (currX + 1)) != plates[i].indicies.end()) {
+						dfs_stack.push(currY * width + (currX + 1));
+					}
+					//else the index belongs to a neighbor, mark it as such
+					else {
+						plates[i].neighbors[voronoi_ids[currY * width + (currX + 1)]];
+						plates[i].boundary_points.push_back({ curr_index, R });
+					}
+				}
+
+				//check up
+				if (coordCheck(currX, currY - 1) && visited.find((currY-1) * width + currX) == visited.end()) {
+					//if the index is in the same plate, add it to the stack
+					if (plates[i].indicies.find((currY - 1) * width + currX) != plates[i].indicies.end()) {
+						dfs_stack.push((currY - 1) * width + currX);
+					}
+					//else the index belongs to a neighbor, mark it as such
+					else {
+						plates[i].neighbors[voronoi_ids[(currY - 1) * width +  currX]];
+						plates[i].boundary_points.push_back({ curr_index, U });
+					}
+				}
+				 
+				//check down
+				if (coordCheck(currX, currY + 1) && visited.find((currY + 1) * width + currX) == visited.end()) {
+					//if the index is in the same plate, add it to the stack
+					if (plates[i].indicies.find((currY + 1) * width + currX) != plates[i].indicies.end()) {
+						dfs_stack.push((currY + 1) * width + currX);
+					}
+					//else the index belongs to a neighbor, mark it as such
+					else {
+						plates[i].neighbors[voronoi_ids[(currY + 1) * width + currX]];
+						plates[i].boundary_points.push_back({ curr_index, U });
+					}
+				}
+
+				//set current index as visited
+				visited.insert({ curr_index,0 });
+			}
+		}
+	}
+
 
 	//run tectonic sim
 
