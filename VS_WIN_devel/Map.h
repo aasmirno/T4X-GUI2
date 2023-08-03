@@ -86,8 +86,8 @@ private:
 	bool compute_temp = true;
 
 	//map data
-	const int map_width = 500;
-	const int map_height = 500;
+	const int map_width = 700;
+	const int map_height = 700;
 
 	//graphics data booleans
 	bool draw_textures = true;

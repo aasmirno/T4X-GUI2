@@ -246,7 +246,7 @@ void Map::updateOverlay() {
 	}
 	else if (draw_pv) {
 		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png", overlay_texture_id);	//load temp tex
-		updateVBO(overlay_vbo_id, tiles.getSize(), h_map.getPlateVoronoi());
+		updateVBO(overlay_vbo_id, tiles.getSize(), h_map.getPlateOverlay());
 	}
 }
 

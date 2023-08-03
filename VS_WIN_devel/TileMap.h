@@ -5,7 +5,7 @@
 
 class TileMap {
 private:
-	enum TileType : uint8_t { OCEAN, BEACH, PLAIN, FOREST, BLANK1, BLANK2, MOUNTAIN, PEAK };
+	enum TileType : uint8_t { DEEP_OCEAN, COASTAL_OCEAN, BEACH, PLAIN, FOREST, BLANK2, MOUNTAIN, PEAK };
 	enum ResourceType : uint8_t { NONE, IRON, COPPER, CHROMIUM, OIL, COAL };
 
 	/*
@@ -17,7 +17,7 @@ private:
 		int posx;
 		int posy;
 
-		Tile(int x, int y) : posx{ x }, posy{ y }, type{ PLAIN }, resource{NONE} {
+		Tile(int x, int y) : posx{ x }, posy{ y }, type{ PLAIN }, resource{ NONE } {
 		}
 
 	};
@@ -36,9 +36,13 @@ public:
 		for (size_t index = 0; index < tile_map_ids.size(); index++) {
 			if (type == 0) {
 				float height = height_map[index];
-				if (height < ocean_level) {
-					tile_map[index].type = TileType::OCEAN;
-					tile_map_ids[index] = TileType::OCEAN;
+				if (height < (ocean_level * (2.0f/3.0f))) {
+					tile_map[index].type = TileType::DEEP_OCEAN;
+					tile_map_ids[index] = TileType::DEEP_OCEAN;
+				}
+				else if (height < ocean_level) {
+					tile_map[index].type = TileType::COASTAL_OCEAN;
+					tile_map_ids[index] = TileType::COASTAL_OCEAN;
 				}
 				else if (height < ocean_level + beach_height) {
 					tile_map[index].type = TileType::BEACH;

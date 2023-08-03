@@ -10,38 +10,40 @@
 class HeightMap
 {
 private:
-	enum ElevationType : uint8_t { L1, L2, L3, L4, L5, L6, L7, L8 };
+	//enums
+	enum ElevationType : uint16_t { L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12 };
 	enum Direction { L, R, U, D };
+	enum BoundaryType { CONVERG_CNT, DIVERG_CNT }; //convergent-continential, divergent-continential 
+
+	//heightmap metdata
 	std::vector<uint8_t> height_map_ids;
 	std::vector<float> height_map;
 	float max_height = 0.0f;
+	float min_height = 100000000.0f;
 	int width = 0;
 	int height = 0;
 
 	//tectonics parameters
+	struct MotionVector {	//Motion vector
+		float x;
+		float y;
+	};
+	struct TecTile {
+		int seed;
+		int index;
+		int dist_to_seed;
+	};
 	struct Plate {
 		int origin;	//flat index origin
 		std::unordered_map<int, int> indicies;	//points belonging to plate
-		std::unordered_map<int, int> neighbors; //list of neighbors
-		std::vector < std::pair<int, Direction> > boundary_points; //list of boundary points <index, direction>
-
-		struct MotionVector {	//Motion vector
-			float magnitude;
-			uint8_t dir;
-		};
+		std::unordered_map<int, BoundaryType> neighbors; //list of neighbors: <plate id, >
+		std::unordered_map < int, int> boundary_points; //list of boundary points <index, neighboring plate>
 
 		MotionVector vector;
-
-		void assignVector() {
-			std::random_device rd;
-			std::mt19937 mt(rd());
-
-			std::uniform_real_distribution<> rand(0, 9);
-			vector.dir = (int)rand(mt);
-			vector.magnitude = rand(mt) / 8.0f;
-
-		}
 	};
+	const int FPROFILE_CONST = 50 - 1;
+	float FAULT_PROFILE_CVG[50];
+	float FAULT_PROFILE_DVG[50];
 
 	std::vector<uint8_t> voronoi_ids;
 	std::vector<Plate> plates;
@@ -85,33 +87,43 @@ public:
 	uint8_t* getIDArray() {
 		//assign ids
 		for (size_t index = 0; index < height_map.size(); index++) {
-			//if max height is 0 (no elevation), assign 0.0f otherwise normalise
-			float normalised_height = height_map[index];
-
-			if (normalised_height < 1.0f / 8.0f) {
+			if (height_map_ids[index] < 1.0f / 12.0f) {
 				height_map_ids[index] = L1;
 			}
-			else if (normalised_height < 2.0f / 8.0f) {
+			else if (height_map_ids[index] < 2.0f / 12.0f) {
 				height_map_ids[index] = L2;
 			}
-			else if (normalised_height < 3.0f / 8.0f) {
+			else if (height_map_ids[index] < 3.0f / 12.0f) {
 				height_map_ids[index] = L3;
 			}
-			else if (normalised_height < 4.0f / 8.0f) {
+			else if (height_map_ids[index] < 4.0f / 12.0f) {
 				height_map_ids[index] = L4;
 			}
-			else if (normalised_height < 5.0f / 8.0f) {
+			else if (height_map_ids[index] < 5.0f / 12.0f) {
 				height_map_ids[index] = L5;
 			}
-			else if (normalised_height < 6.0f / 8.0f) {
+			else if (height_map_ids[index] < 6.0f / 12.0f) {
 				height_map_ids[index] = L6;
 			}
-			else if (normalised_height < 7.0f / 8.0f) {
+			else if (height_map_ids[index] < 7.0f / 12.0f) {
 				height_map_ids[index] = L7;
 			}
-			else {
+			else if (height_map_ids[index] < 8.0f / 12.0f) {
 				height_map_ids[index] = L8;
 			}
+			else if (height_map_ids[index] < 9.0f / 12.0f) {
+				height_map_ids[index] = L9;
+			}
+			else if (height_map_ids[index] < 10.0f / 12.0f) {
+				height_map_ids[index] = L10;
+			}
+			else if (height_map_ids[index] < 11.0f / 12.0f) {
+				height_map_ids[index] = L11;
+			}
+			else {
+				height_map_ids[index] = L12;
+			}
+
 		}
 
 		for (int i = 0; i < plates.size(); i++) {
@@ -119,35 +131,25 @@ public:
 			height_map_ids[plates[i].origin] = L8;
 
 			//draw plate boundaries in white
-			for (auto pair : plates[i].boundary_points) {
+			/*for (auto pair : plates[i].boundary_points) {
 				height_map_ids[pair.first] = L8;
-			}
+			}*/
 
 		}
 
 		return &height_map_ids[0];
 	}
 
-	//create voronoi id diagram from plate origin points
-	uint8_t* getPlateVoronoi() {
-		std::random_device rd;
-		std::mt19937 mt(rd());
-
-		std::uniform_real_distribution<> diffusion(0, 10.0f);
+	//create plate overlay
+	uint8_t* getPlateOverlay() {
 		voronoi_ids.clear();
 		voronoi_ids.resize(width * height);
-		//brute force algortihm, should be fine as it is only run once and with relatively small input sizes
-		for (size_t index = 0; index < height_map.size(); index++) {
-			int closest_plate_org = 0;
-			float dist = 10000000000.0f;
-			for (size_t i = 0; i < plates.size(); i++) {
-				if (coordDist(index, plates[i].origin) < dist) {
-					closest_plate_org = i;
-					dist = coordDist(index, plates[i].origin);
-				}
-			}
 
-			voronoi_ids[index] = closest_plate_org;
+		//assign based on ids
+		for (size_t p_index = 0; p_index < plates.size(); p_index++) {
+			for (auto& index : plates[p_index].indicies) {
+				voronoi_ids[index.first] = p_index;
+			}
 		}
 
 		return &voronoi_ids[0];
@@ -172,6 +174,7 @@ public:
 
 	/*
 	* Utility methods
+	* ------------------------------------------------------------------------------
 	*/
 	//add noise to current height map
 	void addNoise(float perlin_freq, bool fractal_ridge, float octave_weight) {
@@ -230,6 +233,8 @@ public:
 
 		printf("start (%d,%d)\n", search_x, search_y);
 
+		return search_y * width + search_x;
+
 		//find vertical max
 		while (changed) {
 			float curr_height = height_map[search_y * width + search_x];
@@ -259,6 +264,27 @@ public:
 		return search_y * width + search_x;
 	}
 
+	//compress heightmap into 0 1 range
+	void compress() {
+		for (size_t i = 0; i < height_map.size(); i++) {
+			if (height_map[i] > max_height) {
+				max_height = height_map[i];
+			}
+		}
+		for (size_t i = 0; i < height_map.size(); i++) {
+			if (height_map[i] < min_height) {
+				min_height = height_map[i];
+			}
+		}
+		
+		float height_range = max_height - min_height;
+		for (size_t i = 0; i < height_map.size(); i++) {
+			height_map[i] += abs(min_height);
+			height_map[i] / height_range;
+		}
+
+	}
+
 	//check coordinate against bounds
 	bool coordCheck(int x, int y) {
 		if (x < 0 || x >= width) {
@@ -282,10 +308,16 @@ public:
 
 	/*
 		Tectonic map generation section and utilities
+		------------------------------------------------------------------------------
 	*/
 	//initialise plates: noise + sectioning + randomise direction vectors
 	void initialisePlates() {
 		refresh();
+		//initialise profiles
+		for (int i = 0; i < FPROFILE_CONST + 1; i++) {
+			FAULT_PROFILE_CVG[i] = 2.0f / ((float)i + 6.0f);
+			FAULT_PROFILE_DVG[i] = (pow((0.0345 * i - 0.8625), 2.0) - pow(0.8625, 2.0) ) * 0.3;
+		}
 
 		FastNoiseLite noise;
 		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
@@ -294,16 +326,16 @@ public:
 		std::random_device rd;
 		noise.SetSeed(rd());
 		noise.SetFrequency(0.004);
-		for (size_t index = 0; index < height_map.size(); index++)
+		/*for (size_t index = 0; index < height_map.size(); index++)
 		{
 			height_map[index] += ((noise.GetNoise((float)(index % width), (float)(index / height)) + 1.0) * 0.3);
-		}
+		}*/
 
 		//find n local maximums, assign as plate origins
-		int n = 6;
+		int n = 10;
 		int plate_org = findMaximum();
 		plates.clear();
-		plates.push_back(Plate{plate_org});
+		plates.push_back(Plate{ plate_org });
 		//create remaining plates
 		for (int i = 0; i < n - 1; i++) {
 			plate_org = findMaximum();
@@ -313,48 +345,51 @@ public:
 			plates.push_back(Plate{ plate_org });
 		}
 
-		//create plate structs using voronoi method
+		//create plate structs using voronoi method + simplex noise for curvature
 		for (size_t index = 0; index < height_map.size(); index++) {
 			int closest_plate_index = 0;
 			float dist = 10000000000.0f;
 			//find closest plate
 			for (size_t i = 0; i < plates.size(); i++) {
-				if (coordDist(index, plates[i].origin) < dist) {
+				if (coordDist(index, plates[i].origin) + ((noise.GetNoise((float)(index % width), (float)(index / height))) * 50) < dist) {
 					closest_plate_index = i;
 					dist = coordDist(index, plates[i].origin);
 				}
 			}
 			//assign point to plate
-			plates[closest_plate_index].indicies.insert({index,0});
+			plates[closest_plate_index].indicies.insert({ index,0 });
 		}
 
-		//refresh vornoi ids
-		getPlateVoronoi();
+
+		//assign plate direction vectors
+		std::mt19937 mt(rd());
+		std::uniform_real_distribution<> rand(-1.0, 1.0);
+		for (size_t i = 0; i < plates.size(); i++) {
+			plates[i].vector.x = rand(mt);
+			plates[i].vector.y = rand(mt);
+		}
 
 		//assign neighbors and boundaries
+		printf("assigning neighbors\n");
 		assignNeighbors();
+		printf("Done\n");
+		printf("assigning boundaries\n");
+		assignBoundaries();
+		printf("Done\n");
+		printf("applying transforms\n");
+		applyTransforms();
+		printf("Done\n");
 
-		//assign plate random vectors
-		for (auto plate : plates) {
-			plate.assignVector();
-		}
-	}
 
-	//check plate origin: returns false if valid org
-	bool orgCheck(int org) {
-		//check existing origins and lengths
-		for (size_t i = 0; i < plates.size(); i++) {
-			if (org == plates[i].origin || coordDist(plates[i].origin, org) < 100) {
-				return true;
-			}
-		}
-		return false;
+		//compress heightmap
+		compress();
 	}
 
 	//assign plate neighbors using dfs
 	void assignNeighbors() {
 		//iterate each plate
 		for (size_t i = 0; i < plates.size(); i++) {
+			printf("	on plate: %d\n", i);
 			//run dfs from origin
 			std::stack<int> dfs_stack;
 			dfs_stack.push(plates[i].origin);
@@ -364,20 +399,22 @@ public:
 				//get coordinate
 				int curr_index = dfs_stack.top();
 				dfs_stack.pop();
+				//printf("		point: %d", curr_index);
 
 				int currX = curr_index % width;
 				int currY = curr_index / width;
 
 				//check left (check bounds and check visited)
-				if (coordCheck(currX - 1, currY)  && visited.find(currY * width + (currX - 1)) == visited.end()) {
+				if (coordCheck(currX - 1, currY) && visited.find(currY * width + (currX - 1)) == visited.end()) {
 					//if the index is in the same plate, add it to the stack
 					if (plates[i].indicies.find(currY * width + (currX - 1)) != plates[i].indicies.end()) {
 						dfs_stack.push(currY * width + (currX - 1));
 					}
 					//else the index belongs to a neighbor, mark it as such
 					else {
-						plates[i].neighbors[voronoi_ids[currY * width + (currX - 1)]];
-						plates[i].boundary_points.push_back({ curr_index, L });
+						int neighbor = getPlate(currY * width + (currX - 1));
+						plates[i].neighbors[neighbor];
+						plates[i].boundary_points.insert({ curr_index, neighbor });
 					}
 				}
 
@@ -389,24 +426,26 @@ public:
 					}
 					//else the index belongs to a neighbor, mark it as such
 					else {
-						plates[i].neighbors[voronoi_ids[currY * width + (currX + 1)]];
-						plates[i].boundary_points.push_back({ curr_index, R });
+						int neighbor = getPlate(currY * width + (currX + 1));
+						plates[i].neighbors[neighbor];
+						plates[i].boundary_points.insert({ curr_index, neighbor });
 					}
 				}
 
 				//check up
-				if (coordCheck(currX, currY - 1) && visited.find((currY-1) * width + currX) == visited.end()) {
+				if (coordCheck(currX, currY - 1) && visited.find((currY - 1) * width + currX) == visited.end()) {
 					//if the index is in the same plate, add it to the stack
 					if (plates[i].indicies.find((currY - 1) * width + currX) != plates[i].indicies.end()) {
 						dfs_stack.push((currY - 1) * width + currX);
 					}
 					//else the index belongs to a neighbor, mark it as such
 					else {
-						plates[i].neighbors[voronoi_ids[(currY - 1) * width +  currX]];
-						plates[i].boundary_points.push_back({ curr_index, U });
+						int neighbor = getPlate((currY - 1) * width + currX);
+						plates[i].neighbors[neighbor];
+						plates[i].boundary_points.insert({ curr_index, neighbor });
 					}
 				}
-				 
+
 				//check down
 				if (coordCheck(currX, currY + 1) && visited.find((currY + 1) * width + currX) == visited.end()) {
 					//if the index is in the same plate, add it to the stack
@@ -415,23 +454,146 @@ public:
 					}
 					//else the index belongs to a neighbor, mark it as such
 					else {
-						plates[i].neighbors[voronoi_ids[(currY + 1) * width + currX]];
-						plates[i].boundary_points.push_back({ curr_index, U });
+						int neighbor = getPlate((currY + 1) * width + currX);
+						plates[i].neighbors[neighbor];
+						plates[i].boundary_points.insert({ curr_index, neighbor });
 					}
 				}
 
 				//set current index as visited
-				visited.insert({ curr_index,0 });
+				visited.insert({ curr_index, 0 });
 			}
 		}
 	}
 
+	//assign plate boundary types
+	void assignBoundaries() {
+		for (size_t i = 0; i < plates.size(); i++) {
+			for (auto& neighbor_index : plates[i].neighbors) {
+				//calculate boundary type with neighbor
+				plates[i].neighbors[neighbor_index.first] = assignBoundary(i, neighbor_index.first);
+			}
+		}
+	}
 
-	//run tectonic sim
+	//apply boundary transforms
+	void applyTransforms() {
+		FastNoiseLite noise;
+		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+
+		//generate noise
+		std::random_device rd;
+		noise.SetSeed(rd());
+		noise.SetFrequency(0.04);
+
+		for (size_t plate_index = 0; plate_index < plates.size(); plate_index++) {
+			printf("	on plate: %d\n", plate_index);
+			//run seeded bfs on boundary points
+			std::queue<TecTile> bfs_queue;
+			std::unordered_map<int, int> visited;
+
+			for (auto& point : plates[plate_index].boundary_points) {
+				bfs_queue.push(TecTile{ point.first, point.first, 0 });
+				visited.insert({ point.first, 0 });
+			}
+
+			while (!bfs_queue.empty()) {
+				TecTile curr_index = bfs_queue.front();
+				bfs_queue.pop();
+
+				int cx = curr_index.index % width;
+				int cy = curr_index.index / width;
+
+				//apply f profile
+				BoundaryType boundary = getBoundaryType(curr_index.seed, plate_index);
+				switch (boundary) {
+				case CONVERG_CNT:
+					height_map[curr_index.index] += FAULT_PROFILE_CVG[curr_index.dist_to_seed];
+					break;
+				case DIVERG_CNT:
+					height_map[curr_index.index] += FAULT_PROFILE_DVG[curr_index.dist_to_seed];
+					break;
+				}
+
+				int x_off[4] = { -1,1,0,0 };
+				int y_off[4] = { 0,0,-1,1 };
+				for (int off = 0; off < 4; off ++) {
+
+					int tx = cx + x_off[off];
+					int ty = cy + y_off[off];
+					int dist = (int)coordDist(ty * width + tx, curr_index.seed) +(((noise.GetNoise((float)tx, (float)ty) - 1) / 2.0f)*1.5f);
+
+					if (coordCheck(tx, ty)
+						//&& plates[plate_index].indicies.find(ty * width + tx) != plates[plate_index].indicies.end()
+						&& dist < FPROFILE_CONST
+						&& visited.find(ty * width + tx) == visited.end()
+						) {
+						//add to queue
+						bfs_queue.push(TecTile{ curr_index.seed , ty * width + tx, dist });
+						visited.insert({ ty * width + tx, 0 });
+					}
+
+				}
+				
+			}
+		}
+	}
+
+	//utils
+	//------------------------------------------------------------------------------
+	//check plate origin: returns false if valid org
+	bool orgCheck(int org) {
+		//check existing origins and lengths
+		for (size_t i = 0; i < plates.size(); i++) {
+			if (org == plates[i].origin || coordDist(plates[i].origin, org) < 20) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	//find plate to which a point belongs
+	int getPlate(int index) {
+		for (size_t i = 0; i < plates.size(); i++) {
+			if (plates[i].indicies.find(index) != plates[i].indicies.end()) {
+				return i;
+			}
+		}
+	}
+
+	//find boundary point fault type
+	BoundaryType getBoundaryType(int boundary_point, int plate) {
+		int neighbor_index = (*plates[plate].boundary_points.find(boundary_point)).second;
+		return (*plates[plate].neighbors.find(neighbor_index)).second;
+	}
+	 
+	//get angle between motion vectors
+	float angle(MotionVector a, MotionVector b) {
+		float dot = (a.x * b.x) + (a.y * b.y);
+		float mag_a = std::sqrt(pow(a.x, 2) + pow(a.y, 2));
+		float mag_b = std::sqrt(pow(b.x, 2) + pow(b.y, 2));
+
+		float pre_cos = dot / (mag_a * mag_b);
+		return acos(pre_cos) * (180.0 / 3.141592653589793238463);
+	}
+
+	//get boundary type
+	BoundaryType assignBoundary(int plate_1, int plate_2) {
+		Plate p1 = plates[plate_1];
+		Plate p2 = plates[plate_2];
+
+		if (angle(p1.vector, p2.vector) < 90) {
+			return CONVERG_CNT;
+		}
+		else {
+			return DIVERG_CNT;
+		}
+	}
 
 
 	/*
 		Erosion section
+		------------------------------------------------------------------------------
 	*/
 	struct Droplet {
 		float height;
