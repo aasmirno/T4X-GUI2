@@ -1,7 +1,7 @@
 #version 330 core
 uniform mat4 projection;    //projection matrix
 
-in VS_OUT {         //input block for tile ids {0,1,2,3}
+in VS_OUT {         //input block for tile ids {0,1,2,3,4,5,6,7}
     uint tileId;
 } gs_in[];
 
@@ -11,11 +11,11 @@ layout (points) in; //define input as single vertex input (map index)
 layout (triangle_strip, max_vertices = 4) out;  //define output as 4 vertices in triangle strip mode 
 
 void main() {
-    uint tileId = gs_in[0].tileId & 255u;   //bitwise & tile id against max ubyte (11111111)
-    float tileX = float(tileId & 15u) / 8.0;   //bitwise & against max 4 (1111)
-    float tileY = float((tileId >> 4u) & 15u) / 16.0; //always zero if tile types < 15
+    uint tileId = gs_in[0].tileId & 255u;   //bitwise &: tile id(0000 to 1000) against max ubyte (11111111)
+    float tileX = float(tileId & 7u) / 8.0;   //bitwise &: tile id (0000 to 1000) against 8(1111): get x coordinate on texture
+    float tileY = float((tileId >> 3u) & 7u) / 8.0; //always zero if tile types < 15: get y coordinate on texture
     
-    const float B = 1 / 256.0;
+    const float B = 1 / 256.0;  //border buffer (1/256) = px border
     const float S = 1 / 8.0;    //tex size (1/8.0 = 32 px, 1/16 = 16 px)
 
     //set positions and texture coordinates

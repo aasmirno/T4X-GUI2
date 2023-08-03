@@ -10,7 +10,7 @@
 class TempMap {
 private:
 	enum Direction : uint8_t { UL, U, UR, L, R, DL, D, DR };
-	enum TempLevel : uint8_t { T1, T2, T3, T4, T5, T6, T7, T8 };
+	enum TempLevel : uint16_t { T1, T2, T3, T4, T5, T6, T7, T8 };
 
 	/*
 		Temperature cell
@@ -70,7 +70,7 @@ private:
 	std::vector<TempCell> ground_map;	//ground cell map
 	std::vector<CloudCell> cloud_map;	//cloud map
 
-	std::vector<uint8_t> ids;
+	std::vector<uint16_t> ids;
 
 	//parameters
 	float cloud_reflect_percent = 0.0f;	//percentage of incoming solar energy reflected by cloud cover
@@ -88,7 +88,7 @@ public:
 
 
 	//return and array of texture ids: 0 = air temp, 1 = surf temp
-	uint8_t* getIDArray(uint8_t type) {
+	uint16_t* getIDArray(uint8_t type) {
 		for (size_t i = 0; i < ground_map.size(); i++) {
 			//assign ground_temp map
 			if (type == 1) {

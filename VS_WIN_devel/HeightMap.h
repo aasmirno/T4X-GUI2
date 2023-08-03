@@ -16,7 +16,7 @@ private:
 	enum BoundaryType { CONVERG_CNT, DIVERG_CNT }; //convergent-continential, divergent-continential 
 
 	//heightmap metdata
-	std::vector<uint8_t> height_map_ids;
+	std::vector<uint16_t> height_map_ids;
 	std::vector<float> height_map;
 	float max_height = 0.0f;
 	float min_height = 100000000.0f;
@@ -45,7 +45,7 @@ private:
 	float FAULT_PROFILE_CVG[50];
 	float FAULT_PROFILE_DVG[50];
 
-	std::vector<uint8_t> voronoi_ids;
+	std::vector<uint16_t> voronoi_ids;
 	std::vector<Plate> plates;
 
 	//erosion params
@@ -84,40 +84,40 @@ public:
 	}
 
 	//assign ids and return id array
-	uint8_t* getIDArray() {
+	uint16_t* getIDArray() {
 		//assign ids
 		for (size_t index = 0; index < height_map.size(); index++) {
-			if (height_map_ids[index] < 1.0f / 12.0f) {
+			if (height_map[index] < 1.0f / 12.0f) {
 				height_map_ids[index] = L1;
 			}
-			else if (height_map_ids[index] < 2.0f / 12.0f) {
+			else if (height_map[index] < 2.0f / 12.0f) {
 				height_map_ids[index] = L2;
 			}
-			else if (height_map_ids[index] < 3.0f / 12.0f) {
+			else if (height_map[index] < 3.0f / 12.0f) {
 				height_map_ids[index] = L3;
 			}
-			else if (height_map_ids[index] < 4.0f / 12.0f) {
+			else if (height_map[index] < 4.0f / 12.0f) {
 				height_map_ids[index] = L4;
 			}
-			else if (height_map_ids[index] < 5.0f / 12.0f) {
+			else if (height_map[index] < 5.0f / 12.0f) {
 				height_map_ids[index] = L5;
 			}
-			else if (height_map_ids[index] < 6.0f / 12.0f) {
+			else if (height_map[index] < 6.0f / 12.0f) {
 				height_map_ids[index] = L6;
 			}
-			else if (height_map_ids[index] < 7.0f / 12.0f) {
+			else if (height_map[index] < 7.0f / 12.0f) {
 				height_map_ids[index] = L7;
 			}
-			else if (height_map_ids[index] < 8.0f / 12.0f) {
+			else if (height_map[index] < 8.0f / 12.0f) {
 				height_map_ids[index] = L8;
 			}
-			else if (height_map_ids[index] < 9.0f / 12.0f) {
+			else if (height_map[index] < 9.0f / 12.0f) {
 				height_map_ids[index] = L9;
 			}
-			else if (height_map_ids[index] < 10.0f / 12.0f) {
+			else if (height_map[index] < 10.0f / 12.0f) {
 				height_map_ids[index] = L10;
 			}
-			else if (height_map_ids[index] < 11.0f / 12.0f) {
+			else if (height_map[index] < 11.0f / 12.0f) {
 				height_map_ids[index] = L11;
 			}
 			else {
@@ -141,7 +141,7 @@ public:
 	}
 
 	//create plate overlay
-	uint8_t* getPlateOverlay() {
+	uint16_t* getPlateOverlay() {
 		voronoi_ids.clear();
 		voronoi_ids.resize(width * height);
 

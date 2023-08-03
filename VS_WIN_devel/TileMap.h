@@ -5,8 +5,8 @@
 
 class TileMap {
 private:
-	enum TileType : uint8_t { DEEP_OCEAN, COASTAL_OCEAN, BEACH, PLAIN, FOREST, BLANK2, MOUNTAIN, PEAK };
-	enum ResourceType : uint8_t { NONE, IRON, COPPER, CHROMIUM, OIL, COAL };
+	enum TileType : uint16_t { DEEP_OCEAN, COASTAL_OCEAN, BEACH, PLAIN, FOREST, BLANK2, MOUNTAIN, PEAK };
+	enum ResourceType : uint16_t { NONE, IRON, COPPER, CHROMIUM, OIL, COAL };
 
 	/*
 		Tile class, stores tile info
@@ -22,14 +22,14 @@ private:
 
 	};
 
-	std::vector<uint8_t> tile_map_ids;	//store graphical ids
+	std::vector<uint16_t> tile_map_ids;	//store graphical ids
 	std::vector<Tile> tile_map;	//store tile structs
 	int width = 0;
 	int height = 0;
 
 public:
 	//get graphical id array - type: 0-Tile textures, 1-resources
-	uint8_t* getIDArray(std::vector<float>& height_map, float ocean_level, float beach_height, float mountain_height, uint8_t type) {
+	uint16_t* getIDArray(std::vector<float>& height_map, float ocean_level, float beach_height, float mountain_height, uint8_t type) {
 		assert(height_map.size() == tile_map_ids.size());
 
 		//assign ids

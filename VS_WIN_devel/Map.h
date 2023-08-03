@@ -19,6 +19,7 @@
 #include <vector>
 #include <chrono>
 
+//custom shaders for map
 class MapShader :
 	public ShaderManager
 {
@@ -86,8 +87,8 @@ private:
 	bool compute_temp = true;
 
 	//map data
-	const int map_width = 700;
-	const int map_height = 700;
+	const int map_width = 100;
+	const int map_height = 100;
 
 	//graphics data booleans
 	bool draw_textures = true;
@@ -124,7 +125,7 @@ private:
 	bool genVBO(GLuint* vbo_id);
 
 	//copy data into a vbo
-	bool updateVBO(GLuint vbo_id, int size, uint8_t* data);
+	bool updateVBO(GLuint vbo_id, int size, uint16_t* data);
 
 	//create a vao and assign a vbo
 	bool genVAO(GLuint* vao_id, GLuint vbo_id);
