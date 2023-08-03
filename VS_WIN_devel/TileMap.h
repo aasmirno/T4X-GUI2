@@ -65,7 +65,7 @@ public:
 				tile_map_ids[index] = tile_map[index].resource;
 			}
 		}
-
+		printf("size inner: %d\n", tile_map_ids.size());
 		return &tile_map_ids[0];
 	}
 

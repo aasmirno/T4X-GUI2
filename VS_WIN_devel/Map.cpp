@@ -5,8 +5,6 @@ int Map::getTransformLoc() {
 }
 
 bool Map::initialise() {
-	std::cout << "size 16 t: " << sizeof(uint16_t) << std::endl;
-	std::cout << "size 8 t: " << sizeof(uint8_t) << std::endl;
 	tiles.initialise(map_width, map_height);	//initialise tile map
 	h_map.init(map_width, map_height);	//initialise height map
 	t_map.init(map_width, map_height);	//initialise temperature map
@@ -30,12 +28,12 @@ bool Map::initialise() {
 
 	//generate base texture buffers
 	genVBO(&base_vbo_id);	//generate base texture buffer
-	updateVBO(base_vbo_id, map_height * map_width * sizeof(uint16_t), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height,0)); //load tile texture ids into base buffer
+	updateVBO(base_vbo_id, map_height * map_width, tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height,0)); //load tile texture ids into base buffer
 	genVAO(&base_vao_id, base_vbo_id);	//generate base texture vao
 
 	//generate overlay buffers
 	genVBO(&overlay_vbo_id);	//generate overlay array buffer
-	updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint16_t), t_map.getIDArray(0));	//load air temperature ids into overlay buffer
+	updateVBO(overlay_vbo_id, map_height * map_width, t_map.getIDArray(0));	//load air temperature ids into overlay buffer
 	genVAO(&overlay_vao_id, overlay_vbo_id);	//generate overlay array buffer
 	return true;
 }
@@ -130,6 +128,7 @@ void Map::autoGenerate() {
 bool Map::updateVBO(GLuint vbo_id, int size, uint16_t* array) {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);	//bind the buffer to the global array buffer
 	glBufferData(GL_ARRAY_BUFFER, size * sizeof(uint16_t), array, GL_STATIC_DRAW);	//copy tile ids to the buffer
+
 	GLenum err;
 	if ((err = glGetError()) != GL_NO_ERROR) {
 		std::cout << "gl error " << err << std::endl;
