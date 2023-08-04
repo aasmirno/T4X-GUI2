@@ -121,12 +121,12 @@ int MainController::Start() {
 	while (Running) {
 		SDL_GetWindowSize(main_window, &WINDOW_W, &WINDOW_H);
 		SDL_GetMouseState(&mouse_x, &mouse_y);
+		game.setMouse(cam.windowToTileX(mouse_x, WINDOW_W), cam.windowToTileY(mouse_y, WINDOW_H));
 		if (exit_flag) {
 			draw_start = true;
 			draw_game = false;
 			exit_flag = false;
 		}
-
 
 		//get events with sdl
 		SDL_Event event;
@@ -189,7 +189,6 @@ void MainController::EventHandle(SDL_Event& event) {
 
 	//camera movement logic
 	if (draw_game) {
-
 		//zoom logic
 		if (event.type == SDL_MOUSEWHEEL && !wantMouse && draw_start != true) {
 			if (event.wheel.y < 0) { //scroll back
@@ -322,7 +321,6 @@ void MainController::DebugMenu() {
 	float r1y = dy / 6000;
 
 	ImGui::Text("dif dx,dy(%f,%f), /x,/y(%f,%f), /z(%f,%f)", dx, dy, r1x, r1y, r1x / cam.getZoom(), r1y / cam.getZoom());
-	ImGui::Text("cam_pos (1,2): %f,%f", cam.getX() + (0.001562 * cam.getZoom()) * 1, cam.getY() + (0.002778 * cam.getZoom()) * 2);
 	ImGui::Text("dist mpos to: origin(%f,%f), 0,0 (%d,%d)", mouse_x - cam.getX(), mouse_y - cam.getY(), mouse_x - (int)(WINDOW_W/2), mouse_y - (int)(WINDOW_H/2));
 	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
 	ImGui::Text("mouse1_pressed: %d", mouse1_pressed);

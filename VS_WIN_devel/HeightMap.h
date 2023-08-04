@@ -13,7 +13,7 @@ private:
 	//enums
 	enum ElevationType : uint16_t { L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12 };
 	enum Direction { L, R, U, D };
-	enum BoundaryType { CONVERG_CNT, DIVERG_CNT }; //convergent-continential, divergent-continential 
+	enum BoundaryType { CONVERG_CNT, DIVERG_CNT, CONVERG_OCN, DIVERG_OCN, CONVERG_OCNCNT, NONE};
 
 	//heightmap metdata
 	std::vector<uint16_t> height_map_ids;
@@ -33,8 +33,16 @@ private:
 		int index;
 		int dist_to_seed;
 	};
+	struct CPTile {
+		int index;
+		int scale_position;
+		float neighbor_height;
+		int dist_to_origin;
+	};
 	struct Plate {
 		int origin;	//flat index origin
+		int type;	//plate type
+
 		std::unordered_map<int, int> indicies;	//points belonging to plate
 		std::unordered_map<int, BoundaryType> neighbors; //list of neighbors: <plate id, >
 		std::unordered_map < int, int> boundary_points; //list of boundary points <index, neighboring plate>
@@ -42,8 +50,15 @@ private:
 		MotionVector vector;
 	};
 	const int FPROFILE_CONST = 50 - 1;
-	float FAULT_PROFILE_CVG[50];
-	float FAULT_PROFILE_DVG[50];
+	//continent continent profiles
+	float FAULT_PROFILE_CVG_C[50];
+	float FAULT_PROFILE_DVG_C[50];
+	//ocean ocean profiles
+	float FAULT_PROFILE_DVG_O[50];
+
+	//ocean continent profiles
+	float FAULT_PROFILE_CVG_OC_O[50]; //ocean side
+	float FAULT_PROFILE_CVG_OC_C[50]; //continent side
 
 	std::vector<uint16_t> voronoi_ids;
 	std::vector<Plate> plates;
@@ -128,13 +143,10 @@ public:
 
 		for (int i = 0; i < plates.size(); i++) {
 			//draw plate origin in white
-			height_map_ids[plates[i].origin] = L8;
-
-			//draw plate boundaries in white
-			/*for (auto pair : plates[i].boundary_points) {
-				height_map_ids[pair.first] = L8;
-			}*/
-
+			height_map_ids[plates[i].origin] = L12;
+			for (auto& bpoint : plates[i].boundary_points) {
+				height_map_ids[bpoint.first] = L12;
+			}
 		}
 
 		return &height_map_ids[0];
@@ -276,7 +288,7 @@ public:
 				min_height = height_map[i];
 			}
 		}
-		
+
 		float height_range = max_height - min_height;
 		for (size_t i = 0; i < height_map.size(); i++) {
 			height_map[i] += abs(min_height);
@@ -302,8 +314,11 @@ public:
 	}
 
 	//find the equation for a line between 2 flat indices
-	int* lineEquation(int i1, int i2) {
+	float lineEquation(int i1, int i2) {
+		int x1 = i1 % width; int y1 = i2 / width;
+		int x2 = i2 % width; int y2 = i2 / width;
 
+		return (float)(y2 - y1) / (float)(x1 - x2);
 	}
 
 	/*
@@ -313,26 +328,51 @@ public:
 	//initialise plates: noise + sectioning + randomise direction vectors
 	void initialisePlates() {
 		refresh();
+		double c = 0.1 / pow((double)FPROFILE_CONST + 1, 2.0);
+		double c2 = 0.15 / pow((double)FPROFILE_CONST - 4.5, 3.0);
+
 		//initialise profiles
 		for (int i = 0; i < FPROFILE_CONST + 1; i++) {
-			FAULT_PROFILE_CVG[i] = 2.0f / ((float)i + 6.0f);
-			FAULT_PROFILE_DVG[i] = (pow((0.0345 * i - 0.8625), 2.0) - pow(0.8625, 2.0) ) * 0.3;
+			FAULT_PROFILE_DVG_C[i] = pow((double)i, 2.0) * c - 0.1;
+			FAULT_PROFILE_DVG_O[i] = i < 33 ? -(0.003 * i) + 0.1: 0.0;
+
+			if (i < 5) {
+				FAULT_PROFILE_CVG_OC_O[i] = -(0.02 * i);
+			}
+			else if (i < 15) {
+				FAULT_PROFILE_CVG_OC_O[i] = -0.1;
+			}
+			else if (i < 50) {
+				FAULT_PROFILE_CVG_OC_O[i] = -0.02 * (-i+50);
+			}
+			
+			if (i < 20) {
+				FAULT_PROFILE_CVG_C[i] = 0.0;
+				FAULT_PROFILE_CVG_OC_C[i] = 0.0;
+			} else if (i < 32) {
+				FAULT_PROFILE_CVG_C[i] = 0.005 * (i - 20);
+				FAULT_PROFILE_CVG_OC_C[i] = 0.005 * (i - 20);
+			}else if (i < 37) {
+				FAULT_PROFILE_CVG_C[i] = 0.1;
+				FAULT_PROFILE_CVG_OC_C[i] = 0.1;
+			}
+			else if (i < 50) {
+				FAULT_PROFILE_CVG_C[i] = 0.005 * ((-i) + 50);
+				FAULT_PROFILE_CVG_OC_C[i] = 0.005 *((-i) + 50);
+			}
 		}
 
-		FastNoiseLite noise;
+		//noise inits
+		FastNoiseLite noise;	//simplex
 		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
-
-		//generate noise
 		std::random_device rd;
 		noise.SetSeed(rd());
-		noise.SetFrequency(0.004);
-		/*for (size_t index = 0; index < height_map.size(); index++)
-		{
-			height_map[index] += ((noise.GetNoise((float)(index % width), (float)(index / height)) + 1.0) * 0.3);
-		}*/
+		noise.SetFrequency(0.006);
+		std::mt19937 mt(rd());	//rand
+		std::uniform_real_distribution<> rand(-1.0, 1.0);
 
 		//find n local maximums, assign as plate origins
-		int n = 10;
+		int n = 15;
 		int plate_org = findMaximum();
 		plates.clear();
 		plates.push_back(Plate{ plate_org });
@@ -343,27 +383,33 @@ public:
 				plate_org = findMaximum();
 			}
 			plates.push_back(Plate{ plate_org });
+			plates.back().type = rand(mt) > 0.5 ? 1 : 0;
 		}
 
-		//create plate structs using voronoi method + simplex noise for curvature
+		//assign indices to plate and add elevation to continential plates
 		for (size_t index = 0; index < height_map.size(); index++) {
 			int closest_plate_index = 0;
 			float dist = 10000000000.0f;
 			//find closest plate
 			for (size_t i = 0; i < plates.size(); i++) {
-				if (coordDist(index, plates[i].origin) + ((noise.GetNoise((float)(index % width), (float)(index / height))) * 50) < dist) {
+				if (coordDist(index, plates[i].origin) + ((noise.GetNoise((float)(index % width), (float)(index / width))) * 50) < dist) {
 					closest_plate_index = i;
 					dist = coordDist(index, plates[i].origin);
 				}
 			}
 			//assign point to plate
 			plates[closest_plate_index].indicies.insert({ index,0 });
+			float add = noise.GetNoise((float)(plates[closest_plate_index].origin % width), (float)(plates[closest_plate_index].origin / width));
+			add = abs(add);
+			if (plates[closest_plate_index].type == 1) {	//add to cont plates
+				height_map[index] = add > 0.6f ? 0.6 : (add < 0.45 ? 0.45 : add);	//limit 0.35 to 0.4
+			}
+			else {
+				height_map[index] = add > 0.3 ? 0.3 : (add < 0.1 ? 0.1 : add);	//limit 0.1 to 0.3
+			}
 		}
 
-
 		//assign plate direction vectors
-		std::mt19937 mt(rd());
-		std::uniform_real_distribution<> rand(-1.0, 1.0);
 		for (size_t i = 0; i < plates.size(); i++) {
 			plates[i].vector.x = rand(mt);
 			plates[i].vector.y = rand(mt);
@@ -376,13 +422,17 @@ public:
 		printf("assigning boundaries\n");
 		assignBoundaries();
 		printf("Done\n");
+		printf("creating shelf\n");
+		createShelf();
+		printf("Done\n");
+
 		printf("applying transforms\n");
 		applyTransforms();
 		printf("Done\n");
 
 
 		//compress heightmap
-		compress();
+		//compress();
 	}
 
 	//assign plate neighbors using dfs
@@ -476,6 +526,51 @@ public:
 		}
 	}
 
+	//create continential shelf
+	void createShelf() {
+		FastNoiseLite noise;	//simplex	
+		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+		std::random_device rd;
+		noise.SetSeed(rd());
+		noise.SetFrequency(0.05);
+
+		for (size_t plate_index = 0; plate_index < plates.size(); plate_index++) {	//for all plates
+			float shelf_size = std::pow((noise.GetNoise((float)(plates[plate_index].origin % width), (float)(plates[plate_index].origin / width)) * 10),2.0f);	//randomly choose shelf size
+
+			if (plates[plate_index].type == 1) {	//for all continential plates
+				float height_origin = height_map[plates[plate_index].origin];	//get current plate height
+
+				for (auto& point : plates[plate_index].indicies) {	//for all indices in plate
+					auto dist_pair = minimumBoundary(point.first, plate_index);
+					
+					float dist_to_bound = dist_pair.first +(noise.GetNoise((float)(point.first % width), (float)(point.first / width)) * 5);
+					if (dist_to_bound < shelf_size) {
+						float neighbor_height = dist_pair.second;
+						height_map[point.first] = (((height_origin - neighbor_height) / shelf_size) * dist_to_bound) + neighbor_height;
+					}
+				}
+			}
+		}
+	}
+
+	//get closest ocean boundary point
+	std::pair<float, float> minimumBoundary(int index, int plate) {
+		int closest_index = 0;
+		float neighbor_height = 0.0f;
+		float min_dist = std::max(width, height);
+		for (auto& boundary_pair : plates[plate].boundary_points) {
+			if (
+				plates[boundary_pair.second].type == 0	//ocean boundary
+				&& coordDist(index, boundary_pair.first) < min_dist	//smaller than current dist
+				) {
+				neighbor_height = height_map[plates[boundary_pair.second].origin];
+				min_dist = coordDist(index, boundary_pair.first);
+				closest_index = boundary_pair.first;
+			}
+		}
+		return { min_dist,  neighbor_height };
+	}
+
 	//apply boundary transforms
 	void applyTransforms() {
 		FastNoiseLite noise;
@@ -484,7 +579,7 @@ public:
 		//generate noise
 		std::random_device rd;
 		noise.SetSeed(rd());
-		noise.SetFrequency(0.04);
+		noise.SetFrequency(0.05);
 
 		for (size_t plate_index = 0; plate_index < plates.size(); plate_index++) {
 			printf("	on plate: %d\n", plate_index);
@@ -508,23 +603,34 @@ public:
 				BoundaryType boundary = getBoundaryType(curr_index.seed, plate_index);
 				switch (boundary) {
 				case CONVERG_CNT:
-					height_map[curr_index.index] += FAULT_PROFILE_CVG[curr_index.dist_to_seed];
+					height_map[curr_index.index] += FAULT_PROFILE_CVG_C[curr_index.dist_to_seed];
 					break;
 				case DIVERG_CNT:
-					height_map[curr_index.index] += FAULT_PROFILE_DVG[curr_index.dist_to_seed];
+					height_map[curr_index.index] += FAULT_PROFILE_DVG_C[curr_index.dist_to_seed];
+					break;
+				case DIVERG_OCN:
+					height_map[curr_index.index] += FAULT_PROFILE_DVG_O[curr_index.dist_to_seed];
+					break;
+				case CONVERG_OCNCNT:
+					if (plates[plate_index].type == 0) {	//apply ocean side
+						height_map[curr_index.index] += FAULT_PROFILE_CVG_OC_O[curr_index.dist_to_seed];
+					}
+					else { //apply continent side
+						height_map[curr_index.index] += FAULT_PROFILE_CVG_OC_C[curr_index.dist_to_seed];
+					}
 					break;
 				}
 
 				int x_off[4] = { -1,1,0,0 };
 				int y_off[4] = { 0,0,-1,1 };
-				for (int off = 0; off < 4; off ++) {
+				for (int off = 0; off < 4; off++) {
 
 					int tx = cx + x_off[off];
 					int ty = cy + y_off[off];
-					int dist = (int)coordDist(ty * width + tx, curr_index.seed) +(((noise.GetNoise((float)tx, (float)ty) - 1) / 2.0f)*1.5f);
+					int dist = (int)coordDist(ty * width + tx, curr_index.seed) - (abs(noise.GetNoise((float)tx, (float)ty))*5);
 
 					if (coordCheck(tx, ty)
-						//&& plates[plate_index].indicies.find(ty * width + tx) != plates[plate_index].indicies.end()
+						&& plates[plate_index].indicies.find(ty * width + tx) != plates[plate_index].indicies.end()
 						&& dist < FPROFILE_CONST
 						&& visited.find(ty * width + tx) == visited.end()
 						) {
@@ -534,7 +640,7 @@ public:
 					}
 
 				}
-				
+
 			}
 		}
 	}
@@ -545,7 +651,7 @@ public:
 	bool orgCheck(int org) {
 		//check existing origins and lengths
 		for (size_t i = 0; i < plates.size(); i++) {
-			if (org == plates[i].origin || coordDist(plates[i].origin, org) < 20) {
+			if (org == plates[i].origin || coordDist(plates[i].origin, org) < 10) {
 				return true;
 			}
 		}
@@ -566,7 +672,7 @@ public:
 		int neighbor_index = (*plates[plate].boundary_points.find(boundary_point)).second;
 		return (*plates[plate].neighbors.find(neighbor_index)).second;
 	}
-	 
+
 	//get angle between motion vectors
 	float angle(MotionVector a, MotionVector b) {
 		float dot = (a.x * b.x) + (a.y * b.y);
@@ -583,11 +689,26 @@ public:
 		Plate p2 = plates[plate_2];
 
 		if (angle(p1.vector, p2.vector) < 90) {
-			return CONVERG_CNT;
+			if ((p1.type == 0 && p2.type == 1) || (p1.type == 1 && p2.type == 0)) {
+				return CONVERG_OCNCNT;
+			}
+			else if (p1.type == 0 && p2.type == 0) {
+				return CONVERG_OCN;
+			}
+			else if (p1.type == 1 && p2.type == 1) {
+				return CONVERG_CNT;
+			}
 		}
 		else {
-			return DIVERG_CNT;
+			if (p1.type == 0 && p2.type == 0) {
+				return DIVERG_OCN;
+			}
+			if (p1.type == 1 && p2.type == 1) {
+				return DIVERG_CNT;
+			}
 		}
+
+		return NONE;
 	}
 
 

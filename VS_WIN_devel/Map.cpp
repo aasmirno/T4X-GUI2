@@ -131,10 +131,7 @@ bool Map::updateVBO(GLuint vbo_id, int size, uint16_t* array) {
 
 	GLenum err;
 	if ((err = glGetError()) != GL_NO_ERROR) {
-		std::cout << "gl error " << err << std::endl;
-	}
-	else {
-		std::cout << "vbo success update " << err << std::endl;
+		std::cout << "gl error (Map::loadTextures): " << err << std::endl;
 	}
 
 	return true;
@@ -197,9 +194,10 @@ bool Map::loadTextures(std::string texture_path, GLuint& texture_handle) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	if (glGetError() != GL_NO_ERROR) {
-		printf("gl error: %d", glGetError());
-		return false;
+	GLenum err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::cout << "gl error (Map::loadTextures): " << err << std::endl;
+		std::cout << "	glu string: " << glewGetErrorString(err) << std::endl;
 	}
 
 	//delete openil image
@@ -207,14 +205,14 @@ bool Map::loadTextures(std::string texture_path, GLuint& texture_handle) {
 	return true;
 }
 
-void Map::draw() {
+void Map::draw(int mx, int my) {
 	/*
 		opengl rendering
 	*/
 	glUniform2i(glGetUniformLocation(shader.getProgramID(), "mapSize"), map_width, map_height); //set mapsize uniform
 	glUseProgram(shader.getProgramID());	//use shader program
 
-	drawDebug();
+	drawDebug(mx,my);
 
 	//bind and draw base textures
 	glBindTexture(GL_TEXTURE_2D, base_texture_id);
@@ -263,7 +261,7 @@ void Map::updateOverlay() {
 * imgui section
 ------------------------------------------------------------------------------
 */
-void Map::drawDebug() {
+void Map::drawDebug(int mx, int my) {
 	ImGui::SetNextWindowSize(ImVec2{ 450,600 });
 	ImGui::Begin("internal map debug", NULL, ImGuiWindowFlags_NoResize);	//begin imgui window
 	if (ImGui::Button("refresh map")) {
@@ -336,6 +334,13 @@ void Map::drawDebug() {
 		draw_pv = true;
 		updateOverlay();
 	}
+
+	float height_at_mouse = 0.0f;
+	if (mx > 0 && mx < map_width && my > 0 && my < map_height) {
+		height_at_mouse = h_map.getHeight(mx, my);
+	}
+	ImGui::Text("height at (%d,%d): %f", mx, my, height_at_mouse);
+
 	ImGui::End();
 }
 

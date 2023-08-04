@@ -149,13 +149,13 @@ public:
 	bool initialise();
 
 	//draw texture elements only
-	void draw();
+	void draw(int mx, int my);
 
 	/*
 		imgui drawing functions
 	*/
 	//draw debug menu
-	void drawDebug();
+	void drawDebug(int mx, int my);
 
 	//draw overhead display menu
 	void drawDisplay();

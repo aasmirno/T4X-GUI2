@@ -16,6 +16,9 @@ private:
 	bool* back_flag = nullptr;
 	void exitMenus();
 
+	int mx;
+	int my;
+
 	//game state flags
 	bool paused = true;
 	bool saved = false;
@@ -42,6 +45,11 @@ public:
 	bool getFrozen() { return frozen; };
 	void Pause();
 	void unPause();
+
+	//other utilites
+	void setMouse(int x, int y) {
+		mx = x; my = y;
+	}
 
 	/*
 		Graphics section

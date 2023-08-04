@@ -95,7 +95,7 @@ void GameControl::unPause() {
 }
 
 void GameControl::mapCreationMenu() {
-	game_map.draw();
+	game_map.draw(mx, my);
 	game_map.drawDisplay();
 	game_map.drawCreationMenu();
 }

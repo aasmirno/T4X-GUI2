@@ -36,7 +36,7 @@ public:
 		for (size_t index = 0; index < tile_map_ids.size(); index++) {
 			if (type == 0) {
 				float height = height_map[index];
-				if (height < (ocean_level * (2.0f/3.0f))) {
+				if (height < (ocean_level * (19.0f/20.0f))) {
 					tile_map[index].type = TileType::DEEP_OCEAN;
 					tile_map_ids[index] = TileType::DEEP_OCEAN;
 				}
@@ -65,7 +65,6 @@ public:
 				tile_map_ids[index] = tile_map[index].resource;
 			}
 		}
-		printf("size inner: %d\n", tile_map_ids.size());
 		return &tile_map_ids[0];
 	}
 
@@ -110,7 +109,6 @@ public:
 	//some resources have a higher chance of spawning in peaks and foothills: iron, copper, chromium
 	//chromium will only spawn above some elevation
 	void genResources(std::vector<float>& height_map, float iron_pct, float chr_pct, float cu_pct, float oil_pct, float coal_pct) {
-
 		for (size_t index = 0; index < tile_map.size(); index++) {
 
 		}
