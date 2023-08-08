@@ -5,10 +5,16 @@ build
 
 #visual studio development files
 .vs
-VS_WIN_DEVEL/Debug/
-!/x64/
+VS_WIN_devel/Debug
+VS_WIN_devel/x64/
+VS_WIN_devel/natural_earth_vector.zip
 
+#libraries
 /VS_WIN_devel/lib
+
+#unit testing suite
+/UnitTestint
+
 
 *.sln
 *.vcxproj

@@ -7,6 +7,8 @@
 #include <vector>
 #include <windows.h> 
 
+#include "ShaderManager.h";
+
 #include <gl/glew.h>
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
@@ -17,6 +19,29 @@
 #else
 #include <SDL_opengl.h>
 #endif
+
+class MainShader :
+	public ShaderManager
+{
+public:
+	bool init() {
+		program_id = glCreateProgram();
+		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mainvert.glvs", GL_VERTEX_SHADER) != true) {
+			return false;
+		}
+		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mainfrag.glfs", GL_FRAGMENT_SHADER) != true) {
+			return false;
+		}
+
+		if (!linkProgram()) {
+			printf("program linkage error\n");
+			return false;
+		}
+
+		printf("shader init success\n");
+		return true;
+	}
+};
 
 /*
 *	Implementation of main window and game instantiation
@@ -31,13 +56,23 @@ private:
 	SDL_GLContext gl_context = NULL;	//sdl-opengl context
 	ImGuiContext* im_context = NULL;	//imgui context
 
-	//unit managers
-	Camera cam;				//camera controller
+	/*
+		Unit Manager Section
+	*/
+	//camera controller
+	Camera cam;	
 	int mouse_x = 0;
 	int mouse_y = 0;
 	bool mouse1_pressed = false;
 
-	GameControl game;		//game controller
+	//game controller
+	GameControl game;
+
+	/*
+		Graphics and gui
+	*/
+	MainShader shader;	//main menu shader
+	MainShader::GLTexture TEX_LOGO;
 
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
 	bool Running = true;	//run flag

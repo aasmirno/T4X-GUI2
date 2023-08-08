@@ -5,6 +5,8 @@
 #include <queue>
 #include <random>
 #include <cmath>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 #include "FastNoiseLite.h"
 
 class HeightMap
@@ -42,13 +44,23 @@ private:
 	struct Plate {
 		int origin;	//flat index origin
 		int type;	//plate type
-
+		int shelf_size = 0;
 		std::unordered_map<int, int> indicies;	//points belonging to plate
 		std::unordered_map<int, BoundaryType> neighbors; //list of neighbors: <plate id, >
-		std::unordered_map < int, int> boundary_points; //list of boundary points <index, neighboring plate>
+		std::unordered_map< int, int> boundary_points; //list of boundary points <index, neighboring plate>
 
 		MotionVector vector;
 	};
+
+	//list of all boundaries
+	struct BoundaryLocation {
+		int index;
+		int neighbor_plate_index;
+		int boundary_type;
+	};
+	std::vector<std::vector<BoundaryLocation>> fault_list;
+
+
 	const int FPROFILE_CONST = 50 - 1;
 	//continent continent profiles
 	float FAULT_PROFILE_CVG_C[50];
@@ -243,37 +255,33 @@ public:
 		int search_y = (int)coordy(mt);
 		bool changed = true;
 
-		printf("start (%d,%d)\n", search_x, search_y);
-
 		return search_y * width + search_x;
 
-		//find vertical max
-		while (changed) {
-			float curr_height = height_map[search_y * width + search_x];
-			if (search_y - 1 > 0 && height_map[(search_y - 1) * width + search_x] > curr_height) { //check north neighbor
-				changed = true;
-				search_y -= 1;
-			}
-			else if (search_y + 1 < height && height_map[(search_y + 1) * width + search_x] > curr_height) {
-				changed = true;
-				search_y += 1;
-			}
-			else if (search_x - 1 > 0 && height_map[search_y * width + (search_x - 1)] > curr_height) {
-				changed = true;
-				search_x -= 1;
-			}
-			else if (search_x + 1 < width && height_map[search_y * width + (search_x + 1)] > curr_height) {
-				changed = true;
-				search_x += 1;
-			}
-			else {
-				changed = false;
-			}
-		}
+		////find vertical max
+		//while (changed) {
+		//	float curr_height = height_map[search_y * width + search_x];
+		//	if (search_y - 1 > 0 && height_map[(search_y - 1) * width + search_x] > curr_height) { //check north neighbor
+		//		changed = true;
+		//		search_y -= 1;
+		//	}
+		//	else if (search_y + 1 < height && height_map[(search_y + 1) * width + search_x] > curr_height) {
+		//		changed = true;
+		//		search_y += 1;
+		//	}
+		//	else if (search_x - 1 > 0 && height_map[search_y * width + (search_x - 1)] > curr_height) {
+		//		changed = true;
+		//		search_x -= 1;
+		//	}
+		//	else if (search_x + 1 < width && height_map[search_y * width + (search_x + 1)] > curr_height) {
+		//		changed = true;
+		//		search_x += 1;
+		//	}
+		//	else {
+		//		changed = false;
+		//	}
+		//}
 
-		printf("end (%d,%d)\n", search_x, search_y);
-
-		return search_y * width + search_x;
+		//return search_y * width + search_x;
 	}
 
 	//compress heightmap into 0 1 range
@@ -333,9 +341,9 @@ public:
 
 		//initialise profiles
 		for (int i = 0; i < FPROFILE_CONST + 1; i++) {
-			FAULT_PROFILE_DVG_C[i] = pow((double)i, 2.0) * c - 0.1;
-			FAULT_PROFILE_DVG_O[i] = i < 33 ? -(0.003 * i) + 0.1: 0.0;
-
+			FAULT_PROFILE_DVG_C[i] = std::min((pow((double)i, 2.0) * c) - 0.05, 0.0);
+			FAULT_PROFILE_DVG_O[i] = i < 33 ? (i < 4 ? (0.00375 * i) + 0.035 : -(0.0015 * i) + 0.05) : 0.0;
+			//ocean side subduction
 			if (i < 5) {
 				FAULT_PROFILE_CVG_OC_O[i] = -(0.02 * i);
 			}
@@ -345,9 +353,21 @@ public:
 			else if (i < 50) {
 				FAULT_PROFILE_CVG_OC_O[i] = -0.02 * (-i+50);
 			}
-			
-			if (i < 20) {
+			//continent convergence
+			if (i < 5) {
+				FAULT_PROFILE_CVG_C[i] = 0.05;
+			}
+			else if (i < 10) {
+				FAULT_PROFILE_CVG_C[i] = -(0.005 * (i - 10)) + 0.005;
+			}
+			else if (i < 30) {
+				FAULT_PROFILE_CVG_C[i] = -(0.00125 * (i - 30));
+			}
+			else {
 				FAULT_PROFILE_CVG_C[i] = 0.0;
+			}
+			//conitnent side subduction
+			if (i < 5) {
 				FAULT_PROFILE_CVG_OC_C[i] = 0.0;
 			} else if (i < 32) {
 				FAULT_PROFILE_CVG_C[i] = 0.005 * (i - 20);
@@ -371,68 +391,143 @@ public:
 		std::mt19937 mt(rd());	//rand
 		std::uniform_real_distribution<> rand(-1.0, 1.0);
 
-		//find n local maximums, assign as plate origins
+		printf("creating plates:\n");
+		printf("	Plate 0\n");
+		//create n plates
 		int n = 15;
 		int plate_org = findMaximum();
 		plates.clear();
-		plates.push_back(Plate{ plate_org });
+
+		Plate new_plate = Plate{ plate_org };
+		new_plate.type = rand(mt) > 0.2 ? 1 : 0;	//assign type
+
+		//assign plate_height
+		float plate_height = noise.GetNoise((float)(new_plate.origin % width), (float)(new_plate.origin / width));
+		plate_height = abs(plate_height);
+		if (new_plate.type == 1) {	//limit continential plates 0.45 to 0.5
+			height_map[new_plate.origin] = plate_height > 0.5f ? 0.5 : (plate_height < 0.45 ? 0.45 : plate_height);
+		}
+		else {	//limit continential plates 0.1 to 0.3
+			height_map[new_plate.origin] = plate_height > 0.3 ? 0.3 : (plate_height < 0.1 ? 0.1 : plate_height);
+		}
+
+		plates.push_back(new_plate);
+
 		//create remaining plates
 		for (int i = 0; i < n - 1; i++) {
+			printf("	creating plate %d\n", i + 1);
+			//try new points until criteria are fullfilled
 			plate_org = findMaximum();
 			while (orgCheck(plate_org)) {
 				plate_org = findMaximum();
 			}
 			plates.push_back(Plate{ plate_org });
 			plates.back().type = rand(mt) > 0.5 ? 1 : 0;
+
+			plates.push_back(new_plate);
 		}
 
-		//assign indices to plate and add elevation to continential plates
-		for (size_t index = 0; index < height_map.size(); index++) {
-			int closest_plate_index = 0;
-			float dist = 10000000000.0f;
-			//find closest plate
-			for (size_t i = 0; i < plates.size(); i++) {
-				if (coordDist(index, plates[i].origin) + ((noise.GetNoise((float)(index % width), (float)(index / width))) * 50) < dist) {
-					closest_plate_index = i;
-					dist = coordDist(index, plates[i].origin);
-				}
-			}
-			//assign point to plate
-			plates[closest_plate_index].indicies.insert({ index,0 });
-			float add = noise.GetNoise((float)(plates[closest_plate_index].origin % width), (float)(plates[closest_plate_index].origin / width));
-			add = abs(add);
-			if (plates[closest_plate_index].type == 1) {	//add to cont plates
-				height_map[index] = add > 0.6f ? 0.6 : (add < 0.45 ? 0.45 : add);	//limit 0.35 to 0.4
-			}
-			else {
-				height_map[index] = add > 0.3 ? 0.3 : (add < 0.1 ? 0.1 : add);	//limit 0.1 to 0.3
-			}
+		//assign plates with voronoi method
+		printf("assigning points:\n");
+		for (int index = 0; index < height_map.size(); index++) {
+			int nearest_plate = getNearestPlate(index);
+			plates[nearest_plate].indicies.insert({ index, 0 });
+			height_map[index] = height_map[plates[nearest_plate].origin];
 		}
 
 		//assign plate direction vectors
+		printf("assigning motion vectors");
 		for (size_t i = 0; i < plates.size(); i++) {
 			plates[i].vector.x = rand(mt);
 			plates[i].vector.y = rand(mt);
 		}
 
-		//assign neighbors and boundaries
-		printf("assigning neighbors\n");
-		assignNeighbors();
-		printf("Done\n");
-		printf("assigning boundaries\n");
-		assignBoundaries();
-		printf("Done\n");
-		printf("creating shelf\n");
-		createShelf();
-		printf("Done\n");
-
-		printf("applying transforms\n");
-		applyTransforms();
-		printf("Done\n");
-
+		//run 3 relaxations
+		lloydRelax();
+		lloydRelax();
+		lloydRelax();
 
 		//compress heightmap
 		//compress();
+	}
+
+	class DelaunayTriangle {
+		//x.y pairs of triangle vertices
+		std::vector<std::pair<int, int>> points;
+
+		//check if a point is within the triangle using barycentric method
+		bool inTriangle(int x, int y) {
+			std::pair<int, int>& p1 = points[0];
+			std::pair<int, int>& p2 = points[1];
+			std::pair<int, int>& p3 = points[2];
+
+			int denom = (p2.second - p3.second) * (p1.first - p3.first) + (p3.first - p2.first) * (p1.second - p3.second);
+			double a = ((p2.second - p3.second) * (x - p3.first) + (p3.first - p2.first) * (y - p3.second)) / (double)denom;
+			double b = ((p3.second - p1.second) * (x - p3.first) + (p1.first - p3.first) * (y - p3.second)) / (double)denom;
+			double c = 1 - a - b;
+
+			return 0 <= a && a <= 1 && 0 <= b && b <= 1 && 0 <= c && c <= 1;
+		}
+
+		//rearrange points based on 
+		void reassign() {
+			//find tallest point
+			for (auto& point : points) {
+			}
+
+		}
+
+		DelaunayTriangle(std::pair<int, int> p1, std::pair<int, int> p2, std::pair<int, int> p3) {
+			int i = 0;
+			for (int i = 0; i < 3; i++) {
+
+			}
+		}
+
+		//return true if a point is in the circumcircle of the triangle
+		bool inCircle(int x, int y) {
+			//check if the point is in triangle first
+			if (inTriangle(x, y))
+				return true;
+			//use determinant method to find circumcircular belonging
+		}
+	};
+
+	//delaunay triangulation
+	void delaunay() {
+		std::vector<DelaunayTriangle> point_list;	//list of triangles
+		//add point
+		//determine if breakage occurs
+		//restructure
+	}
+
+	//run lloyd relaxation algorithm (kmeans)
+	void lloydRelax() {
+		for (auto& plate : plates) {
+			//get avg
+			float avg_x = 0.0f;
+			float avg_y = 0.0f;
+			int iterations = 1;
+			for (auto& index : plate.indicies) {
+				int curr_index = index.first;
+				avg_x += (curr_index % width);
+				avg_y += (curr_index / width);
+				iterations++;
+			}
+			avg_x /= iterations;
+			avg_y /= iterations;
+
+			//move origin to avg
+			plate.origin = (int)(avg_y)*width + (int)(avg_x);
+			plate.indicies.clear();
+		}
+
+		//reassign points
+		for (int index = 0; index < height_map.size(); index++) {
+			int nearest_plate = getNearestPlate(index);
+			plates[nearest_plate].indicies.insert({ index, 0 });
+			height_map[index] = height_map[plates[nearest_plate].origin];
+		}
 	}
 
 	//assign plate neighbors using dfs
@@ -477,34 +572,6 @@ public:
 					//else the index belongs to a neighbor, mark it as such
 					else {
 						int neighbor = getPlate(currY * width + (currX + 1));
-						plates[i].neighbors[neighbor];
-						plates[i].boundary_points.insert({ curr_index, neighbor });
-					}
-				}
-
-				//check up
-				if (coordCheck(currX, currY - 1) && visited.find((currY - 1) * width + currX) == visited.end()) {
-					//if the index is in the same plate, add it to the stack
-					if (plates[i].indicies.find((currY - 1) * width + currX) != plates[i].indicies.end()) {
-						dfs_stack.push((currY - 1) * width + currX);
-					}
-					//else the index belongs to a neighbor, mark it as such
-					else {
-						int neighbor = getPlate((currY - 1) * width + currX);
-						plates[i].neighbors[neighbor];
-						plates[i].boundary_points.insert({ curr_index, neighbor });
-					}
-				}
-
-				//check down
-				if (coordCheck(currX, currY + 1) && visited.find((currY + 1) * width + currX) == visited.end()) {
-					//if the index is in the same plate, add it to the stack
-					if (plates[i].indicies.find((currY + 1) * width + currX) != plates[i].indicies.end()) {
-						dfs_stack.push((currY + 1) * width + currX);
-					}
-					//else the index belongs to a neighbor, mark it as such
-					else {
-						int neighbor = getPlate((currY + 1) * width + currX);
 						plates[i].neighbors[neighbor];
 						plates[i].boundary_points.insert({ curr_index, neighbor });
 					}
@@ -651,7 +718,7 @@ public:
 	bool orgCheck(int org) {
 		//check existing origins and lengths
 		for (size_t i = 0; i < plates.size(); i++) {
-			if (org == plates[i].origin || coordDist(plates[i].origin, org) < 10) {
+			if (org == plates[i].origin || coordDist(plates[i].origin, org) < 40.0f) {
 				return true;
 			}
 		}
@@ -664,6 +731,55 @@ public:
 			if (plates[i].indicies.find(index) != plates[i].indicies.end()) {
 				return i;
 			}
+		}
+		return -1;
+	}
+
+	//get plate type at an index
+	int getPlateType(int index) {
+		if (plates.size() == 0 || getPlate(index) == -1) {
+			return -1;
+		}
+		return plates[getPlate(index)].type;
+	}
+
+	//get plate shelf size
+	float getContinentialShelfSize(int index) {
+		if (plates.size() == 0 || getPlate(index) == -1) {
+			return -1;
+		}
+		return plates[getPlate(index)].shelf_size;
+	}
+
+	//get closest plate to index (unoised)
+	int getNearestPlate(int index) {
+		float min_dist = 10000000.0f;
+		int np = 0;
+		for (size_t i = 0; i < plates.size(); i++) {
+			if (coordDist(index, plates[i].origin) < min_dist) {
+				min_dist = coordDist(index, plates[i].origin);
+				np = i;
+			}
+		}
+		return np;
+	}
+
+	//get plate motion vector
+	std::pair<float, float> getMotionVector(int index) {
+		if (plates.size() == 0 || getPlate(index) == -1) {
+			return { -1,-1 };
+		}
+		return { plates[getPlate(index)].vector.x, plates[getPlate(index)].vector.y };
+	}
+
+	std::vector<int> getBoundaryList(int index) {
+		if (plates.size() == 0 || getPlate(index) == -1) {
+			return { -1 };
+		}
+		auto& plate = plates[getPlate(index)];
+		std::vector<int> nlist;
+		for (auto& neighbor : plate.neighbors) {
+			nlist.push_back(neighbor.second);
 		}
 	}
 

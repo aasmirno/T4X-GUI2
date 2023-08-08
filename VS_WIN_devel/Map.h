@@ -28,13 +28,13 @@ private:
 public:
 	bool init() {
 		program_id = glCreateProgram();
-		if (loadFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapvert.glvs", GL_VERTEX_SHADER) != true) {
+		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapvert.glvs", GL_VERTEX_SHADER) != true) {
 			return false;
 		}
-		if (loadFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapfrag.glfs", GL_FRAGMENT_SHADER) != true) {
+		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapfrag.glfs", GL_FRAGMENT_SHADER) != true) {
 			return false;
 		}
-		if (loadFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapgeom.glgs", GL_GEOMETRY_SHADER) != true) {
+		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapgeom.glgs", GL_GEOMETRY_SHADER) != true) {
 			return false;
 		}
 
@@ -104,11 +104,18 @@ private:
 	//graphics handles
 	MapShader shader;
 
-	GLuint base_texture_id = -1;	//base texture handle
+	//base textures
+	MapShader::GLTexture TEX_TILE32;
+	MapShader::GLTexture TEX_ELEVATION32;
+	//overlays
+	MapShader::GLTexture TEX_CLOUDS32_O;
+	MapShader::GLTexture TEX_TEMP32_O;
+	MapShader::GLTexture TEX_RESOURCES32_O;
+
+	//vaos and vbos
 	GLuint base_vbo_id = -1;	//base texture vertex buffer object handle
 	GLuint base_vao_id = -1;	//base texture array object handle
 
-	GLuint overlay_texture_id = -1;	//overlay texture handle
 	GLuint overlay_vbo_id = -1;	//overlay vertex buffer object handle
 	GLuint overlay_vao_id = -1;	//overlay vertex array object handle
 

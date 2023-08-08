@@ -96,7 +96,8 @@ bool MainController::genInit() {
 	/*
 		Internal setup
 	*/
-	//glViewport(cam.getX(), cam.getY(), WINDOW_W, WINDOW_H);
+	shader.init();
+	TEX_LOGO = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\Logo.png");
 
 	//check for errors
 	if (glGetError() != GL_NO_ERROR) {

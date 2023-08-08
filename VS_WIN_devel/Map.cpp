@@ -13,8 +13,11 @@ bool Map::initialise() {
 	/*
 		graphical init
 	*/
-	loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png", base_texture_id);	//load base texture (default: textured tiles)
-	loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png", overlay_texture_id);	//load overlay texture (default: temperature)
+	TEX_TILE32 = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png");
+	TEX_ELEVATION32 = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSetElevation32.png");
+	TEX_CLOUDS32_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayClouds32.png");
+	TEX_RESOURCES32_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayResource32.png");
+	TEX_TEMP32_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png");
 
 	glEnable(GL_BLEND);
 	glClipControl(GL_UPPER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
@@ -27,14 +30,14 @@ bool Map::initialise() {
 	}
 
 	//generate base texture buffers
-	genVBO(&base_vbo_id);	//generate base texture buffer
-	updateVBO(base_vbo_id, map_height * map_width, tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height,0)); //load tile texture ids into base buffer
-	genVAO(&base_vao_id, base_vbo_id);	//generate base texture vao
+	shader.genVBO(&base_vbo_id);	//generate base texture buffer
+	shader.updateVBO(base_vbo_id, map_height * map_width, tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height, 0)); //load tile texture ids into base buffer
+	shader.genVAO(&base_vao_id, base_vbo_id);	//generate base texture vao
 
 	//generate overlay buffers
-	genVBO(&overlay_vbo_id);	//generate overlay array buffer
-	updateVBO(overlay_vbo_id, map_height * map_width, t_map.getIDArray(0));	//load air temperature ids into overlay buffer
-	genVAO(&overlay_vao_id, overlay_vbo_id);	//generate overlay array buffer
+	shader.genVBO(&overlay_vbo_id);	//generate overlay array buffer
+	shader.updateVBO(overlay_vbo_id, map_height * map_width, t_map.getIDArray(0));	//load air temperature ids into overlay buffer
+	shader.genVAO(&overlay_vao_id, overlay_vbo_id);	//generate overlay array buffer
 	return true;
 }
 
@@ -70,16 +73,16 @@ void Map::loop() {
 
 		//update textures
 		if (draw_air_temp) {
-			updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint16_t), t_map.getIDArray(0));
+			shader.updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint16_t), t_map.getIDArray(0));
 		}
 		else if (draw_surface_temp) {
-			updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint16_t), t_map.getIDArray(1));
+			shader.updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint16_t), t_map.getIDArray(1));
 		}
 		else if (draw_clouds) {
-			updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint16_t), t_map.getIDArray(2));
+			shader.updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint16_t), t_map.getIDArray(2));
 		}
 		else if (draw_pressure) {
-			updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint16_t), t_map.getIDArray(3));
+			shader.updateVBO(overlay_vbo_id, map_height * map_width * sizeof(uint16_t), t_map.getIDArray(3));
 		}
 
 		counter = speed;
@@ -125,86 +128,6 @@ void Map::autoGenerate() {
 ------------------------------------------------------------------------------
 */
 
-bool Map::updateVBO(GLuint vbo_id, int size, uint16_t* array) {
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);	//bind the buffer to the global array buffer
-	glBufferData(GL_ARRAY_BUFFER, size * sizeof(uint16_t), array, GL_STATIC_DRAW);	//copy tile ids to the buffer
-
-	GLenum err;
-	if ((err = glGetError()) != GL_NO_ERROR) {
-		std::cout << "gl error (Map::loadTextures): " << err << std::endl;
-	}
-
-	return true;
-}
-
-bool Map::genVBO(GLuint* vbo_id) {
-	glGenBuffers(1, vbo_id);	//generate a buffer
-	if (*vbo_id == -1) {
-		printf("vbo gen error\n");
-		return false;
-	}
-
-	return true;
-}
-
-bool Map::genVAO(GLuint* vao_id, GLuint vbo_id) {
-	glGenVertexArrays(1, vao_id);	//gen a vertex array object
-	glBindVertexArray(*vao_id);		//bind vertex array object 
-
-	assert(vbo_id != -1);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);	//load the vbo to global context
-
-	if (*vao_id == -1) {
-		printf("vao gen error\n");
-		return false;
-	}
-
-	glEnableVertexAttribArray(0);	//enable tile id attribute in vertex shader 
-	glVertexAttribIPointer(0, 1, GL_UNSIGNED_SHORT, 0, 0);	//assign vbo to vao
-	//attrib 0
-	//1 component
-	//gl ushort(16) array
-	//uint16_t stride (16 bytes)
-	//0 offset
-
-	return true;
-}
-
-bool Map::loadTextures(std::string texture_path, GLuint& texture_handle) {
-	//create an openil image
-	ILuint img = -1;
-	ilInit();
-	ilGenImages(1, &img);	//gen img buffer
-	ilBindImage(img);	//bind created image
-
-	if (texture_handle == -1) {	//check if texture is already generated
-		glGenTextures(1, &texture_handle);	//generate a texture
-	}
-	glBindTexture(GL_TEXTURE_2D, texture_handle);	//bind the texture handle to opengl
-
-	//load the texture file
-	ilLoadImage(&texture_path[0]);	//load
-	assert(ilGetInteger(IL_IMAGE_CHANNELS) == 4);	//assert rgba format
-	ILubyte* bytes = ilGetData();	//get pixel data
-
-	//load the base tile texture into the opengl sampler
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	GLenum err;
-	if ((err = glGetError()) != GL_NO_ERROR) {
-		std::cout << "gl error (Map::loadTextures): " << err << std::endl;
-		std::cout << "	glu string: " << glewGetErrorString(err) << std::endl;
-	}
-
-	//delete openil image
-	ilDeleteImages(1, &img);
-	return true;
-}
-
 void Map::draw(int mx, int my) {
 	/*
 		opengl rendering
@@ -215,13 +138,13 @@ void Map::draw(int mx, int my) {
 	drawDebug(mx,my);
 
 	//bind and draw base textures
-	glBindTexture(GL_TEXTURE_2D, base_texture_id);
+	updateBase();
 	glBindVertexArray(base_vao_id);
 	glDrawArrays(GL_POINTS, 0, map_width * map_height);
 
 	//bind and draw overlay textures
 	if (draw_air_temp || draw_surface_temp || draw_clouds || draw_resources || draw_pv) {
-		glBindTexture(GL_TEXTURE_2D, overlay_texture_id);
+		updateOverlay();
 		glBindVertexArray(overlay_vao_id);
 		glDrawArrays(GL_POINTS, 0, map_width * map_height);
 	}
@@ -229,38 +152,36 @@ void Map::draw(int mx, int my) {
 
 void Map::updateBase() {
 	if (draw_elevation) {
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSetElevation32.png", base_texture_id);	//load tile textures
-		updateVBO(base_vbo_id, t_map.getSize(), h_map.getIDArray());	//update elevation
+		shader.loadTexture(TEX_ELEVATION32);	//load tile textures
+		shader.updateVBO(base_vbo_id, t_map.getSize(), h_map.getIDArray());	//update elevation
 	}
 	else if (draw_textures) {
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png", base_texture_id);
-		updateVBO(base_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height, 0));	//update tile textures
+		shader.loadTexture(TEX_TILE32);
+		shader.updateVBO(base_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height, 0));	//update tile textures
 	}
 }
 
 void Map::updateOverlay() {
 	if (draw_surface_temp) {
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png", overlay_texture_id);	//load temp tex
-		updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(1));
+		shader.loadTexture(TEX_TEMP32_O);	//load temp tex
+		shader.updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(1));
 	}
 	else if (draw_clouds) {
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayClouds32.png", overlay_texture_id);	//load cloud tex
-		updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(2));
+		shader.loadTexture(TEX_CLOUDS32_O);	//load cloud tex
+		shader.updateVBO(overlay_vbo_id, t_map.getSize(), t_map.getIDArray(2));
 	}
 	else if (draw_resources) {
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayResource32.png", overlay_texture_id);	//load resource tex
-		updateVBO(overlay_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height, 1));
+		shader.loadTexture(TEX_RESOURCES32_O);	//load resource tex
+		shader.updateVBO(overlay_vbo_id, tiles.getSize(), tiles.getIDArray(h_map.getHeightMap(), ocean_level, beach_height, mountain_height, 1));
 	}
 	else if (draw_pv) {
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png", overlay_texture_id);	//load temp tex
-		updateVBO(overlay_vbo_id, tiles.getSize(), h_map.getPlateOverlay());
+		shader.loadTexture(TEX_TEMP32_O);	//load temp tex
+		shader.updateVBO(overlay_vbo_id, tiles.getSize(), h_map.getPlateOverlay());
 	}
 }
 
-/*
-* imgui section
-------------------------------------------------------------------------------
-*/
+
+//imgui section
 void Map::drawDebug(int mx, int my) {
 	ImGui::SetNextWindowSize(ImVec2{ 450,600 });
 	ImGui::Begin("internal map debug", NULL, ImGuiWindowFlags_NoResize);	//begin imgui window
@@ -273,9 +194,6 @@ void Map::drawDebug(int mx, int my) {
 
 		//reset graphical flags
 		draw_surface_temp, draw_air_temp = false;
-
-		//load textured tiles into base handle
-		loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png", base_texture_id);
 
 		//update base vbo
 		updateBase();
@@ -326,6 +244,27 @@ void Map::drawDebug(int mx, int my) {
 	ImGui::Text("added: %f, lost %f", t_map.getAdded(), t_map.getRadiated());
 	if (ImGui::Button("tectonic generation")) {
 		h_map.initialisePlates();
+		printf("Done\n");
+
+		//assign neighbors and boundaries
+		//printf("assigning neighbors\n");
+		//h_map.assignNeighbors();
+		//printf("Done\n");
+	
+		////assign boundary type
+		//printf("assigning boundary types\n");
+		//h_map.assignBoundaries();
+		//printf("Done\n");
+
+		//printf("creating shelf\n");
+		//h_map.createShelf();
+		//printf("Done\n");
+
+		//printf("applying transforms\n");
+		//h_map.applyTransforms();
+		//printf("Done\n");
+
+		//h_map.compress();
 		updateBase();
 	}
 
@@ -497,9 +436,6 @@ void Map::drawCreationMenu() {
 
 		//reset graphical flags
 		draw_surface_temp = false, draw_air_temp = false;
-
-		//load textured tiles into base handle
-		//loadTextures("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png", base_texture_id);
 
 		//update base vbo
 		updateBase();
