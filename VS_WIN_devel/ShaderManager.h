@@ -65,11 +65,14 @@ public:
 	/*
 		Load a texture into a texture handle
 			1
+			old method from Map
+			2
 			texture_path: file path to texture
 			texture_handle: texture handle
-			2
+			3
 			GLTexture tex: Gltexture struct of an already loaded texture
 	*/
+	bool loadTextures(std::string texture_path, GLuint& texture_handle);
 	GLTexture loadTextureFromFile(std::string texture_path);
 	bool loadTexture(GLTexture tex);
 

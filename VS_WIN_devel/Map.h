@@ -113,9 +113,11 @@ private:
 	MapShader::GLTexture TEX_RESOURCES32_O;
 
 	//vaos and vbos
+	GLuint base_texture_id = -1;
 	GLuint base_vbo_id = -1;	//base texture vertex buffer object handle
 	GLuint base_vao_id = -1;	//base texture array object handle
 
+	GLuint overlay_texture_id = -1;
 	GLuint overlay_vbo_id = -1;	//overlay vertex buffer object handle
 	GLuint overlay_vao_id = -1;	//overlay vertex array object handle
 
@@ -128,17 +130,10 @@ private:
 	/*
 		graphical methods
 	*/
-	//create a vbo buffer
-	bool genVBO(GLuint* vbo_id);
 
-	//copy data into a vbo
-	bool updateVBO(GLuint vbo_id, int size, uint16_t* data);
-
-	//create a vao and assign a vbo
-	bool genVAO(GLuint* vao_id, GLuint vbo_id);
 
 	//load texture file into a texture handle
-	bool loadTextures(std::string texture_path, GLuint &texture_handle);
+	bool loadTextures(std::string texture_path, GLuint& texture_handle);
 
 	//update base buffer
 	void updateBase();

@@ -121,13 +121,13 @@ ShaderManager::GLTexture ShaderManager::loadTextureFromFile(std::string texture_
 	tex.data.resize(tex.height * tex.width * 4);
 	ilCopyPixels(0, 0, 0, tex.width, tex.height, 1, IL_RGBA, IL_UNSIGNED_BYTE, &tex.data[0]);
 
-	glBindTexture(GL_TEXTURE_2D, tex.handle);	//bind the texture handle to opengl
-	//load the texture into the opengl sampler and format
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &tex.data[0]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glBindTexture(GL_TEXTURE_2D, tex.handle);	//bind the texture handle to opengl
+	////load the texture into the opengl sampler and format
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &tex.data[0]);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	//delete openil image
 	ilDeleteImages(1, &img);
@@ -141,7 +141,13 @@ bool ShaderManager::loadTexture(GLTexture tex) {
 		return false;
 	}
 
-	glBindTexture(GL_TEXTURE_2D, tex.handle);	//bind the texture handle to opengl
+	//load the texture into the opengl sampler and format
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &tex.data[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	
 	checkGLError();
 	return true;
 }
@@ -193,7 +199,7 @@ bool ShaderManager::updateVBO(GLuint vbo_id, int size, uint16_t* array) {
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);	//bind the buffer to the global array buffer
-	glBufferSubData(GL_ARRAY_BUFFER, 0, size * sizeof(uint16_t), array);	//copy tile ids to the buffer
+	glBufferData(GL_ARRAY_BUFFER, size * sizeof(uint16_t), array, GL_STATIC_DRAW);	//copy tile ids to the buffer
 	checkGLError();
 	return true;
 }

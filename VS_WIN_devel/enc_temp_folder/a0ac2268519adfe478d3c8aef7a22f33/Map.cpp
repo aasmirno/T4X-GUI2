@@ -128,6 +128,43 @@ void Map::autoGenerate() {
 * Graphics Section
 ------------------------------------------------------------------------------
 */
+
+
+bool Map::loadTextures(std::string texture_path, GLuint& texture_handle) {
+	//create an openil image
+	ILuint img = -1;
+	ilInit();
+	ilGenImages(1, &img);	//gen img buffer
+	ilBindImage(img);	//bind created image
+
+	if (texture_handle == -1) {	//check if texture is already generated
+		glGenTextures(1, &texture_handle);	//generate a texture
+	}
+	glBindTexture(GL_TEXTURE_2D, texture_handle);	//bind the texture handle to opengl
+
+	//load the texture file
+	ilLoadImage(&texture_path[0]);	//load
+	assert(ilGetInteger(IL_IMAGE_CHANNELS) == 4);	//assert rgba format
+	ILubyte* bytes = ilGetData();	//get pixel data
+
+	//load the base tile texture into the opengl sampler
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	GLenum err;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		std::cout << "gl error (Map::loadTextures): " << err << std::endl;
+		std::cout << "	glu string: " << glewGetErrorString(err) << std::endl;
+	}
+
+	//delete openil image
+	ilDeleteImages(1, &img);
+	return true;
+}
+
 void Map::draw(int mx, int my) {
 	/*
 		opengl rendering
@@ -181,6 +218,7 @@ void Map::updateOverlay() {
 		shader.updateVBO(overlay_vbo_id, tiles.getSize(), h_map.getPlateOverlay());
 	}
 }
+
 
 //imgui section
 void Map::drawDebug(int mx, int my) {
