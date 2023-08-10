@@ -74,7 +74,6 @@ bool MainController::genInit() {
 	//set gl default color buffer values
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-
 	printf("openGL ver: %s, glsl ver: %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 	/*
@@ -90,19 +89,16 @@ bool MainController::genInit() {
 	//set style
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.WindowPadding = ImVec2(0, 0);
-	style.ItemSpacing = ImVec2(4,1);
+	style.ItemSpacing = ImVec2(4, 1);
 
 
 	/*
 		Internal setup
 	*/
-	shader.init();
-	TEX_LOGO = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\Logo.png");
-
+	GLenum err;
 	//check for errors
-	if (glGetError() != GL_NO_ERROR) {
-		printf("opengl error\n");
-		return false;
+	if ((err = glGetError()) != GL_NO_ERROR) {
+		printf("%d", err);
 	}
 
 	return true;
@@ -160,7 +156,8 @@ int MainController::Start() {
 					//event handler
 					EventHandle(event);
 				}
-			} else if(mouse_x >= WINDOW_W / 2 - 200 && mouse_y >= WINDOW_H / 2 - 200 && mouse_x < WINDOW_W / 2 + 200 && mouse_y < WINDOW_H / 2 + 200){
+			}
+			else if (mouse_x >= WINDOW_W / 2 - 200 && mouse_y >= WINDOW_H / 2 - 200 && mouse_x < WINDOW_W / 2 + 200 && mouse_y < WINDOW_H / 2 + 200) {
 				ImGui_ImplSDL2_ProcessEvent(&event);
 			}
 		}
@@ -176,7 +173,6 @@ int MainController::Start() {
 }
 
 void MainController::EventHandle(SDL_Event& event) {
-	std::cout << event.key.keysym.sym << std::endl;
 	bool wantMouse = ImGui::GetIO().WantCaptureMouse;
 	bool wantKey = ImGui::GetIO().WantCaptureKeyboard;
 	const Uint8* keyboard_state_array = SDL_GetKeyboardState(NULL);
@@ -201,7 +197,7 @@ void MainController::EventHandle(SDL_Event& event) {
 		}
 
 		//camera mouse movement logic
-		if (event.type == SDL_MOUSEBUTTONDOWN ) {
+		if (event.type == SDL_MOUSEBUTTONDOWN) {
 			if (event.button.button == SDL_BUTTON_LEFT) {	//left click (m1)
 				mouse1_pressed = true;
 			}
@@ -255,7 +251,7 @@ void MainController::Render() {
 		menuHandler();
 	}
 
- 	if (debug)
+	if (debug)
 		DebugMenu();
 
 	//render imgui components
@@ -292,7 +288,6 @@ void MainController::Cleanup() {
 
 //handle menu drawing logic
 void MainController::menuHandler() {
-
 	if (draw_start)
 		drawStart();
 	if (draw_options)
@@ -314,7 +309,7 @@ void MainController::DebugMenu() {
 			cam.reset(340, WINDOW_W, 106, WINDOW_H);
 		}
 	}
-	ImGui::Text("mouse pos window(%d,%d), cam(%f,%f), map(%d, %d), index(%d)", mouse_x, mouse_y, cam.windowToCam(mouse_x, WINDOW_W), cam.windowToCam(mouse_y, WINDOW_H), cam.windowToTileX(mouse_x, WINDOW_W), cam.windowToTileY(mouse_y, WINDOW_H), cam.windowToTileY(mouse_y, WINDOW_H)*600 + cam.windowToTileX(mouse_x, WINDOW_W));
+	ImGui::Text("mouse pos window(%d,%d), cam(%f,%f), map(%d, %d), index(%d)", mouse_x, mouse_y, cam.windowToCam(mouse_x, WINDOW_W), cam.windowToCam(mouse_y, WINDOW_H), cam.windowToTileX(mouse_x, WINDOW_W), cam.windowToTileY(mouse_y, WINDOW_H), cam.windowToTileY(mouse_y, WINDOW_H) * 600 + cam.windowToTileX(mouse_x, WINDOW_W));
 	ImGui::Text("cam pos (org) xm,ym: (%f,%f), xw,yw (%f,%f)", cam.getX(), cam.getY(), cam.getWindowX(WINDOW_W), cam.getWindowY(WINDOW_H));
 	float dx = cam.windowToCam(mouse_x, WINDOW_W) - cam.getX();
 	float dy = cam.windowToCam(mouse_y, WINDOW_H) - cam.getY();
@@ -322,7 +317,7 @@ void MainController::DebugMenu() {
 	float r1y = dy / 6000;
 
 	ImGui::Text("dif dx,dy(%f,%f), /x,/y(%f,%f), /z(%f,%f)", dx, dy, r1x, r1y, r1x / cam.getZoom(), r1y / cam.getZoom());
-	ImGui::Text("dist mpos to: origin(%f,%f), 0,0 (%d,%d)", mouse_x - cam.getX(), mouse_y - cam.getY(), mouse_x - (int)(WINDOW_W/2), mouse_y - (int)(WINDOW_H/2));
+	ImGui::Text("dist mpos to: origin(%f,%f), 0,0 (%d,%d)", mouse_x - cam.getX(), mouse_y - cam.getY(), mouse_x - (int)(WINDOW_W / 2), mouse_y - (int)(WINDOW_H / 2));
 	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
 	ImGui::Text("mouse1_pressed: %d", mouse1_pressed);
 
@@ -340,8 +335,8 @@ void MainController::drawStart() {
 	flags |= ImGuiWindowFlags_NoResize;
 	flags |= ImGuiWindowFlags_NoCollapse;
 
-	ImGui::SetNextWindowPos(ImVec2{ (float)WINDOW_W /2 - 200,(float)WINDOW_H/2 -200});
-	ImGui::SetNextWindowSize(ImVec2{400,400});
+	ImGui::SetNextWindowPos(ImVec2{ (float)WINDOW_W / 2 - 200,(float)WINDOW_H / 2 - 200 });
+	ImGui::SetNextWindowSize(ImVec2{ 400,400 });
 
 	ImGui::Begin("Main Menu", NULL, flags);
 
@@ -352,7 +347,6 @@ void MainController::drawStart() {
 		game.init(exit_flag);
 		cam.setTransformLoc(game.getMapTransformLoc());
 		cam.reset(340, WINDOW_W, 106, WINDOW_H);
-		
 	}
 
 	//loading button
@@ -379,7 +373,7 @@ void MainController::drawOpts() {
 	flags |= ImGuiWindowFlags_NoMove;
 	flags |= ImGuiWindowFlags_NoResize;
 	flags |= ImGuiWindowFlags_NoCollapse;
-	
+
 	ImGui::SetNextWindowPos(ImVec2{ (float)WINDOW_W / 2 - 200,(float)WINDOW_H / 2 - 200 });
 	ImGui::SetNextWindowSize(ImVec2{ 400,400 });
 

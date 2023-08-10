@@ -1,0 +1,7 @@
+#version 330 core
+in vec2 Vertex2D;
+
+void main()
+{
+   gl_Position = vec4(Vertex2D.x, Vertex2D.y, 0.0, 1.0);
+}

@@ -9,6 +9,8 @@
 
 #define GL_GLEXT_PROTOTYPES
 #include <gl/glew.h>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 /*
 	Shader management:
@@ -24,10 +26,17 @@
 class ShaderManager {
 protected:
 	GLuint program_id = 0;			//shader program id
-
+	std::vector<std::string> errors;
 private:
 	std::vector<GLint> shaders;		//shader ids
 	void deleteShaders();
+
+	void logError(std::string error) {
+		if (errors.size() > 50) {
+			errors.pop_back();
+		}
+		errors.push_back(error);
+	}
 
 public:
 	/*
@@ -38,6 +47,14 @@ public:
 		std::vector<ILubyte> data;	//raw image data
 		int width = -1;				//texture width
 		int height = -1;			//texture height
+	};
+
+	/*
+		Struct for a vertex
+	*/
+	struct GLVertex {
+		GLint x;
+		GLint y;
 	};
 
 	/*
@@ -52,12 +69,12 @@ public:
 			compile shader
 			attach shader
 	*/
-	bool loadShader(std::string path, GLenum type);
+	bool loadShader(std::string path, GLenum type, int pid);
 
 	/*
 		Link a generated shader program
 	*/
-	bool linkProgram();
+	bool linkProgram(int pid);
 
 	//location and id getters
 	GLuint getProgramID();
@@ -65,14 +82,11 @@ public:
 	/*
 		Load a texture into a texture handle
 			1
-			old method from Map
-			2
 			texture_path: file path to texture
 			texture_handle: texture handle
-			3
+			2
 			GLTexture tex: Gltexture struct of an already loaded texture
 	*/
-	bool loadTextures(std::string texture_path, GLuint& texture_handle);
 	GLTexture loadTextureFromFile(std::string texture_path);
 	bool loadTexture(GLTexture tex);
 
@@ -106,6 +120,6 @@ public:
 	/*
 	*	draw textured rectangle
 	*/
-	void drawTexturedRect(int rect_x, int rect_y, int rect_w, int rect_h, GLTexture tex);
+	/*void drawTexturedRect(float rect_x, float rect_y, float rect_w, float rect_h, GLTexture tex);*/
 
 };

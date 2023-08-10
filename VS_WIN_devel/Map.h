@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <vector>
 #include <chrono>
+#include <fstream>
 
 //custom shaders for map
 class MapShader :
@@ -28,17 +29,17 @@ private:
 public:
 	bool init() {
 		program_id = glCreateProgram();
-		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapvert.glvs", GL_VERTEX_SHADER) != true) {
+		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapvert.glvs", GL_VERTEX_SHADER, program_id) != true) {
 			return false;
 		}
-		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapfrag.glfs", GL_FRAGMENT_SHADER) != true) {
+		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapfrag.glfs", GL_FRAGMENT_SHADER, program_id) != true) {
 			return false;
 		}
-		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapgeom.glgs", GL_GEOMETRY_SHADER) != true) {
+		if (loadShader("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\mapgeom.glgs", GL_GEOMETRY_SHADER, program_id) != true) {
 			return false;
 		}
 
-		if (!linkProgram()) {
+		if (!linkProgram(program_id)) {
 			printf("program linkage error\n");
 			return false;
 		}
@@ -113,14 +114,13 @@ private:
 	MapShader::GLTexture TEX_RESOURCES32_O;
 
 	//vaos and vbos
-	GLuint base_texture_id = -1;
 	GLuint base_vbo_id = -1;	//base texture vertex buffer object handle
 	GLuint base_vao_id = -1;	//base texture array object handle
 
-	GLuint overlay_texture_id = -1;
 	GLuint overlay_vbo_id = -1;	//overlay vertex buffer object handle
 	GLuint overlay_vao_id = -1;	//overlay vertex array object handle
 
+private:
 	/*
 		Game methods
 	*/
@@ -130,20 +130,22 @@ private:
 	/*
 		graphical methods
 	*/
-
-
-	//load texture file into a texture handle
-	bool loadTextures(std::string texture_path, GLuint& texture_handle);
-
 	//update base buffer
 	void updateBase();
+
 	//update overlay buffer
 	void updateOverlay();
 
+	/*
+		Utils
+	*/
+
+	bool saveHeightMap(const std::string& file_name);
+	bool loadHeightMap(const std::string& file_name);
 public:
 	//loop map logic once
 	void loop();
-	
+
 	//get tranform uniform location
 	int getTransformLoc();
 

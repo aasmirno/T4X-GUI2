@@ -1,27 +1,28 @@
 #include "ShaderManager.h"
 
+//utils
 GLuint ShaderManager::getProgramID() { return program_id; }
 
 bool ShaderManager::checkGLError() {
 	//check gl errors
 	GLenum err;
 	if ((err = glGetError()) != GL_NO_ERROR) {
-		std::cout << "gl error (ShaderManager): " << err << std::endl;
-		std::cout << "	glu string: " << glewGetErrorString(err) << std::endl;
+		logError("gl error (ShaderManager)");
 		return false;
 	}
 	return true;
 }
 
-bool ShaderManager::linkProgram() {
+//shader/program
+bool ShaderManager::linkProgram(int pid) {
 	//link and check program
-	glLinkProgram(program_id);
+	glLinkProgram(pid);
 	GLint linkSuccess = GL_FALSE;
-	glGetProgramiv(program_id, GL_LINK_STATUS, &linkSuccess);
+	glGetProgramiv(pid, GL_LINK_STATUS, &linkSuccess);
 	if (linkSuccess != GL_TRUE) {
-		printf("Program link error: %d", program_id);
+		printf("Program link error: %d", pid);
 		deleteShaders();
-		glDeleteProgram(program_id);
+		glDeleteProgram(pid);
 		return false;
 	}
 
@@ -38,8 +39,8 @@ void ShaderManager::deleteShaders() {
 	checkGLError();
 }
 
-bool ShaderManager::loadShader(std::string path, GLenum type) {
-	assert(program_id != 0);	//make sure program is loaded
+bool ShaderManager::loadShader(std::string path, GLenum type, int pid) {
+	assert(pid != 0);	//make sure program is loaded
 
 	GLuint shader_id = 0;
 
@@ -79,18 +80,19 @@ bool ShaderManager::loadShader(std::string path, GLenum type) {
 	//check shader created
 	if (shader_id == 0) {
 		printf("shader creation error: deleting pid");
-		glDeleteProgram(program_id);
-		program_id = 0;
+		glDeleteProgram(pid);
+		pid = 0;
 		return false;
 	}
 
 	//attach shader to program
-	glAttachShader(program_id, shader_id);
+	glAttachShader(pid, shader_id);
 	shaders.push_back(shader_id);
 	checkGLError();
 	return true;
 }
 
+//textures
 ShaderManager::GLTexture ShaderManager::loadTextureFromFile(std::string texture_path) {
 	//create an openil image
 	ILuint img = -1;
@@ -121,14 +123,6 @@ ShaderManager::GLTexture ShaderManager::loadTextureFromFile(std::string texture_
 	tex.data.resize(tex.height * tex.width * 4);
 	ilCopyPixels(0, 0, 0, tex.width, tex.height, 1, IL_RGBA, IL_UNSIGNED_BYTE, &tex.data[0]);
 
-	//glBindTexture(GL_TEXTURE_2D, tex.handle);	//bind the texture handle to opengl
-	////load the texture into the opengl sampler and format
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &tex.data[0]);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
 	//delete openil image
 	ilDeleteImages(1, &img);
 	return tex;
@@ -147,11 +141,10 @@ bool ShaderManager::loadTexture(GLTexture tex) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	
-	checkGLError();
 	return true;
 }
 
+//vbo/vao utils
 bool ShaderManager::genVBO(GLuint* vbo_id) {
 	glGenBuffers(1, vbo_id);	//generate a buffer
 	if (*vbo_id == -1) {
@@ -200,11 +193,5 @@ bool ShaderManager::updateVBO(GLuint vbo_id, int size, uint16_t* array) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);	//bind the buffer to the global array buffer
 	glBufferData(GL_ARRAY_BUFFER, size * sizeof(uint16_t), array, GL_STATIC_DRAW);	//copy tile ids to the buffer
-	checkGLError();
 	return true;
-}
-
-void ShaderManager::drawTexturedRect(int rect_x, int rect_y, int rect_w, int rect_h, GLTexture tex) {
-	loadTexture(tex);	//load gl texture
-
 }

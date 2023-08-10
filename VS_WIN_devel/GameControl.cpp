@@ -26,7 +26,6 @@ bool GameControl::init(bool& game_active_flag) {
 	paused = true;
 	frozen = false;
 
-
 	game_map.initialise();
 	return true;
 }

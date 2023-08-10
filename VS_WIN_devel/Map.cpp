@@ -9,7 +9,7 @@ bool Map::initialise() {
 	h_map.init(map_width, map_height);	//initialise height map
 	t_map.init(map_width, map_height);	//initialise temperature map
 	equator = map_height / 2;		//set sun y level
-	
+
 	/*
 		graphical init
 	*/
@@ -18,8 +18,6 @@ bool Map::initialise() {
 	TEX_CLOUDS32_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayClouds32.png");
 	TEX_RESOURCES32_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayResource32.png");
 	TEX_TEMP32_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png");
-	updateBase();
-
 	glEnable(GL_BLEND);
 	glClipControl(GL_UPPER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -39,6 +37,8 @@ bool Map::initialise() {
 	shader.genVBO(&overlay_vbo_id);	//generate overlay array buffer
 	shader.updateVBO(overlay_vbo_id, map_height * map_width, t_map.getIDArray(0));	//load air temperature ids into overlay buffer
 	shader.genVAO(&overlay_vao_id, overlay_vbo_id);	//generate overlay array buffer
+
+	updateBase();
 	return true;
 }
 
@@ -112,7 +112,7 @@ void Map::autoGenerate() {
 
 	//second addition
 	perlin_freq = 0.01f;
-	fractal_ridge = false;	
+	fractal_ridge = false;
 	octave_weight = 0.1f;
 	h_map.addNoise(perlin_freq, fractal_ridge, octave_weight);
 
@@ -122,6 +122,61 @@ void Map::autoGenerate() {
 		h_map.subNoise(0.05f, false, 0.006f);
 	}
 
+}
+
+bool Map::loadHeightMap(const std::string& file_name) {
+	std::ifstream file(file_name);
+	if (!file.is_open()) {
+		std::cerr << "Failed to open file: " << file_name << std::endl;
+		return false;
+	}
+
+	int height = 0;
+	int width = 0;
+
+	file >> height;
+	file >> width;
+
+	h_map.init(width, height);
+	std::vector<float>& h_m = h_map.getHeightMap();
+	for (int i = 0; i < h_m.size(); i++) {
+		file >> h_m[i];
+	}
+	
+	// Close the file
+	file.close();
+
+	if (file.fail()) {
+		std::cerr << "Error writing to file: " << file_name << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool Map::saveHeightMap(const std::string& file_name) {
+	// Open the binary file for writing
+	std::ofstream file(file_name);
+	if (!file.is_open()) {
+		std::cerr << "Failed to open file: " << file_name << std::endl;
+		return false;
+	}
+
+	file << map_height << " " << map_width << "\n";
+
+	for (size_t i = 0; i < h_map.getHeightMap().size(); i++) {
+		file << h_map.getHeightMap()[i] << " ";
+	}
+
+	// Close the file
+	file.close();
+
+	if (file.fail()) {
+		std::cerr << "Error writing to file: " << file_name << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 /*
@@ -138,7 +193,6 @@ void Map::draw(int mx, int my) {
 	drawDebug(mx, my);
 
 	//bind and draw base textures
-	glBindTexture(GL_TEXTURE_2D, base_texture_id);
 	updateBase();
 	glBindVertexArray(base_vao_id);
 	glDrawArrays(GL_POINTS, 0, map_width * map_height);
@@ -146,7 +200,6 @@ void Map::draw(int mx, int my) {
 	//bind and draw overlay textures
 	if (draw_air_temp || draw_surface_temp || draw_clouds || draw_resources || draw_pv) {
 		updateOverlay();
-		glBindTexture(GL_TEXTURE_2D, overlay_texture_id);
 		glBindVertexArray(overlay_vao_id);
 		glDrawArrays(GL_POINTS, 0, map_width * map_height);
 	}
@@ -251,7 +304,7 @@ void Map::drawDebug(int mx, int my) {
 		//printf("assigning neighbors\n");
 		//h_map.assignNeighbors();
 		//printf("Done\n");
-	
+
 		////assign boundary type
 		//printf("assigning boundary types\n");
 		//h_map.assignBoundaries();
@@ -451,32 +504,34 @@ void Map::drawCreationMenu() {
 	ImGui::SliderFloat("Sea Level", &ocean_level, 0.0f, 1.0f);
 	ImGui::SliderFloat("Mountain Height", &mountain_height, ocean_level, 1.0f);
 	ImGui::Text(""); ImGui::Text("");
-	ImGui::SeparatorText("Options");
-	if (ImGui::Button("Continue", ImVec2{ 300,30 })) {
 
-	}
-
-	if (ImGui::Button("Save Height Map", ImVec2{ 300,30 })) {
-
-	}
-
-	ImGui::Text(""); ImGui::Text("");
+	//resources
 	ImGui::SeparatorText("Resource parameters");
 
 	ImGui::Text("");
-	ImGui::SameLine(4,0);
+	ImGui::SameLine(4, 0);
 	ImGui::Text("Abundance");
 	ImGui::PushItemWidth(150); ImGui::SliderFloat("Iron", &iron_ab, 0.0f, 1.0f);
 	ImGui::PushItemWidth(150); ImGui::SliderFloat("Chromium", &chrom_ab, 0.0f, 1.0f);
 	ImGui::PushItemWidth(150); ImGui::SliderFloat("Copper", &copper_ab, 0.0f, 1.0f);
 	ImGui::PushItemWidth(150); ImGui::SliderFloat("Oil", &oil_ab, 0.0f, 1.0f);
 	ImGui::PushItemWidth(150); ImGui::SliderFloat("Coal", &coal_ab, 0.0f, 1.0f);
-
-	ImGui::SameLine(); GUIutils::HoverTip("change noise level of detail");
 	if (ImGui::Button("Generate Resources", ImVec2{ 300,30 })) {
 		tiles.genResources(h_map.getHeightMap(), iron_ab, chrom_ab, copper_ab, oil_ab, coal_ab);
 	}
+	ImGui::Text(""); ImGui::Text("");
 
+	//options
+	ImGui::SeparatorText("Options");
+	if (ImGui::Button("Continue", ImVec2{ 300,30 })) {
 
+	}
+
+	if (ImGui::Button("Save height map", ImVec2{ 300,30 })) {
+		saveHeightMap("test.txt");
+	}
+	if (ImGui::Button("Load height map", ImVec2{ 300,30 })) {
+		loadHeightMap("test.txt");
+	}
 	ImGui::End();
 }

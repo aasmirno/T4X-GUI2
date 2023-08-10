@@ -94,7 +94,7 @@ void Camera::updateProjection() {
 	glm::mat4 base = glm::translate(glm::mat4(1.0f), glm::vec3(cam_x, cam_y, 0.0f));
 	glm::mat4 screen_resolution = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f / 1280.0f, 2.0f / 720.0f, 0.0f));
 	glm::mat4 zoom = glm::scale(glm::mat4(1.0f), glm::vec3(current_transform, current_transform, 0.0f));	//generate zoom matrix
-	debug_matrix(base);
+	//debug_matrix(base);
 	base = base * zoom * screen_resolution;
 
 	glUniformMatrix4fv(transform_loc, 1, false, &base[0][0]);
