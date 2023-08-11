@@ -421,8 +421,17 @@ public:
 			while (orgCheck(plate_org)) {
 				plate_org = findMaximum();
 			}
-			plates.push_back(Plate{ plate_org });
-			plates.back().type = rand(mt) > 0.5 ? 1 : 0;
+			new_plate = Plate{ plate_org };
+			new_plate.type = rand(mt) > 0.2 ? 1 : 0;	//assign type
+			//assign plate_height
+			plate_height = noise.GetNoise((float)(new_plate.origin % width), (float)(new_plate.origin / width));
+			plate_height = abs(plate_height);
+			if (new_plate.type == 1) {	//limit continential plates 0.45 to 0.5
+				height_map[new_plate.origin] = plate_height > 0.5f ? 0.5 : (plate_height < 0.45 ? 0.45 : plate_height);
+			}
+			else {	//limit continential plates 0.1 to 0.3
+				height_map[new_plate.origin] = plate_height > 0.3 ? 0.3 : (plate_height < 0.1 ? 0.1 : plate_height);
+			}
 
 			plates.push_back(new_plate);
 		}
@@ -436,16 +445,17 @@ public:
 		}
 
 		//assign plate direction vectors
-		printf("assigning motion vectors");
+		printf("assigning motion vectors\n");
 		for (size_t i = 0; i < plates.size(); i++) {
 			plates[i].vector.x = rand(mt);
 			plates[i].vector.y = rand(mt);
 		}
 
 		//run 3 relaxations
-		lloydRelax();
-		lloydRelax();
-		lloydRelax();
+		printf("running lloyd relaxation\n");
+		//lloydRelax();
+		//lloydRelax();
+		//lloydRelax();
 
 		//compress heightmap
 		//compress();

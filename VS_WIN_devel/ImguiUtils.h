@@ -4,10 +4,12 @@
 namespace GUIutils {
 	/*
 		Hoverable tooltip, copied from imgui_demo.cpp
+			desc: tooltip message
+			symb: display symbol
 	*/
-	static void HoverTip(const char* desc)
+	static void HoverTip(const char* desc, const char* symb)
 	{
-		ImGui::TextDisabled("(?)");
+		ImGui::TextDisabled(symb);
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort) && ImGui::BeginTooltip())
 		{
 			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
@@ -15,6 +17,5 @@ namespace GUIutils {
 			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
 		}
-	}
-	
+	}	
 }

@@ -69,6 +69,8 @@ public:
 	}
 
 	void initialise(int m_width, int m_height) {
+		tile_map.clear();
+		tile_map_ids.clear();
 		width = m_width;
 		height = m_height;
 
@@ -78,6 +80,7 @@ public:
 		for (int i = 0; i < width * height; i++) {
 			tile_map.push_back(Tile{ i % width, i / width });
 		}
+
 	}
 
 	void refresh() {

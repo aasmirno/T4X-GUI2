@@ -1368,7 +1368,7 @@ static void ShowDemoWindowWidgets()
             // and the code in misc/cpp/imgui_stdlib.h for how to setup InputText() for dynamically resizing strings.
             static char text[1024 * 16] =
                 "/*\n"
-                " The Pentium F00F bug, shorthand for F0 0F C7 C8,\n"
+                " The Pentium F00F bug, s   horthand for F0 0F C7 C8,\n"
                 " the hexadecimal encoding of one offending instruction,\n"
                 " more formally, the invalid operand with locked CMPXCHG8B\n"
                 " instruction bug, is a design flaw in the majority of\n"

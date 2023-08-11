@@ -26,13 +26,14 @@ bool GameControl::init(bool& game_active_flag) {
 	paused = true;
 	frozen = false;
 
-	game_map.initialise();
+	game_map.initialise(&map_creation_active);
 	return true;
 }
 
 void GameControl::Draw() {
 	glClear(GL_COLOR_BUFFER_BIT);
-
+	game_map.draw(mx, my);
+	game_map.drawDisplay();
 	if (game_menu_active) {
 		gameMenu();
 	}
@@ -94,7 +95,8 @@ void GameControl::unPause() {
 }
 
 void GameControl::mapCreationMenu() {
-	game_map.draw(mx, my);
-	game_map.drawDisplay();
 	game_map.drawCreationMenu();
+	if (!map_creation_active) {
+		game_menu_active = true;
+	}
 }

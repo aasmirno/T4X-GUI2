@@ -1,6 +1,7 @@
 #include "MainController.h"
 
 MainController::MainController() {
+
 }
 
 bool MainController::genInit() {

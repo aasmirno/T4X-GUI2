@@ -88,8 +88,8 @@ private:
 	bool compute_temp = true;
 
 	//map data
-	const int map_width = 700;
-	const int map_height = 700;
+	 int map_width = 700;
+	 int map_height = 700;
 
 	//graphics data booleans
 	bool draw_textures = true;
@@ -101,6 +101,11 @@ private:
 	bool draw_clouds = false;
 	bool draw_pressure = false;
 	bool draw_resources = false;
+
+	bool* c_flag = nullptr; //continue flag
+	char last_file_name[1024 * 16];
+	bool load_error = false;
+
 
 	//graphics handles
 	MapShader shader;
@@ -150,7 +155,7 @@ public:
 	int getTransformLoc();
 
 	//initialise game map
-	bool initialise();
+	bool initialise(bool* cont_flag);
 
 	//draw texture elements only
 	void draw(int mx, int my);

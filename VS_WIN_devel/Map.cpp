@@ -4,12 +4,13 @@ int Map::getTransformLoc() {
 	return glGetUniformLocation(shader.getProgramID(), "projection");
 }
 
-bool Map::initialise() {
+bool Map::initialise(bool* cont_flag) {
+	c_flag = cont_flag;
 	tiles.initialise(map_width, map_height);	//initialise tile map
 	h_map.init(map_width, map_height);	//initialise height map
 	t_map.init(map_width, map_height);	//initialise temperature map
 	equator = map_height / 2;		//set sun y level
-
+	load_error = false;
 	/*
 		graphical init
 	*/
@@ -131,25 +132,17 @@ bool Map::loadHeightMap(const std::string& file_name) {
 		return false;
 	}
 
-	int height = 0;
-	int width = 0;
+	file >> map_height;
+	file >> map_width;
 
-	file >> height;
-	file >> width;
-
-	h_map.init(width, height);
+	initialise(c_flag);
 	std::vector<float>& h_m = h_map.getHeightMap();
 	for (int i = 0; i < h_m.size(); i++) {
 		file >> h_m[i];
 	}
-	
+
 	// Close the file
 	file.close();
-
-	if (file.fail()) {
-		std::cerr << "Error writing to file: " << file_name << std::endl;
-		return false;
-	}
 
 	return true;
 }
@@ -301,22 +294,22 @@ void Map::drawDebug(int mx, int my) {
 		printf("Done\n");
 
 		//assign neighbors and boundaries
-		//printf("assigning neighbors\n");
-		//h_map.assignNeighbors();
-		//printf("Done\n");
+		printf("assigning neighbors\n");
+		h_map.assignNeighbors();
+		printf("Done\n");
 
 		////assign boundary type
-		//printf("assigning boundary types\n");
-		//h_map.assignBoundaries();
-		//printf("Done\n");
+		printf("assigning boundary types\n");
+		h_map.assignBoundaries();
+		printf("Done\n");
 
-		//printf("creating shelf\n");
-		//h_map.createShelf();
-		//printf("Done\n");
+		printf("creating shelf\n");
+		h_map.createShelf();
+		printf("Done\n");
 
-		//printf("applying transforms\n");
-		//h_map.applyTransforms();
-		//printf("Done\n");
+		printf("applying transforms\n");
+		h_map.applyTransforms();
+		printf("Done\n");
 
 		//h_map.compress();
 		updateBase();
@@ -438,21 +431,30 @@ void Map::drawCreationMenu() {
 	flags |= ImGuiWindowFlags_NoCollapse;
 
 	ImGui::SetNextWindowPos(ImVec2{ 10,10 });
-	ImGui::SetNextWindowSize(ImVec2{ 300,700 });
+	ImGui::SetNextWindowSize(ImVec2{ 300,800 });
 
 	ImGui::Begin("Map Creation", NULL, flags);
 	ImGui::SameLine(4, 0);
 	ImGui::TextWrapped("The parameters below can be used to create a custom game map. Alternatively, a map can be generated using a preset algorithm with the \"Auto Generate\" button");
 	ImGui::Text("");
-	ImGui::SeparatorText("Heightmap parameters");
+	ImGui::SeparatorText("Dimensions");
 
 	ImGui::PushItemWidth(150);
-	ImGui::SliderFloat("Noise Frequency", &perlin_freq, 0.0001f, 0.05f);
-	ImGui::SameLine(); GUIutils::HoverTip("change noise level of detail");
+	ImGui::SliderInt("Map width", &map_width, 10, 1000);
+	ImGui::SliderInt("Map height", &map_height, 10, 1000);
+	if (ImGui::Button("Set dimensions"))
+		initialise(c_flag);
+	ImGui::SameLine(); GUIutils::HoverTip("Map dimensions must be set before any generation", "(!)");
+	ImGui::Text("");
+
+	ImGui::SeparatorText("Detail");
+	ImGui::PushItemWidth(150);
+	ImGui::SliderFloat("Smoothness", &perlin_freq, 0.0001f, 0.05f);
+	ImGui::SameLine(); GUIutils::HoverTip("Controls how detailed the noise is", "(?)");
 
 	ImGui::PushItemWidth(150);
 	ImGui::SliderFloat("Weight", &octave_weight, 0.0f, 1.0f);
-	ImGui::SameLine(); GUIutils::HoverTip("change noise weight multiplier");
+	ImGui::SameLine(); GUIutils::HoverTip("Controls how much height is added or subtracted", "(?)");
 
 	//Fractal Choices
 	if (ImGui::Button("Toggle Ridged Fractal Noise", ImVec2{ 200, 30 })) {
@@ -465,8 +467,7 @@ void Map::drawCreationMenu() {
 	else {
 		ImGui::Text("Inactive");
 	}
-	ImGui::SameLine(); GUIutils::HoverTip("activate or deactivate fractal step for noise generation");
-	ImGui::Text("");
+	ImGui::SameLine(); GUIutils::HoverTip("Activates or deactivates fractal step for noise generation", "(?)");
 
 	//Add noise
 	if (ImGui::Button("Add Noise", ImVec2{ 148, 30 })) {
@@ -494,11 +495,6 @@ void Map::drawCreationMenu() {
 		//update base vbo
 		updateBase();
 	}
-	ImGui::Separator();
-	if (ImGui::Button("Auto Generate", ImVec2{ 300,30 })) {
-		autoGenerate();
-		updateBase();
-	}
 
 	ImGui::SeparatorText("World parameters");
 	ImGui::SliderFloat("Sea Level", &ocean_level, 0.0f, 1.0f);
@@ -520,18 +516,69 @@ void Map::drawCreationMenu() {
 		tiles.genResources(h_map.getHeightMap(), iron_ab, chrom_ab, copper_ab, oil_ab, coal_ab);
 	}
 	ImGui::Text(""); ImGui::Text("");
-
+	if (ImGui::Button("Auto Generate", ImVec2{ 300,30 })) {
+		autoGenerate();
+		updateBase();
+	}
 	//options
 	ImGui::SeparatorText("Options");
-	if (ImGui::Button("Continue", ImVec2{ 300,30 })) {
-
+	if (ImGui::Button("Finish and proceed", ImVec2{ 300,30 })) {
+		(*c_flag) = false;
 	}
 
+	//Save and load height maps
 	if (ImGui::Button("Save height map", ImVec2{ 300,30 })) {
-		saveHeightMap("test.txt");
+		ImGui::OpenPopup("Save File");
 	}
 	if (ImGui::Button("Load height map", ImVec2{ 300,30 })) {
-		loadHeightMap("test.txt");
+		ImGui::OpenPopup("Load File");
 	}
+
+	//load file pop up
+	ImGui::SetNextWindowSize(ImVec2{ 244,100 });
+	if (ImGui::BeginPopupModal("Load File", NULL, flags))
+	{
+		ImGui::Text("Enter Filename");
+		ImGui::SameLine(); GUIutils::HoverTip("Enter a local filename containing the height map file", "(?)");
+
+		ImGui::Separator();
+		ImGui::InputText("##source", last_file_name, IM_ARRAYSIZE(last_file_name), ImGuiInputTextFlags_CharsNoBlank);
+
+		if (ImGui::Button("OK", ImVec2(120, 0)))
+			if (loadHeightMap(last_file_name)) {
+				ImGui::CloseCurrentPopup();
+				load_error = false;
+			}
+			else {
+				load_error = true;
+			}
+
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); load_error = false;}
+
+		if (load_error) {
+			ImGui::Text("File load error");
+		}
+		ImGui::EndPopup();
+	}
+
+	//save file popup
+	ImGui::SetNextWindowSize(ImVec2{ 244,100 });
+	if (ImGui::BeginPopupModal("Save File", NULL, flags))
+	{
+		ImGui::Text("Enter Filename");
+		ImGui::SameLine(); GUIutils::HoverTip("Enter a local filename containing the height map file", "(?)");
+
+		ImGui::Separator();
+		ImGui::InputText("##source", last_file_name, IM_ARRAYSIZE(last_file_name), ImGuiInputTextFlags_CharsNoBlank);
+
+		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); saveHeightMap(last_file_name); load_error = false;}
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); load_error = false;}
+		ImGui::EndPopup();
+	}
+
 	ImGui::End();
 }
