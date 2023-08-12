@@ -19,6 +19,7 @@
 #include <vector>
 #include <chrono>
 #include <fstream>
+#include <string>
 
 //custom shaders for map
 class MapShader :
@@ -65,6 +66,8 @@ private:
 	float ocean_level = 0.5f;
 	float beach_height = 0.02f;
 	float mountain_height = 0.9f;
+
+	uint8_t resource_method = 0;
 	float iron_ab = 0.0f;
 	float chrom_ab = 0.0f;
 	float copper_ab = 0.0f;
@@ -102,10 +105,11 @@ private:
 	bool draw_pressure = false;
 	bool draw_resources = false;
 
+	//graphics meta
 	bool* c_flag = nullptr; //continue flag
 	char last_file_name[1024 * 16];
 	bool load_error = false;
-
+	std::string r_method;
 
 	//graphics handles
 	MapShader shader;

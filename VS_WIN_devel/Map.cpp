@@ -512,8 +512,16 @@ void Map::drawCreationMenu() {
 	ImGui::PushItemWidth(150); ImGui::SliderFloat("Copper", &copper_ab, 0.0f, 1.0f);
 	ImGui::PushItemWidth(150); ImGui::SliderFloat("Oil", &oil_ab, 0.0f, 1.0f);
 	ImGui::PushItemWidth(150); ImGui::SliderFloat("Coal", &coal_ab, 0.0f, 1.0f);
+
+	if (resource_method == 0) {
+		r_method = "Generate Resources: (Patch)";
+	}
+	else {
+		r_method = "Generate Resources: (Seam)";
+	}
+
 	if (ImGui::Button("Generate Resources", ImVec2{ 300,30 })) {
-		tiles.genResources(h_map.getHeightMap(), iron_ab, chrom_ab, copper_ab, oil_ab, coal_ab);
+		tiles.genResources(h_map.getHeightMap(), iron_ab, chrom_ab, copper_ab, oil_ab, coal_ab, ocean_level, mountain_height, resource_method);
 	}
 	ImGui::Text(""); ImGui::Text("");
 	if (ImGui::Button("Auto Generate", ImVec2{ 300,30 })) {
