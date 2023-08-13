@@ -9,7 +9,7 @@
 #include <glm/ext.hpp>
 #include "FastNoiseLite.h"
 
-class HeightMap
+class HeightMap : public BaseMap
 {
 private:
 	//enums
@@ -22,8 +22,6 @@ private:
 	std::vector<float> height_map;
 	float max_height = 0.0f;
 	float min_height = 100000000.0f;
-	int width = 0;
-	int height = 0;
 
 	//tectonics parameters
 	struct MotionVector {	//Motion vector
@@ -180,9 +178,8 @@ public:
 	}
 
 	//initialise height map to 0.0f
-	void init(int size_x, int size_y) {
-		width = size_x;
-		height = size_y;
+	void initialise(int w, int h) {
+		BaseMap::initialise(w,h);
 		refresh();
 	}
 
@@ -201,18 +198,7 @@ public:
 	* ------------------------------------------------------------------------------
 	*/
 	//add noise to current height map
-	void addNoise(float perlin_freq, bool fractal_ridge, float octave_weight) {
-		FastNoiseLite noise;
-		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
-
-		if (fractal_ridge) {
-			noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
-		}
-
-		//generate perlin noise
-		std::random_device rd;
-		noise.SetSeed(rd());
-		noise.SetFrequency(perlin_freq);
+	void addNoise(FastNoiseLite &noise, float octave_weight) {
 		for (size_t index = 0; index < height_map.size(); index++)
 		{
 			height_map[index] += ((noise.GetNoise((float)(index % width), (float)(index / height)) + 1.0) * octave_weight);
@@ -221,18 +207,7 @@ public:
 	}
 
 	//subtract noise from current height map
-	void subNoise(float perlin_freq, bool fractal_ridge, float octave_weight) {
-		FastNoiseLite noise;
-		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
-
-		if (fractal_ridge) {
-			noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
-		}
-
-		//generate 1st octave perlin noise
-		std::random_device rd;
-		noise.SetSeed(rd());
-		noise.SetFrequency(perlin_freq);
+	void subNoise(FastNoiseLite& noise, float octave_weight) {
 		for (size_t index = 0; index < height_map.size(); index++)
 		{
 			height_map[index] -= ((noise.GetNoise((float)(index % width), (float)(index / height)) + 1.0) * octave_weight);
@@ -303,22 +278,6 @@ public:
 			height_map[i] / height_range;
 		}
 
-	}
-
-	//check coordinate against bounds
-	bool coordCheck(int x, int y) {
-		if (x < 0 || x >= width) {
-			return false;
-		}
-		if (y < 0 || y >= height) {
-			return false;
-		}
-		return true;
-	}
-
-	//euclidean distance between flat indices
-	float coordDist(int i1, int i2) {
-		return std::sqrt(pow(i1 % width - i2 % width, 2) + pow(i1 / width - i2 / width, 2));
 	}
 
 	//find the equation for a line between 2 flat indices

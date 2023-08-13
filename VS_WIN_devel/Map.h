@@ -1,10 +1,13 @@
 #pragma once
 //internal libraries
+#include "ImguiUtils.h"
 #include "ShaderManager.h"
+
+#include "BaseMap.h"
 #include "HeightMap.h"
 #include "TempMap.h"
 #include "TileMap.h"
-#include "ImguiUtils.h"
+#include "WaterMap.h"
 
 //graphics libraries
 #include "imgui.h"
@@ -53,6 +56,9 @@ public:
 class Map
 {
 private:
+	//general parameters
+	FastNoiseLite noise;
+
 	//simulation speed parameters
 	int counter = 5;
 	int speed = 10;
@@ -68,11 +74,11 @@ private:
 	float mountain_height = 0.9f;
 
 	uint8_t resource_method = 0;
-	float iron_ab = 0.0f;
-	float chrom_ab = 0.0f;
-	float copper_ab = 0.0f;
-	float oil_ab = 0.0f;
-	float coal_ab = 0.0f;
+	float iron_ab = 0.0001f;	int iron_sz = 6;
+	float chrom_ab = 0.0f;	int chrm_sz = 3;
+	float copper_ab = 0.0f; int cu_sz = 6;
+	float oil_ab = 0.0f;	int oil_sz = 5;
+	float coal_ab = 0.0002f;	int coal_sz = 10;
 
 	//height map generation parameters
 	HeightMap h_map;
@@ -90,9 +96,13 @@ private:
 	int drop_off = 1;
 	bool compute_temp = true;
 
+	//water map params
+	WaterMap water;
+
+
 	//map data
-	 int map_width = 700;
-	 int map_height = 700;
+	int map_width = 700;
+	int map_height = 700;
 
 	//graphics data booleans
 	bool draw_textures = true;

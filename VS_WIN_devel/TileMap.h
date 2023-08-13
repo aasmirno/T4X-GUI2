@@ -3,11 +3,12 @@
 #include <queue>
 #include <unordered_map>
 #include "FastNoiseLite.h";
+#include "BaseMap.h"
 #include <assert.h>
 #include <random>
 #include <cmath>
 
-class TileMap {
+class TileMap : public BaseMap {
 private:
 	enum TileType : uint16_t { DEEP_OCEAN, COASTAL_OCEAN, BEACH, PLAIN, FOREST, BLANK2, MOUNTAIN, PEAK };
 	enum ResourceType : uint16_t { NONE, IRON, COPPER, CHROMIUM, OIL, COAL };
@@ -28,24 +29,7 @@ private:
 
 	std::vector<uint16_t> tile_map_ids;	//store graphical ids
 	std::vector<Tile> tile_map;	//store tile structs
-	int width = 0;
-	int height = 0;
 
-	//check coordinate against bounds
-	bool coordCheck(int x, int y) {
-		if (x < 0 || x >= width) {
-			return false;
-		}
-		if (y < 0 || y >= height) {
-			return false;
-		}
-		return true;
-	}
-
-	//euclidean distance between flat indices
-	float coordDist(int i1, int i2) {
-		return std::sqrt(pow(i1 % width - i2 % width, 2) + pow(i1 / width - i2 / width, 2));
-	}
 public:
 	//get graphical id array - type: 0-Tile textures, 1-resources
 	uint16_t* getIDArray(std::vector<float>& height_map, float ocean_level, float beach_height, float mountain_height, uint8_t type) {
@@ -87,14 +71,17 @@ public:
 		return &tile_map_ids[0];
 	}
 
-	void initialise(int m_width, int m_height) {
-		tile_map.clear();
-		tile_map_ids.clear();
-		width = m_width;
-		height = m_height;
+	void initialise(int w, int h) {
+		BaseMap::initialise(w, h);
 
+		assert(width != 0 && height != 0);
+	
+		//reset tile ids
+		tile_map_ids.clear();
 		tile_map_ids.resize(width * height);
 
+		//reset tile vector
+		tile_map.clear();
 		tile_map.reserve(width * height);
 		for (int i = 0; i < width * height; i++) {
 			tile_map.push_back(Tile{ i % width, i / width });
@@ -106,11 +93,6 @@ public:
 		tile_map_ids.clear();
 		tile_map.clear();
 		initialise(width, height);
-	}
-
-	size_t getSize() {
-		assert(tile_map_ids.size() == tile_map.size());
-		return tile_map.size();
 	}
 
 	//run a bernoulli trial n times (binomial)
@@ -156,12 +138,16 @@ public:
 
 				int tx = cx + x_off[off];
 				int ty = cy + y_off[off];
-				//float dist = coordDist(ty * width + tx, index) - (abs(noise.GetNoise((float)(tx),(float)(ty)))*var);
+				float fx = (float)tx;
+				float fy = (float)ty;
+
+				noise.DomainWarp(fx, fy);
+				float dist = coordDist(ty * width + tx, index) - (abs(noise.GetNoise(fx, fy)) * var);
 				if (
 					coordCheck(tx, ty) &&								//in bounds
 					visited.find(ty * width + tx) == visited.end() &&	//not already visited
-					height_map[ty * width + tx] > ocean_height &&					//not an ocean tile
-					coordDist(ty * width + tx, index) - (abs(noise.GetNoise((float)(tx), (float)(ty))) * var) < max_dist //within max distance
+					height_map[ty * width + tx] > ocean_height &&		//not an ocean tile
+					dist < max_dist //within max distance
 					) {
 					visited[ty * width + tx];
 					bfs_queue.push(ty * width + tx);
@@ -174,7 +160,14 @@ public:
 	//generate resources: x_pct - percent chance for resource type x to spawn
 	//some resources have a higher chance of spawning in peaks and foothills: iron, copper, chromium
 	//chromium will only spawn above some elevation
-	void genResources(std::vector<float>& height_map, float iron_pct, float chr_pct, float cu_pct, float oil_pct, float coal_pct, float ocean_height, float mountain_height, uint8_t rm) {
+	void genResources(std::vector<float>& height_map, 
+		float iron_pct, int iron_size, 
+		float chr_pct, int chr_size, 
+		float cu_pct, int cu_size,
+		float oil_pct, int oil_size,
+		float coal_pct, int coal_size,
+		float ocean_height, float mountain_height, 
+		uint8_t rm) {
 		//clear resources
 //#TODO: optimise with seperate resource array
 		for (size_t index = 0; index < tile_map.size(); index++) {
@@ -184,10 +177,14 @@ public:
 		//initialise noise
 		FastNoiseLite noise;	//simplex
 		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
-		noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
+		noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+		noise.SetFrequency(0.05);
+
+		noise.SetDomainWarpType(FastNoiseLite::DomainWarpType_BasicGrid);
+		noise.SetDomainWarpAmp(30.0f);
+
 		std::random_device rd;
 		noise.SetSeed(rd());
-		noise.SetFrequency(0.05);
 
 		//patch method
 		if (rm == 0) {
@@ -200,10 +197,10 @@ public:
 					&& tile_map[index].resource == NONE
 					) {
 					if (roll(coal_pct, 1)) {
-						applySeam(COAL, index, 10, noise, height_map, ocean_height, mountain_height);
+						applySeam(COAL, index, coal_size, noise, height_map, ocean_height, mountain_height);
 					}
 					else if (roll(iron_pct, 1)) {
-						applySeam(IRON, index, 6, noise, height_map, ocean_height, mountain_height);
+						applySeam(IRON, index, iron_size, noise, height_map, ocean_height, mountain_height);
 					}
 
 				}

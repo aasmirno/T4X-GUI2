@@ -7,8 +7,8 @@ int Map::getTransformLoc() {
 bool Map::initialise(bool* cont_flag) {
 	c_flag = cont_flag;
 	tiles.initialise(map_width, map_height);	//initialise tile map
-	h_map.init(map_width, map_height);	//initialise height map
-	t_map.init(map_width, map_height);	//initialise temperature map
+	h_map.initialise(map_width, map_height);	//initialise height map
+	t_map.initialise(map_width, map_height);	//initialise temperature map
 	equator = map_height / 2;		//set sun y level
 	load_error = false;
 	/*
@@ -105,23 +105,40 @@ void Map::autoGenerate() {
 	//reset graphical flags
 	draw_surface_temp, draw_air_temp = false;
 
+	//set seed
+	std::random_device rd;
+	noise.SetSeed(rd());
+
 	//first addition
-	perlin_freq = 0.004;
-	fractal_ridge = false;
 	octave_weight = 0.4f;
-	h_map.addNoise(perlin_freq, fractal_ridge, octave_weight);
+	noise.SetFrequency(0.004);
+	noise.SetFractalType(FastNoiseLite::FractalType_None);
+	noise.SetFractalLacunarity(1.0f);
+	noise.SetFractalGain(0.5f);
+	h_map.addNoise(noise, octave_weight);
 
 	//second addition
-	perlin_freq = 0.01f;
-	fractal_ridge = false;
 	octave_weight = 0.1f;
-	h_map.addNoise(perlin_freq, fractal_ridge, octave_weight);
+	noise.SetFrequency(0.01f);
+	noise.SetFractalLacunarity(2.0f);
+	noise.SetFractalGain(0.5f);
+	noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+	h_map.addNoise(noise, octave_weight);
 
 	//detailing
 	for (int i = 0; i < 10; i++) {
-		h_map.addNoise(0.05f, true, 0.01f);
-		h_map.subNoise(0.05f, false, 0.006f);
+		noise.SetFrequency(0.05f);
+		noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+		h_map.addNoise(noise, 0.01f);
+
+		noise.SetFrequency(0.05f);
+		noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+		h_map.subNoise(noise, 0.006f);
 	}
+
+	noise.SetFrequency(0.05f);
+	noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
+	h_map.addNoise(noise, 0.05f);
 
 }
 
@@ -262,16 +279,6 @@ void Map::drawDebug(int mx, int my) {
 	}
 	ImGui::SameLine();
 	ImGui::Text("%d", fractal_ridge);
-
-	if (ImGui::Button("add perlin")) {
-		h_map.addNoise(perlin_freq, fractal_ridge, octave_weight);	//apply perlin noise
-		updateBase();
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("sub perlin")) {
-		h_map.subNoise(perlin_freq, fractal_ridge, octave_weight);
-		updateBase();
-	}
 
 	if (ImGui::Button("erode hydro")) {
 		h_map.erode();
@@ -471,13 +478,17 @@ void Map::drawCreationMenu() {
 
 	//Add noise
 	if (ImGui::Button("Add Noise", ImVec2{ 148, 30 })) {
-		h_map.addNoise(perlin_freq, fractal_ridge, octave_weight);	//apply perlin noise
+		noise.SetFrequency(perlin_freq);
+		noise.SetFractalType(fractal_ridge ? FastNoiseLite::FractalType_Ridged : FastNoiseLite::FractalType_None);
+		h_map.addNoise(noise, octave_weight);	//apply perlin noise
 		updateBase();
 	}
 	ImGui::SameLine();
 	//subtract noise
 	if (ImGui::Button("Subtract Noise", ImVec2{ 148,30 })) {
-		h_map.subNoise(perlin_freq, fractal_ridge, octave_weight);
+		noise.SetFrequency(perlin_freq);
+		noise.SetFractalType(fractal_ridge ? FastNoiseLite::FractalType_Ridged : FastNoiseLite::FractalType_None);
+		h_map.subNoise(noise, octave_weight);
 		updateBase();
 	}
 
@@ -504,14 +515,12 @@ void Map::drawCreationMenu() {
 	//resources
 	ImGui::SeparatorText("Resource parameters");
 
-	ImGui::Text("");
-	ImGui::SameLine(4, 0);
-	ImGui::Text("Abundance");
-	ImGui::PushItemWidth(150); ImGui::SliderFloat("Iron", &iron_ab, 0.0f, 1.0f);
-	ImGui::PushItemWidth(150); ImGui::SliderFloat("Chromium", &chrom_ab, 0.0f, 1.0f);
-	ImGui::PushItemWidth(150); ImGui::SliderFloat("Copper", &copper_ab, 0.0f, 1.0f);
-	ImGui::PushItemWidth(150); ImGui::SliderFloat("Oil", &oil_ab, 0.0f, 1.0f);
-	ImGui::PushItemWidth(150); ImGui::SliderFloat("Coal", &coal_ab, 0.0f, 1.0f);
+	ImGui::Text(""); ImGui::SameLine(60); ImGui::Text("Abundance	  Patch Size");
+	ImGui::Text("Iron"); ImGui::SameLine(60); ImGui::PushItemWidth(100); ImGui::SliderFloat("##IA", &iron_ab, 0.0f, 0.001f, "%.5f"); ImGui::SameLine(); ImGui::PushItemWidth(100); ImGui::InputInt("##IS", &iron_sz);
+	ImGui::Text("Chromium"); ImGui::SameLine(60); ImGui::PushItemWidth(100); ImGui::SliderFloat("##CA", &chrom_ab, 0.0f, 0.001f, "%.5f"); ImGui::SameLine(); ImGui::PushItemWidth(100); ImGui::InputInt("##CS", &chrm_sz);
+	ImGui::Text("Copper"); ImGui::SameLine(60); ImGui::PushItemWidth(100); ImGui::SliderFloat("##CUA", &copper_ab, 0.0f, 0.001f, "%.5f"); ImGui::SameLine(); ImGui::PushItemWidth(100); ImGui::InputInt("##CUS", &cu_sz);
+	ImGui::Text("Oil"); ImGui::SameLine(60); ImGui::PushItemWidth(100); ImGui::SliderFloat("##OA", &oil_ab, 0.0f, 0.001f, "%.5f"); ImGui::SameLine(); ImGui::PushItemWidth(100); ImGui::InputInt("##OS", &oil_sz);
+	ImGui::Text("Coal"); ImGui::SameLine(60); ImGui::PushItemWidth(100); ImGui::SliderFloat("##CLA", &coal_ab, 0.0f, 0.001f, "%.5f"); ImGui::SameLine(); ImGui::PushItemWidth(100); ImGui::InputInt("##CLS", &coal_sz);
 
 	if (resource_method == 0) {
 		r_method = "Generate Resources: (Patch)";
@@ -521,7 +530,7 @@ void Map::drawCreationMenu() {
 	}
 
 	if (ImGui::Button("Generate Resources", ImVec2{ 300,30 })) {
-		tiles.genResources(h_map.getHeightMap(), iron_ab, chrom_ab, copper_ab, oil_ab, coal_ab, ocean_level, mountain_height, resource_method);
+		tiles.genResources(h_map.getHeightMap(), iron_ab, iron_sz, chrom_ab, chrm_sz, copper_ab, cu_sz, oil_ab, oil_sz, coal_ab, coal_sz, ocean_level, mountain_height, resource_method);
 	}
 	ImGui::Text(""); ImGui::Text("");
 	if (ImGui::Button("Auto Generate", ImVec2{ 300,30 })) {

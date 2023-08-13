@@ -7,7 +7,7 @@
 #include "imgui.h"
 #include "FastNoiseLite.h"
 
-class TempMap {
+class TempMap : public BaseMap {
 private:
 	enum Direction : uint8_t { UL, U, UR, L, R, DL, D, DR };
 	enum TempLevel : uint16_t { T1, T2, T3, T4, T5, T6, T7, T8 };
@@ -41,9 +41,6 @@ private:
 	/*
 		Meta data
 	*/
-	int width;
-	int height;
-
 	int iterations = 0;
 
 	float added = 0.0f;
@@ -82,11 +79,7 @@ private:
 	int sun_x_rad = 0;	//sun radius x
 	int sun_y_rad = 0;	//sun radius y
 
-
-
 public:
-
-
 	//return and array of texture ids: 0 = air temp, 1 = surf temp
 	uint16_t* getIDArray(uint8_t type) {
 		for (size_t i = 0; i < ground_map.size(); i++) {
@@ -150,15 +143,10 @@ public:
 	}
 
 	//initialise map
-	void init(int size_x, int size_y) {
-		width = size_x;
-		height = size_y;
+	void initialise(int width, int height) {
+		BaseMap::initialise(width, height);
 		refresh();
 		getIDArray(0);
-	}
-
-	int getSize() {
-		return width * height;
 	}
 
 	float getAdded() { return added; }
