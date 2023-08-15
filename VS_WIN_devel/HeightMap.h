@@ -13,7 +13,7 @@ class HeightMap : public BaseMap
 {
 private:
 	//enums
-	enum ElevationType : uint16_t { L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12 };
+	enum ElevationType : uint16_t { L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12, L13, L14, L15, L16};
 	enum Direction { L, R, U, D };
 	enum BoundaryType { CONVERG_CNT, DIVERG_CNT, CONVERG_OCN, DIVERG_OCN, CONVERG_OCNCNT, NONE};
 
@@ -115,38 +115,50 @@ public:
 			if (height_map[index] < 1.0f / 12.0f) {
 				height_map_ids[index] = L1;
 			}
-			else if (height_map[index] < 2.0f / 12.0f) {
+			else if (height_map[index] < 2.0f / 16.0f) {
 				height_map_ids[index] = L2;
 			}
-			else if (height_map[index] < 3.0f / 12.0f) {
+			else if (height_map[index] < 3.0f / 16.0f) {
 				height_map_ids[index] = L3;
 			}
-			else if (height_map[index] < 4.0f / 12.0f) {
+			else if (height_map[index] < 4.0f / 16.0f) {
 				height_map_ids[index] = L4;
 			}
-			else if (height_map[index] < 5.0f / 12.0f) {
+			else if (height_map[index] < 5.0f / 16.0f) {
 				height_map_ids[index] = L5;
 			}
-			else if (height_map[index] < 6.0f / 12.0f) {
+			else if (height_map[index] < 6.0f / 16.0f) {
 				height_map_ids[index] = L6;
 			}
-			else if (height_map[index] < 7.0f / 12.0f) {
+			else if (height_map[index] < 7.0f / 16.0f) {
 				height_map_ids[index] = L7;
 			}
-			else if (height_map[index] < 8.0f / 12.0f) {
+			else if (height_map[index] < 8.0f / 16.0f) {
 				height_map_ids[index] = L8;
 			}
-			else if (height_map[index] < 9.0f / 12.0f) {
+			else if (height_map[index] < 9.0f / 16.0f) {
 				height_map_ids[index] = L9;
 			}
-			else if (height_map[index] < 10.0f / 12.0f) {
+			else if (height_map[index] < 10.0f / 16.0f) {
 				height_map_ids[index] = L10;
 			}
-			else if (height_map[index] < 11.0f / 12.0f) {
+			else if (height_map[index] < 11.0f / 16.0f) {
 				height_map_ids[index] = L11;
 			}
-			else {
+			else if (height_map[index] < 12.0f / 16.0f) {
 				height_map_ids[index] = L12;
+			}
+			else if (height_map[index] < 13.0f / 16.0f) {
+				height_map_ids[index] = L13;
+			}
+			else if (height_map[index] < 14.0f / 16.0f) {
+				height_map_ids[index] = L14;
+			}
+			else if (height_map[index] < 15.0f / 16.0f) {
+				height_map_ids[index] = L15;
+			}
+			else {
+				height_map_ids[index] = L16;
 			}
 
 		}

@@ -9,6 +9,8 @@ bool Map::initialise(bool* cont_flag) {
 	tiles.initialise(map_width, map_height);	//initialise tile map
 	h_map.initialise(map_width, map_height);	//initialise height map
 	t_map.initialise(map_width, map_height);	//initialise temperature map
+	water.initialise(map_width, map_height);	//initialise surface water map
+
 	equator = map_height / 2;		//set sun y level
 	load_error = false;
 	/*
@@ -16,9 +18,13 @@ bool Map::initialise(bool* cont_flag) {
 	*/
 	TEX_TILE32 = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSet32.png");
 	TEX_ELEVATION32 = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\TileSetElevation32.png");
+
 	TEX_CLOUDS32_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayClouds32.png");
 	TEX_RESOURCES32_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayResource32.png");
 	TEX_TEMP32_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayTemp32.png");
+	TEX_WATER32_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayWater32.png");
+	TEX_VELO_O = shader.loadTextureFromFile("D:\\Software and Tools\\C++\\T4x\\VS_WIN_devel\\resources\\OverlayPressure32.png");
+
 	glEnable(GL_BLEND);
 	glClipControl(GL_UPPER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -208,7 +214,7 @@ void Map::draw(int mx, int my) {
 	glDrawArrays(GL_POINTS, 0, map_width * map_height);
 
 	//bind and draw overlay textures
-	if (draw_air_temp || draw_surface_temp || draw_clouds || draw_resources || draw_pv) {
+	if (draw_air_temp || draw_surface_temp || draw_clouds || draw_resources || draw_pv || draw_water || draw_velocity) {
 		updateOverlay();
 		glBindVertexArray(overlay_vao_id);
 		glDrawArrays(GL_POINTS, 0, map_width * map_height);
@@ -242,6 +248,14 @@ void Map::updateOverlay() {
 	else if (draw_pv) {
 		shader.loadTexture(TEX_TEMP32_O);	//load temp tex
 		shader.updateVBO(overlay_vbo_id, tiles.getSize(), h_map.getPlateOverlay());
+	}
+	else if (draw_water) {
+		shader.loadTexture(TEX_WATER32_O);	//load temp tex
+		shader.updateVBO(overlay_vbo_id, water.getSize(), water.getIDArray());
+	}
+	else if (draw_velocity) {
+		shader.loadTexture(TEX_VELO_O);
+		shader.updateVBO(overlay_vbo_id, water.getSize(), water.getVelocityField());
 	}
 }
 
@@ -323,17 +337,50 @@ void Map::drawDebug(int mx, int my) {
 	}
 
 	if (ImGui::Button("draw pv")) {
-		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false;
+		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false, draw_water = false, draw_velocity = false;
 		draw_pv = true;
 		updateOverlay();
 	}
 
-	float height_at_mouse = 0.0f;
-	if (mx > 0 && mx < map_width && my > 0 && my < map_height) {
-		height_at_mouse = h_map.getHeight(mx, my);
+	if (ImGui::Button("draw velo field")) {
+		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false, draw_pv = false, draw_water = false;
+		draw_velocity = true;
+		updateOverlay();
 	}
-	ImGui::Text("height at (%d,%d): %f", mx, my, height_at_mouse);
 
+	if (ImGui::Button("draw water")) {
+		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false, draw_pv = false, draw_velocity = false;
+		draw_water = true;
+		updateOverlay();
+	}
+
+	if (ImGui::Button("add water")) {
+		water.addWaterOnly();
+	}
+
+	if (ImGui::Button("reset_water")) {
+		water.reset();
+	}
+
+	if ((ImGui::Button("move water"))) {
+		water.moveWater(h_map.getHeightMap());
+	}
+
+	if (ImGui::Button("move water 200")) {
+		for (int i = 0; i < 200; i++) {
+			water.moveWater(h_map.getHeightMap());
+		}
+	}
+
+	if (ImGui::Button("compress")) {
+		h_map.compress();
+	}
+
+	ImGui::Text("height at (%d,%d): %f", mx, my, h_map.getHeight(mx, my));
+	ImGui::Text("water level at (%d,%d): %f", mx, my, water.getWaterAt(mx,my));
+	ImGui::Text("Total water: %f", water.totalWater());
+	ImGui::Text("	inflow: %f", water.getTotalIn());
+	ImGui::Text("	outflow: %f", water.getTotalOut());
 	ImGui::End();
 }
 
@@ -383,24 +430,24 @@ void Map::drawDisplay() {
 	ImGui::Text("");
 	ImGui::SameLine(0, 4);
 	if (ImGui::Button("No overlay", button_size)) {
-		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false, draw_pv = false;
+		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false, draw_pv = false,draw_water = false, draw_velocity = false;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Draw surface temp", button_size)) {
-		draw_air_temp = false, draw_clouds = false, draw_pressure = false, draw_pv = false;
+		draw_air_temp = false, draw_clouds = false, draw_pressure = false, draw_pv = false, draw_water = false, draw_velocity = false;
 		draw_surface_temp = true;
 		updateOverlay();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Draw cloud cover", button_size)) {
-		draw_air_temp = false, draw_surface_temp = false, draw_pressure = false, draw_pv = false;
+		draw_air_temp = false, draw_surface_temp = false, draw_pressure = false, draw_pv = false, draw_water = false, draw_velocity = false;
 		draw_clouds = true;
 
 		updateOverlay();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Draw resources", button_size)) {
-		draw_air_temp = false, draw_surface_temp = false, draw_pressure = false, draw_clouds = false, draw_pv = false;
+		draw_air_temp = false, draw_surface_temp = false, draw_pressure = false, draw_clouds = false, draw_pv = false, draw_water = false, draw_velocity = false;
 		draw_resources = true;
 
 		updateOverlay();

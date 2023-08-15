@@ -114,6 +114,8 @@ private:
 	bool draw_clouds = false;
 	bool draw_pressure = false;
 	bool draw_resources = false;
+	bool draw_water = false;
+	bool draw_velocity = false;
 
 	//graphics meta
 	bool* c_flag = nullptr; //continue flag
@@ -131,6 +133,8 @@ private:
 	MapShader::GLTexture TEX_CLOUDS32_O;
 	MapShader::GLTexture TEX_TEMP32_O;
 	MapShader::GLTexture TEX_RESOURCES32_O;
+	MapShader::GLTexture TEX_WATER32_O;
+	MapShader::GLTexture TEX_VELO_O;
 
 	//vaos and vbos
 	GLuint base_vbo_id = -1;	//base texture vertex buffer object handle
