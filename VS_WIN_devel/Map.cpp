@@ -148,6 +148,16 @@ void Map::autoGenerate() {
 
 }
 
+void Map::autoGeneratePlate() {
+	h_map.refresh();
+	t_map.refresh();
+	tiles.refresh();
+	water.reset();
+
+	h_map.initialisePlates();
+	h_map.lloydRelax();
+}
+
 bool Map::loadHeightMap(const std::string& file_name) {
 	std::ifstream file(file_name);
 	if (!file.is_open()) {
@@ -261,7 +271,7 @@ void Map::updateOverlay() {
 
 //imgui section
 void Map::drawDebug(int mx, int my) {
-	ImGui::SetNextWindowSize(ImVec2{ 450,600 });
+	ImGui::SetNextWindowSize(ImVec2{ 450,800 });
 	ImGui::Begin("internal map debug", NULL, ImGuiWindowFlags_NoResize);	//begin imgui window
 	if (ImGui::Button("refresh map")) {
 		//refresh internal maps
@@ -355,7 +365,7 @@ void Map::drawDebug(int mx, int my) {
 	}
 
 	if (ImGui::Button("add water")) {
-		water.addWaterOnly();
+		water.addWaterOnly(h_map.getHeightMap(), ocean_level);
 	}
 
 	if (ImGui::Button("reset_water")) {
@@ -363,13 +373,40 @@ void Map::drawDebug(int mx, int my) {
 	}
 
 	if ((ImGui::Button("move water"))) {
-		water.moveWater(h_map.getHeightMap());
+		water.moveWater(h_map.getHeightMap(), ocean_level);
 	}
 
 	if (ImGui::Button("move water 200")) {
 		for (int i = 0; i < 200; i++) {
-			water.moveWater(h_map.getHeightMap());
+			water.moveWater(h_map.getHeightMap(), ocean_level);
+			if (i == 100 || i == 150)
+				printf("i at %d\n", i);
 		}
+	}
+
+	if ((ImGui::Button("generate tilt map"))) {
+		water.genTilt(h_map.getHeightMap(), ocean_level);
+	}
+
+	if ((ImGui::Button("erode"))) {
+		water.updateErosionExterior(h_map.getHeightMap(), ocean_level);
+	}
+
+	if ((ImGui::Button("iterate"))) {
+		float args[] = {
+			0.5f,	//time increment
+			1.0f,	//cross sectional area of connecting pipes
+			9.8f,	//gravity constant
+			0.5f,	//pipe length
+			1.0f,	//grid x distance
+			1.0f,	//grid y distance
+
+			0.1f,	//sediment capacity constant
+			1.0f,	//dissolving constant
+			1.0f,	//deposition constant
+			0.0f	//minimum tilt angle
+		};
+		water.iterate(h_map.getHeightMap(), ocean_level, args);
 	}
 
 	if (ImGui::Button("compress")) {
@@ -377,7 +414,9 @@ void Map::drawDebug(int mx, int my) {
 	}
 
 	ImGui::Text("height at (%d,%d): %f", mx, my, h_map.getHeight(mx, my));
-	ImGui::Text("water level at (%d,%d): %f", mx, my, water.getWaterAt(mx,my));
+	ImGui::Text("water level at (%d,%d): %f", mx, my, water.getWaterAt(mx, my));
+	ImGui::Text("velocity at (%d,%d): dx %f, dy %f", mx, my, water.getVelocityAt(mx, my).first, water.getVelocityAt(mx, my).second);
+	ImGui::Text("tilt angle at (%d, %d): ax %f, ay %f ", mx, my, water.getTiltAngleAt(mx, my).first, water.getTiltAngleAt(mx, my).second);
 	ImGui::Text("Total water: %f", water.totalWater());
 	ImGui::Text("	inflow: %f", water.getTotalIn());
 	ImGui::Text("	outflow: %f", water.getTotalOut());
@@ -430,7 +469,7 @@ void Map::drawDisplay() {
 	ImGui::Text("");
 	ImGui::SameLine(0, 4);
 	if (ImGui::Button("No overlay", button_size)) {
-		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false, draw_pv = false,draw_water = false, draw_velocity = false;
+		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false, draw_pv = false, draw_water = false, draw_velocity = false;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Draw surface temp", button_size)) {
@@ -581,7 +620,7 @@ void Map::drawCreationMenu() {
 	}
 	ImGui::Text(""); ImGui::Text("");
 	if (ImGui::Button("Auto Generate", ImVec2{ 300,30 })) {
-		autoGenerate();
+		autoGeneratePlate();
 		updateBase();
 	}
 	//options
@@ -619,7 +658,7 @@ void Map::drawCreationMenu() {
 
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); load_error = false;}
+		if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); load_error = false; }
 
 		if (load_error) {
 			ImGui::Text("File load error");
@@ -637,10 +676,10 @@ void Map::drawCreationMenu() {
 		ImGui::Separator();
 		ImGui::InputText("##source", last_file_name, IM_ARRAYSIZE(last_file_name), ImGuiInputTextFlags_CharsNoBlank);
 
-		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); saveHeightMap(last_file_name); load_error = false;}
+		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); saveHeightMap(last_file_name); load_error = false; }
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); load_error = false;}
+		if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); load_error = false; }
 		ImGui::EndPopup();
 	}
 

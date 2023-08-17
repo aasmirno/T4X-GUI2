@@ -40,8 +40,8 @@ private:
 		int dist_to_origin;
 	};
 	struct Plate {
-		int origin;	//flat index origin
-		int type;	//plate type
+		int origin;			//flat index origin
+		int type = 0;		//plate type
 		int shelf_size = 0;
 		std::unordered_map<int, int> indicies;	//points belonging to plate
 		std::unordered_map<int, BoundaryType> neighbors; //list of neighbors: <plate id, >
@@ -231,8 +231,8 @@ public:
 		}
 	}
 
-	//find local maximum
-	int findMaximum() {
+	//get random point on map
+	int getRand() {
 		std::random_device rd;
 		std::mt19937 mt(rd());
 
@@ -242,33 +242,11 @@ public:
 		int search_y = (int)coordy(mt);
 		bool changed = true;
 
+		while (!orgCheck(search_y * width + search_x)) {
+
+		}
+
 		return search_y * width + search_x;
-
-		////find vertical max
-		//while (changed) {
-		//	float curr_height = height_map[search_y * width + search_x];
-		//	if (search_y - 1 > 0 && height_map[(search_y - 1) * width + search_x] > curr_height) { //check north neighbor
-		//		changed = true;
-		//		search_y -= 1;
-		//	}
-		//	else if (search_y + 1 < height && height_map[(search_y + 1) * width + search_x] > curr_height) {
-		//		changed = true;
-		//		search_y += 1;
-		//	}
-		//	else if (search_x - 1 > 0 && height_map[search_y * width + (search_x - 1)] > curr_height) {
-		//		changed = true;
-		//		search_x -= 1;
-		//	}
-		//	else if (search_x + 1 < width && height_map[search_y * width + (search_x + 1)] > curr_height) {
-		//		changed = true;
-		//		search_x += 1;
-		//	}
-		//	else {
-		//		changed = false;
-		//	}
-		//}
-
-		//return search_y * width + search_x;
 	}
 
 	//compress heightmap into 0 1 range
@@ -287,7 +265,7 @@ public:
 		float height_range = max_height - min_height;
 		for (size_t i = 0; i < height_map.size(); i++) {
 			height_map[i] += abs(min_height);
-			height_map[i] / height_range;
+			height_map[i] /= height_range;
 		}
 
 	}
@@ -359,15 +337,28 @@ public:
 		std::random_device rd;
 		noise.SetSeed(rd());
 		noise.SetFrequency(0.006);
+
 		std::mt19937 mt(rd());	//rand
 		std::uniform_real_distribution<> rand(-1.0, 1.0);
 
-		printf("creating plates:\n");
 		printf("	Plate 0\n");
 		//create n plates
-		int n = 15;
-		int plate_org = findMaximum();
+		int num_plates = 15;
+		int plate_org = 0;
 		plates.clear();
+
+		//generate 
+		printf("creating plates:\n");
+		for (int i = 0; i < num_plates; i++) {
+			printf("	Plate %d\n",i);
+			int plate_org = getRand();
+			Plate new_plate = Plate{ plate_org };
+		}
+
+
+
+
+
 
 		Plate new_plate = Plate{ plate_org };
 		new_plate.type = rand(mt) > 0.2 ? 1 : 0;	//assign type
@@ -388,9 +379,9 @@ public:
 		for (int i = 0; i < n - 1; i++) {
 			printf("	creating plate %d\n", i + 1);
 			//try new points until criteria are fullfilled
-			plate_org = findMaximum();
+			plate_org = getRand();
 			while (orgCheck(plate_org)) {
-				plate_org = findMaximum();
+				plate_org = getRand();
 			}
 			new_plate = Plate{ plate_org };
 			new_plate.type = rand(mt) > 0.2 ? 1 : 0;	//assign type
@@ -421,15 +412,6 @@ public:
 			plates[i].vector.x = rand(mt);
 			plates[i].vector.y = rand(mt);
 		}
-
-		//run 3 relaxations
-		printf("running lloyd relaxation\n");
-		//lloydRelax();
-		//lloydRelax();
-		//lloydRelax();
-
-		//compress heightmap
-		//compress();
 	}
 
 	class DelaunayTriangle {
@@ -695,15 +677,15 @@ public:
 
 	//utils
 	//------------------------------------------------------------------------------
-	//check plate origin: returns false if valid org
+	//check plate origin: returns true if valid origin
 	bool orgCheck(int org) {
 		//check existing origins and lengths
 		for (size_t i = 0; i < plates.size(); i++) {
 			if (org == plates[i].origin || coordDist(plates[i].origin, org) < 40.0f) {
-				return true;
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	//find plate to which a point belongs

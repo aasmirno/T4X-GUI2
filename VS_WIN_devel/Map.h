@@ -149,6 +149,7 @@ private:
 	*/
 	//automatically generate a game map
 	void autoGenerate();
+	void autoGeneratePlate();
 
 	/*
 		graphical methods
