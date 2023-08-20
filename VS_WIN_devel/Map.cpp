@@ -149,13 +149,18 @@ void Map::autoGenerate() {
 }
 
 void Map::autoGeneratePlate() {
-	h_map.refresh();
+	h_map.refresh(); 
 	t_map.refresh();
 	tiles.refresh();
 	water.reset();
 
 	h_map.initialisePlates();
-	h_map.lloydRelax();
+	
+	h_map.assignNeighbors();
+	h_map.assignBoundaries();
+
+	//h_map.assignShelfSize();
+	//h_map.createShelf();
 }
 
 bool Map::loadHeightMap(const std::string& file_name) {
@@ -304,10 +309,6 @@ void Map::drawDebug(int mx, int my) {
 	ImGui::SameLine();
 	ImGui::Text("%d", fractal_ridge);
 
-	if (ImGui::Button("erode hydro")) {
-		h_map.erode();
-	}
-
 	ImGui::SeparatorText("tile type thresholds");
 	ImGui::SliderFloat("ocean level", &ocean_level, 0.0f, 1.0f);
 	ImGui::SliderFloat("beach height", &beach_height, 0.0f, 1.0f);
@@ -351,7 +352,7 @@ void Map::drawDebug(int mx, int my) {
 		draw_pv = true;
 		updateOverlay();
 	}
-
+	ImGui::SameLine();
 	if (ImGui::Button("draw velo field")) {
 		draw_air_temp = false, draw_surface_temp = false, draw_clouds = false, draw_resources = false, draw_pv = false, draw_water = false;
 		draw_velocity = true;
@@ -363,7 +364,7 @@ void Map::drawDebug(int mx, int my) {
 		draw_water = true;
 		updateOverlay();
 	}
-
+	ImGui::SameLine();
 	if (ImGui::Button("add water")) {
 		water.addWaterOnly(h_map.getHeightMap(), ocean_level);
 	}
@@ -371,7 +372,7 @@ void Map::drawDebug(int mx, int my) {
 	if (ImGui::Button("reset_water")) {
 		water.reset();
 	}
-
+	ImGui::SameLine();
 	if ((ImGui::Button("move water"))) {
 		water.moveWater(h_map.getHeightMap(), ocean_level);
 	}
@@ -383,7 +384,7 @@ void Map::drawDebug(int mx, int my) {
 				printf("i at %d\n", i);
 		}
 	}
-
+	ImGui::SameLine();
 	if ((ImGui::Button("generate tilt map"))) {
 		water.genTilt(h_map.getHeightMap(), ocean_level);
 	}
@@ -391,7 +392,7 @@ void Map::drawDebug(int mx, int my) {
 	if ((ImGui::Button("erode"))) {
 		water.updateErosionExterior(h_map.getHeightMap(), ocean_level);
 	}
-
+	ImGui::SameLine();
 	if ((ImGui::Button("iterate"))) {
 		float args[] = {
 			0.5f,	//time increment
@@ -413,6 +414,10 @@ void Map::drawDebug(int mx, int my) {
 		h_map.compress();
 	}
 
+	if (ImGui::Button("lloyd-r")) {
+		h_map.lloydRelax();
+	}
+
 	ImGui::Text("height at (%d,%d): %f", mx, my, h_map.getHeight(mx, my));
 	ImGui::Text("water level at (%d,%d): %f", mx, my, water.getWaterAt(mx, my));
 	ImGui::Text("velocity at (%d,%d): dx %f, dy %f", mx, my, water.getVelocityAt(mx, my).first, water.getVelocityAt(mx, my).second);
@@ -420,6 +425,14 @@ void Map::drawDebug(int mx, int my) {
 	ImGui::Text("Total water: %f", water.totalWater());
 	ImGui::Text("	inflow: %f", water.getTotalIn());
 	ImGui::Text("	outflow: %f", water.getTotalOut());
+
+	std::vector<int> neighbors = h_map.getBoundaryList(my * map_width + mx);
+	ImGui::Text("plate index '' '': %d", h_map.getPlate(my * map_width + mx) );
+	ImGui::Text("dist to ocean: %f, height: %f", h_map.distToOcean(my* map_width + mx, h_map.getPlate(my* map_width + mx)).first, h_map.distToOcean(my* map_width + mx, h_map.getPlate(my* map_width + mx)).second);
+	ImGui::Text("Neighbors");
+	for (auto& n : neighbors) {
+		ImGui::Text("	Plate %d", n);
+	}
 	ImGui::End();
 }
 

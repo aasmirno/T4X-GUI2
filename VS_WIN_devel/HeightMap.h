@@ -42,7 +42,7 @@ private:
 	struct Plate {
 		int origin;			//flat index origin
 		int type = 0;		//plate type
-		int shelf_size = 0;
+		int shelf_size = 1;
 		std::unordered_map<int, int> indicies;	//points belonging to plate
 		std::unordered_map<int, BoundaryType> neighbors; //list of neighbors: <plate id, >
 		std::unordered_map< int, int> boundary_points; //list of boundary points <index, neighboring plate>
@@ -165,9 +165,9 @@ public:
 
 		for (int i = 0; i < plates.size(); i++) {
 			//draw plate origin in white
-			height_map_ids[plates[i].origin] = L12;
+			height_map_ids[plates[i].origin] = L16;
 			for (auto& bpoint : plates[i].boundary_points) {
-				height_map_ids[bpoint.first] = L12;
+				height_map_ids[bpoint.first] = L16;
 			}
 		}
 
@@ -203,6 +203,9 @@ public:
 
 		height_map_ids.clear();
 		height_map_ids.resize(height * width);
+		
+		plates.clear();
+		voronoi_ids.clear();
 	}
 
 	/*
@@ -240,13 +243,28 @@ public:
 		std::uniform_real_distribution<> coordy(0, height - 3);
 		int search_x = (int)coordx(mt);
 		int search_y = (int)coordy(mt);
-		bool changed = true;
+		int iterations = 0;
 
 		while (!orgCheck(search_y * width + search_x)) {
-
+			search_x = (int)coordx(mt);
+			search_y = (int)coordy(mt);
+			iterations++;
+			if (iterations > 30) {
+				return -1;
+			}
 		}
 
 		return search_y * width + search_x;
+	}
+
+	//get angle between motion vectors
+	float angle(MotionVector a, MotionVector b) {
+		float dot = (a.x * b.x) + (a.y * b.y);
+		float mag_a = std::sqrt(pow(a.x, 2) + pow(a.y, 2));
+		float mag_b = std::sqrt(pow(b.x, 2) + pow(b.y, 2));
+
+		float pre_cos = dot / (mag_a * mag_b);
+		return acos(pre_cos) * (180.0 / 3.141592653589793238463);
 	}
 
 	//compress heightmap into 0 1 range
@@ -347,64 +365,53 @@ public:
 		int plate_org = 0;
 		plates.clear();
 
-		//generate 
+		//generate origins
 		printf("creating plates:\n");
 		for (int i = 0; i < num_plates; i++) {
 			printf("	Plate %d\n",i);
 			int plate_org = getRand();
-			Plate new_plate = Plate{ plate_org };
-		}
-
-
-
-
-
-
-		Plate new_plate = Plate{ plate_org };
-		new_plate.type = rand(mt) > 0.2 ? 1 : 0;	//assign type
-
-		//assign plate_height
-		float plate_height = noise.GetNoise((float)(new_plate.origin % width), (float)(new_plate.origin / width));
-		plate_height = abs(plate_height);
-		if (new_plate.type == 1) {	//limit continential plates 0.45 to 0.5
-			height_map[new_plate.origin] = plate_height > 0.5f ? 0.5 : (plate_height < 0.45 ? 0.45 : plate_height);
-		}
-		else {	//limit continential plates 0.1 to 0.3
-			height_map[new_plate.origin] = plate_height > 0.3 ? 0.3 : (plate_height < 0.1 ? 0.1 : plate_height);
-		}
-
-		plates.push_back(new_plate);
-
-		//create remaining plates
-		for (int i = 0; i < n - 1; i++) {
-			printf("	creating plate %d\n", i + 1);
-			//try new points until criteria are fullfilled
-			plate_org = getRand();
-			while (orgCheck(plate_org)) {
-				plate_org = getRand();
+			if (plate_org == -1) {
+				break;
 			}
-			new_plate = Plate{ plate_org };
+
+			Plate new_plate = Plate{ plate_org };
 			new_plate.type = rand(mt) > 0.2 ? 1 : 0;	//assign type
-			//assign plate_height
-			plate_height = noise.GetNoise((float)(new_plate.origin % width), (float)(new_plate.origin / width));
-			plate_height = abs(plate_height);
-			if (new_plate.type == 1) {	//limit continential plates 0.45 to 0.5
-				height_map[new_plate.origin] = plate_height > 0.5f ? 0.5 : (plate_height < 0.45 ? 0.45 : plate_height);
+			plates.push_back(new_plate);
+		}
+
+		//assign heights
+		for (auto& plate : plates) {
+			float plate_height = noise.GetNoise((float)(plate.origin % width), (float)(plate.origin / width));
+			if (plate.type == 1) {	//limit continential plates 0.45 to 0.5
+				height_map[plate.origin] = plate_height > 0.5f ? 0.5 : (plate_height < 0.45 ? 0.45 : plate_height);
 			}
 			else {	//limit continential plates 0.1 to 0.3
-				height_map[new_plate.origin] = plate_height > 0.3 ? 0.3 : (plate_height < 0.1 ? 0.1 : plate_height);
+				height_map[plate.origin] = plate_height > 0.3 ? 0.3 : (plate_height < 0.1 ? 0.1 : plate_height);
 			}
-
-			plates.push_back(new_plate);
 		}
 
 		//assign plates with voronoi method
 		printf("assigning points:\n");
 		for (int index = 0; index < height_map.size(); index++) {
-			int nearest_plate = getNearestPlate(index);
+			int nearest_plate = getNearestPlateNoise(index);
 			plates[nearest_plate].indicies.insert({ index, 0 });
-			height_map[index] = height_map[plates[nearest_plate].origin];
 		}
+
+		//run relaxation algorithm
+		for (int i = 0; i < 3; i++) {
+			//lloydRelax();
+		}
+
+		//for (auto& plate : plates) {
+		//	plate.indicies.clear();
+		//}
+
+		////reassign indices
+		//for (int index = 0; index < height_map.size(); index++) {
+		//	int nearest_plate = getNearestPlateNoise(index);
+		//	plates[nearest_plate].indicies.insert({ index, 0 });
+		//	height_map[index] = height_map[plates[nearest_plate].origin];
+		//}
 
 		//assign plate direction vectors
 		printf("assigning motion vectors\n");
@@ -467,7 +474,7 @@ public:
 	//run lloyd relaxation algorithm (kmeans)
 	void lloydRelax() {
 		for (auto& plate : plates) {
-			//get avg
+			//get avg of indices
 			float avg_x = 0.0f;
 			float avg_y = 0.0f;
 			int iterations = 1;
@@ -495,63 +502,61 @@ public:
 
 	//assign plate neighbors using dfs
 	void assignNeighbors() {
+		printf("assigning neighbors\n");
 		//iterate each plate
-		for (size_t i = 0; i < plates.size(); i++) {
+		for (int i = 0; i < plates.size(); i++) {
 			printf("	on plate: %d\n", i);
-			//run dfs from origin
-			std::stack<int> dfs_stack;
-			dfs_stack.push(plates[i].origin);
-			std::unordered_map<int, int> visited;
-
-			while (!dfs_stack.empty()) {
-				//get coordinate
-				int curr_index = dfs_stack.top();
-				dfs_stack.pop();
-				//printf("		point: %d", curr_index);
-
-				int currX = curr_index % width;
-				int currY = curr_index / width;
-
-				//check left (check bounds and check visited)
-				if (coordCheck(currX - 1, currY) && visited.find(currY * width + (currX - 1)) == visited.end()) {
-					//if the index is in the same plate, add it to the stack
-					if (plates[i].indicies.find(currY * width + (currX - 1)) != plates[i].indicies.end()) {
-						dfs_stack.push(currY * width + (currX - 1));
-					}
-					//else the index belongs to a neighbor, mark it as such
-					else {
-						int neighbor = getPlate(currY * width + (currX - 1));
-						plates[i].neighbors[neighbor];
-						plates[i].boundary_points.insert({ curr_index, neighbor });
+			for (auto& index : plates[i].indicies) {
+				int cx = index.first % width;
+				int cy = index.first / width;
+				int x_off[4] = { -1,1,0,0 };
+				int y_off[4] = { 0,0,-1,1 };
+				for (int off = 0; off < 4; off++) {
+					int tx = cx + x_off[off];
+					int ty = cy + y_off[off];
+					if (coordCheck(tx, ty) && !(plates[i].indicies.find(ty * width + tx) != plates[i].indicies.end())) {
+						plates[i].neighbors[getPlate(ty * width + tx)];
+						plates[i].boundary_points.insert({ index.first, getPlate(ty * width + tx) });
 					}
 				}
-
-				//check right
-				if (coordCheck(currX + 1, currY) && visited.find(currY * width + (currX + 1)) == visited.end()) {
-					//if the index is in the same plate, add it to the stack
-					if (plates[i].indicies.find(currY * width + (currX + 1)) != plates[i].indicies.end()) {
-						dfs_stack.push(currY * width + (currX + 1));
-					}
-					//else the index belongs to a neighbor, mark it as such
-					else {
-						int neighbor = getPlate(currY * width + (currX + 1));
-						plates[i].neighbors[neighbor];
-						plates[i].boundary_points.insert({ curr_index, neighbor });
-					}
-				}
-
-				//set current index as visited
-				visited.insert({ curr_index, 0 });
 			}
 		}
 	}
 
 	//assign plate boundary types
 	void assignBoundaries() {
+		printf("assigning boundaries\n");
 		for (size_t i = 0; i < plates.size(); i++) {
+			printf("	on plate: %d\n", i);
 			for (auto& neighbor_index : plates[i].neighbors) {
 				//calculate boundary type with neighbor
 				plates[i].neighbors[neighbor_index.first] = assignBoundary(i, neighbor_index.first);
+			}
+		}
+	}
+
+	//set shelf size for continents
+	void assignShelfSize() {
+		FastNoiseLite noise;	//simplex	
+		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+		std::random_device rd;
+		noise.SetSeed(rd());
+		noise.SetFrequency(0.05);
+
+		for (int plate_index = 0; plate_index < plates.size(); plate_index++) {
+			if (plates[plate_index].type == 1) {
+				//generate random shelf size
+				float shelf_size = (std::abs(noise.GetNoise((float)(plates[plate_index].origin % width), (float)(plates[plate_index].origin / width))) * 50.0f);	//randomly choose shelf size
+				shelf_size = std::max(25.0f, shelf_size);
+				plates[plate_index].shelf_size = shelf_size;
+
+				//set neighboring continent shelf size;
+				for (auto neighbor_index : plates[plate_index].neighbors) {
+					if (plates[neighbor_index.first].type == 1) {
+						plates[neighbor_index.first].shelf_size = shelf_size;
+					}
+				}
+
 			}
 		}
 	}
@@ -562,29 +567,60 @@ public:
 		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
 		std::random_device rd;
 		noise.SetSeed(rd());
-		noise.SetFrequency(0.05);
+		noise.SetFrequency(0.09);
 
 		for (size_t plate_index = 0; plate_index < plates.size(); plate_index++) {	//for all plates
-			float shelf_size = std::pow((noise.GetNoise((float)(plates[plate_index].origin % width), (float)(plates[plate_index].origin / width)) * 10),2.0f);	//randomly choose shelf size
-
 			if (plates[plate_index].type == 1) {	//for all continential plates
 				float height_origin = height_map[plates[plate_index].origin];	//get current plate height
 
-				for (auto& point : plates[plate_index].indicies) {	//for all indices in plate
-					auto dist_pair = minimumBoundary(point.first, plate_index);
-					
-					float dist_to_bound = dist_pair.first +(noise.GetNoise((float)(point.first % width), (float)(point.first / width)) * 5);
-					if (dist_to_bound < shelf_size) {
-						float neighbor_height = dist_pair.second;
-						height_map[point.first] = (((height_origin - neighbor_height) / shelf_size) * dist_to_bound) + neighbor_height;
+				std::queue<std::pair<int, float>> search_queue; //<index, closest ocean plate height>
+				std::unordered_map<int, int> visited;	
+				//seed bfs queue with all ocean boundary tiles
+				for (auto& point : plates[plate_index].boundary_points) {
+					if (plates[point.second].type == 0) {
+						search_queue.push({ point.first, height_map[plates[point.second].origin] });
+					}
+				}
+
+				//run bfs from ocean boundary
+				while (!search_queue.empty()) {
+					auto curr_index = search_queue.front();
+					search_queue.pop();
+					int cx = curr_index.first % width;
+					int cy = curr_index.first / width;
+					//assign height based on shelf formula
+					float dist_to_bound = distToOcean(curr_index.first, plate_index).first;// +(noise.GetNoise((float)(cx % width), (float)(cy / width)) * 5);
+					height_map[curr_index.first] = std::max((((height_origin - curr_index.second) / plates[plate_index].shelf_size) * dist_to_bound) + curr_index.second, curr_index.second);
+
+					int x_off[4] = { -1,1,0,0 };
+					int y_off[4] = { 0,0,-1,1 };
+					for (int off = 0; off < 4; off++) {
+
+						int tx = cx + x_off[off];
+						int ty = cy + y_off[off];
+						auto dist_pair = distToOcean(ty * width + tx, plate_index);
+						if (coordCheck(tx, ty)
+							&& plates[plate_index].indicies.find(ty * width + tx) != plates[plate_index].indicies.end()
+							&& dist_pair.first < plates[plate_index].shelf_size
+							&& visited.find(ty * width + tx) == visited.end()
+							) {
+
+							//add to queue
+							search_queue.push({ ty * width + tx, dist_pair.second});
+							visited.insert({ ty * width + tx, 0 });
+						}
+
 					}
 				}
 			}
 		}
 	}
 
-	//get closest ocean boundary point
-	std::pair<float, float> minimumBoundary(int index, int plate) {
+	//get closest ocean boundary point <distance, ocean plate height>
+	std::pair<float, float> distToOcean(int index, int plate) {
+		if (!coordCheck(index) || !coordCheck(plate)) {
+			return {-1,-1};
+		}
 		int closest_index = 0;
 		float neighbor_height = 0.0f;
 		float min_dist = std::max(width, height);
@@ -727,6 +763,28 @@ public:
 		return np;
 	}
 
+	//get closest plate to index (noised)
+	int getNearestPlateNoise(int index) {
+		FastNoiseLite noise;
+		std::random_device rd;
+		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+		noise.SetSeed(rd());
+		noise.SetFrequency(0.001f);
+
+		float min_dist = 10000000.0f;
+		int np = 0;
+		float variance = std::abs((noise.GetNoise((float)(index % width), (float)(index / width)))) * 10;
+		//printf("%f\n", variance);
+		for (size_t i = 0; i < plates.size(); i++) {
+			float dist = coordDist(index, plates[i].origin) + variance;
+			if( dist < min_dist) {
+				min_dist = coordDist(index, plates[i].origin);
+				np = i;
+			}
+		}
+		return np;
+	}
+
 	//get plate motion vector
 	std::pair<float, float> getMotionVector(int index) {
 		if (plates.size() == 0 || getPlate(index) == -1) {
@@ -736,30 +794,22 @@ public:
 	}
 
 	std::vector<int> getBoundaryList(int index) {
-		if (plates.size() == 0 || getPlate(index) == -1) {
+		if (plates.size() == 0 || getPlate(index) == -1 || !coordCheck(index)) {
 			return { -1 };
 		}
+
 		auto& plate = plates[getPlate(index)];
 		std::vector<int> nlist;
 		for (auto& neighbor : plate.neighbors) {
-			nlist.push_back(neighbor.second);
+			nlist.push_back(neighbor.first);
 		}
+		return nlist;
 	}
 
 	//find boundary point fault type
 	BoundaryType getBoundaryType(int boundary_point, int plate) {
 		int neighbor_index = (*plates[plate].boundary_points.find(boundary_point)).second;
 		return (*plates[plate].neighbors.find(neighbor_index)).second;
-	}
-
-	//get angle between motion vectors
-	float angle(MotionVector a, MotionVector b) {
-		float dot = (a.x * b.x) + (a.y * b.y);
-		float mag_a = std::sqrt(pow(a.x, 2) + pow(a.y, 2));
-		float mag_b = std::sqrt(pow(b.x, 2) + pow(b.y, 2));
-
-		float pre_cos = dot / (mag_a * mag_b);
-		return acos(pre_cos) * (180.0 / 3.141592653589793238463);
 	}
 
 	//get boundary type
@@ -789,187 +839,5 @@ public:
 
 		return NONE;
 	}
-
-
-	/*
-		Erosion section
-		------------------------------------------------------------------------------
-	*/
-	struct Droplet {
-		float height;
-		float gradientX;
-		float gradientY;
-	};
-
-	void erode() {
-		InitializeBrushIndices(erosionRadius);
-		int num_droplets = 100000;
-
-		std::random_device rd;
-		std::mt19937 mt(rd());
-
-		std::uniform_real_distribution<> coordx(0, width - 3);
-		std::uniform_real_distribution<> coordy(0, height - 3);
-
-
-		for (num_droplets; num_droplets > 0; num_droplets--) {
-			//generate new droplet
-			float startx = coordx(mt);
-			float starty = coordy(mt);
-			float dirX = 0;
-			float dirY = 0;
-			float speed = initialSpeed;
-			float water = initialWaterVolume;
-			float sediment = 0;
-
-			for (int track = 0; track < maxDropletLifetime; track++) {
-				int nodeX = (int)startx;
-				int nodeY = (int)starty;
-				int dropletIndex = nodeY * height + nodeX;
-				//int dropletIndex = nodeY * mapSize + nodeX;
-				// Calculate droplet's offset inside the cell (0,0) = at NW node, (1,1) = at SE node
-				float cellOffsetX = startx - nodeX;
-				float cellOffsetY = starty - nodeY;
-
-				Droplet d = calculate(startx, starty);
-
-				dirX = (dirX * inertia - d.gradientX * (1 - inertia));
-				dirY = (dirY * inertia - d.gradientY * (1 - inertia));
-
-				float len = std::sqrt(dirX * dirX + dirY * dirY);
-				if (len != 0) {
-					dirX /= len;
-					dirY /= len;
-				}
-				startx += dirX;
-				starty += dirY;
-
-				if ((dirX == 0.0f && dirY == 0.0f) || !coordCheck(startx, starty)) {
-					break;
-				}
-
-				// Find the droplet's new height and calculate the deltaHeight
-				float newHeight = calculate(startx, starty).height;
-				float deltaHeight = newHeight - d.height;
-
-				// Calculate the droplet's sediment capacity (higher when moving fast down a slope and contains lots of water)
-				float sedimentCapacity = std::max(-deltaHeight * speed * water * sedimentCapacityFactor, minSedimentCapacity);
-
-				// If carrying more sediment than capacity, or if flowing uphill:
-				if (sediment > sedimentCapacity || deltaHeight > 0) {
-					// If moving uphill (deltaHeight > 0) try fill up to the current height, otherwise deposit a fraction of the excess sediment
-					float amountToDeposit = (deltaHeight > 0) ? std::min(deltaHeight, sediment) : (sediment - sedimentCapacity) * depositSpeed;
-					sediment -= amountToDeposit;
-
-					// Add the sediment to the four nodes of the current cell using bilinear interpolation
-					// Deposition is not distributed over a radius (like erosion) so that it can fill small pits
-					if (dropletIndex > 0 && dropletIndex < height * width) {
-						height_map[dropletIndex] += amountToDeposit * (1 - cellOffsetX) * (1 - cellOffsetY);
-					}
-					if (dropletIndex + 1 > 0 && dropletIndex + 1 < height * width) {
-						height_map[dropletIndex + 1] += amountToDeposit * cellOffsetX * (1 - cellOffsetY);
-					}
-					if (dropletIndex + width > 0 && dropletIndex + width < height * width) {
-						height_map[dropletIndex + width] += amountToDeposit * (1 - cellOffsetX) * cellOffsetY;
-					}
-					if (dropletIndex + width + 1 > 0 && dropletIndex + width + 1 < height * width) {
-						height_map[dropletIndex + width + 1] += amountToDeposit * cellOffsetX * cellOffsetY;
-					}
-
-				}
-				else {
-					// Erode a fraction of the droplet's current carry capacity.
-					// Clamp the erosion to the change in height so that it doesn't dig a hole in the terrain behind the droplet
-					float amountToErode = std::min((sedimentCapacity - sediment) * erodeSpeed, -deltaHeight);
-
-					// Use erosion brush to erode from all nodes inside the droplet's erosion radius
-					for (int brushPointIndex = 0; brushPointIndex < erosionBrushIndices[dropletIndex].size(); brushPointIndex++) {
-						int nodeIndex = erosionBrushIndices[dropletIndex][brushPointIndex];
-						float weighedErodeAmount = amountToErode * erosionBrushWeights[dropletIndex][brushPointIndex];
-						float deltaSediment = (height_map[nodeIndex] < weighedErodeAmount) ? height_map[nodeIndex] : weighedErodeAmount;
-						height_map[nodeIndex] -= deltaSediment;
-						sediment += deltaSediment;
-					}
-				}
-				// Update droplet's speed and water content
-				speed = std::sqrt(speed * speed + deltaHeight * gravity);
-				water *= (1 - evaporateSpeed);
-			}
-
-		}
-	}
-
-	Droplet calculate(float px, float py) {
-		int coordX = (int)px;
-		int coordY = (int)py;
-
-		// Calculate droplet's offset inside the cell (0,0) = at NW node, (1,1) = at SE node
-		float x = px - coordX;
-		float y = py - coordY;
-
-		int nodeIndexNW = coordY * height + coordX;    //x,y
-		float heightNW = (nodeIndexNW >= 0 && nodeIndexNW < width * height) ? height_map[nodeIndexNW] : 0.0; //x,y
-		float heightNE = (nodeIndexNW + 1 >= 0 && nodeIndexNW + 1 < width * height) ? height_map[nodeIndexNW + 1] : 0.0; //x+1,y
-		float heightSW = (nodeIndexNW + width >= 0 && nodeIndexNW + width < width * height) ? height_map[nodeIndexNW + width] : 0.0;
-		float heightSE = (nodeIndexNW + width + 1 >= 0 && nodeIndexNW + width + 1 < width * height) ? height_map[nodeIndexNW + width + 1] : 0.0;
-
-		float gradientX = (heightNE - heightNW) * (1 - y) + (heightSE - heightSW) * y;
-		float gradientY = (heightSW - heightNW) * (1 - x) + (heightSE - heightNE) * x;
-
-		float height = heightNW * (1 - x) * (1 - y) + heightNE * x * (1 - y) + heightSW * (1 - x) * y + heightSE * x * y;
-		return Droplet{ height = height, gradientX = gradientX, gradientY = gradientY };
-	}
-
-	void InitializeBrushIndices(int radius) {
-		erosionBrushIndices.resize(width * height);
-		erosionBrushWeights.resize(width * height);
-
-		std::vector<int> xOffsets;
-		xOffsets.resize(radius * radius * 4);
-		std::vector<int> yOffsets;
-		yOffsets.resize(radius * radius * 4);
-		std::vector<int> weights;
-		weights.resize(radius * radius * 4);
-		float weightSum = 0;
-		int addIndex = 0;
-
-		for (int i = 0; i < erosionBrushIndices.size(); i++) {
-			int centreX = i % width;
-			int centreY = i / height;
-
-			if (centreY <= radius || centreY >= height - radius || centreX <= radius + 1 || centreX >= width - radius) {
-				weightSum = 0;
-				addIndex = 0;
-				for (int y = -radius; y <= radius; y++) {
-					for (int x = -radius; x <= radius; x++) {
-						float sqrDst = x * x + y * y;
-						if (sqrDst < radius * radius) {
-							int coordX = centreX + x;
-							int coordY = centreY + y;
-
-							if (coordX >= 0 && coordX < width && coordY >= 0 && coordY < height) {
-								float weight = 1 - std::sqrt(sqrDst) / radius;
-								weightSum += weight;
-								weights[addIndex] = weight;
-								xOffsets[addIndex] = x;
-								yOffsets[addIndex] = y;
-								addIndex++;
-							}
-						}
-					}
-				}
-			}
-
-			int numEntries = addIndex;
-			erosionBrushIndices[i].resize(numEntries);
-			erosionBrushWeights[i].resize(numEntries);
-
-			for (int j = 0; j < numEntries; j++) {
-				erosionBrushIndices[i][j] = (yOffsets[j] + centreY) * height + xOffsets[j] + centreX;
-				erosionBrushWeights[i][j] = weights[j] / weightSum;
-			}
-		}
-	}
-
 };
 
