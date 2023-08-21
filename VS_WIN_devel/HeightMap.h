@@ -7,6 +7,7 @@
 #include <cmath>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
+#include <FastNoise/FastNoise.h>
 #include "FastNoiseLite.h"
 
 class HeightMap : public BaseMap
@@ -41,6 +42,7 @@ private:
 	};
 	struct Plate {
 		int origin;			//flat index origin
+		float base_height = 0.0f;	//base height
 		int type = 0;		//plate type
 		int shelf_size = 1;
 		std::unordered_map<int, int> indicies;	//points belonging to plate
@@ -355,6 +357,7 @@ public:
 		std::random_device rd;
 		noise.SetSeed(rd());
 		noise.SetFrequency(0.006);
+		auto fnPerlin = FastNoise::New<FastNoise::OpenSimplex2S>();
 
 		std::mt19937 mt(rd());	//rand
 		std::uniform_real_distribution<> rand(-1.0, 1.0);
@@ -383,35 +386,40 @@ public:
 		for (auto& plate : plates) {
 			float plate_height = noise.GetNoise((float)(plate.origin % width), (float)(plate.origin / width));
 			if (plate.type == 1) {	//limit continential plates 0.45 to 0.5
-				height_map[plate.origin] = plate_height > 0.5f ? 0.5 : (plate_height < 0.45 ? 0.45 : plate_height);
+				plate.base_height = plate_height > 0.5f ? 0.5 : (plate_height < 0.45 ? 0.45 : plate_height);
+				height_map[plate.origin] = plate.base_height;
 			}
 			else {	//limit continential plates 0.1 to 0.3
-				height_map[plate.origin] = plate_height > 0.3 ? 0.3 : (plate_height < 0.1 ? 0.1 : plate_height);
+				plate.base_height = plate_height > 0.3 ? 0.3 : (plate_height < 0.1 ? 0.1 : plate_height);
+				height_map[plate.origin] = plate.base_height;
 			}
 		}
 
 		//assign plates with voronoi method
 		printf("assigning points:\n");
 		for (int index = 0; index < height_map.size(); index++) {
-			int nearest_plate = getNearestPlateNoise(index);
+			int nearest_plate = getNearestPlate(index);
 			plates[nearest_plate].indicies.insert({ index, 0 });
 		}
 
 		//run relaxation algorithm
 		for (int i = 0; i < 3; i++) {
-			//lloydRelax();
+			lloydRelax();
 		}
 
-		//for (auto& plate : plates) {
-		//	plate.indicies.clear();
-		//}
-
 		////reassign indices
-		//for (int index = 0; index < height_map.size(); index++) {
-		//	int nearest_plate = getNearestPlateNoise(index);
-		//	plates[nearest_plate].indicies.insert({ index, 0 });
-		//	height_map[index] = height_map[plates[nearest_plate].origin];
-		//}
+		for (int index = 0; index < plates.size(); index++) {
+			plates[index].indicies.clear();
+		}
+
+		noise.SetFrequency(0.005);
+		for (size_t index = 0; index < height_map.size(); index++) {
+			int closest_plate_index = getNearestPlateNoise(index, noise);
+			//assign point to plate
+			plates[closest_plate_index].indicies.insert({ index,0 });
+			height_map[index] = plates[closest_plate_index].base_height;
+			
+		}
 
 		//assign plate direction vectors
 		printf("assigning motion vectors\n");
@@ -567,7 +575,7 @@ public:
 		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
 		std::random_device rd;
 		noise.SetSeed(rd());
-		noise.SetFrequency(0.09);
+		noise.SetFrequency(0.005);
 
 		for (size_t plate_index = 0; plate_index < plates.size(); plate_index++) {	//for all plates
 			if (plates[plate_index].type == 1) {	//for all continential plates
@@ -589,7 +597,7 @@ public:
 					int cx = curr_index.first % width;
 					int cy = curr_index.first / width;
 					//assign height based on shelf formula
-					float dist_to_bound = distToOcean(curr_index.first, plate_index).first;// +(noise.GetNoise((float)(cx % width), (float)(cy / width)) * 5);
+					float dist_to_bound = distToOcean(curr_index.first, plate_index).first + (noise.GetNoise((float)(cx % width), (float)(cy / width)) * 5);
 					height_map[curr_index.first] = std::max((((height_origin - curr_index.second) / plates[plate_index].shelf_size) * dist_to_bound) + curr_index.second, curr_index.second);
 
 					int x_off[4] = { -1,1,0,0 };
@@ -711,6 +719,39 @@ public:
 		}
 	}
 
+	//apply a base noise profile
+	void applyNoiseProfile(float ocean_level){
+		FastNoiseLite noise;	//simplex
+		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+		std::random_device rd;
+		noise.SetSeed(rd());
+
+		//apply general terrain
+		noise.SetFrequency(0.01);
+		for (int index = 0; index < height_map.size(); index++) {
+			if (height_map[index] > ocean_level) {
+				height_map[index] += std::abs(noise.GetNoise((float)(index % width), (float)getPlate(index))) * 0.2;
+			}
+		}
+
+		//apply mountain profile
+		noise.SetFrequency(0.05);
+		for (int index = 0; index < height_map.size(); index++) {
+			if (height_map[index] > 0.6) {
+				height_map[index] += std::abs(noise.GetNoise((float)(index % width), (float)getPlate(index))) * 0.2;
+			}
+		}
+
+		//apply fbm fractal
+		noise.SetFrequency(0.2);
+		noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+		for (int index = 0; index < height_map.size(); index++) {
+			if (height_map[index] > ocean_level) {
+				height_map[index] += std::abs(noise.GetNoise((float)(index % width), (float)(index / height))) * 0.05;
+			}
+		}
+	}
+
 	//utils
 	//------------------------------------------------------------------------------
 	//check plate origin: returns true if valid origin
@@ -764,25 +805,17 @@ public:
 	}
 
 	//get closest plate to index (noised)
-	int getNearestPlateNoise(int index) {
-		FastNoiseLite noise;
-		std::random_device rd;
-		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
-		noise.SetSeed(rd());
-		noise.SetFrequency(0.001f);
-
-		float min_dist = 10000000.0f;
-		int np = 0;
-		float variance = std::abs((noise.GetNoise((float)(index % width), (float)(index / width)))) * 10;
-		//printf("%f\n", variance);
+	int getNearestPlateNoise(int index, FastNoiseLite& noise) {
+		int closest_plate_index = 0;
+		float dist = 10000000000.0f;
+		//find closest plate
 		for (size_t i = 0; i < plates.size(); i++) {
-			float dist = coordDist(index, plates[i].origin) + variance;
-			if( dist < min_dist) {
-				min_dist = coordDist(index, plates[i].origin);
-				np = i;
+			if (coordDist(index, plates[i].origin) + ((noise.GetNoise((float)(index % width), (float)(index / width))) * 50) < dist) {
+				closest_plate_index = i;
+				dist = coordDist(index, plates[i].origin);
 			}
 		}
-		return np;
+		return closest_plate_index;
 	}
 
 	//get plate motion vector

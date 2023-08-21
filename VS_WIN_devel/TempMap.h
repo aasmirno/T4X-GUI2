@@ -248,7 +248,6 @@ public:
 		fnFractal->SetSource(fnPerlin);
 		fnFractal->SetOctaveCount(9);
 		float freq = 0.005;
-
 		for (size_t index = 0; index < cloud_map.size(); index++) {
 			if (cloud_map[index].moisture > 0.0f) {
 				int x = index % width;

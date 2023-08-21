@@ -159,8 +159,10 @@ void Map::autoGeneratePlate() {
 	h_map.assignNeighbors();
 	h_map.assignBoundaries();
 
-	//h_map.assignShelfSize();
-	//h_map.createShelf();
+	h_map.assignShelfSize();
+	h_map.createShelf();
+
+	h_map.applyNoiseProfile(ocean_level);
 }
 
 bool Map::loadHeightMap(const std::string& file_name) {
@@ -408,6 +410,24 @@ void Map::drawDebug(int mx, int my) {
 			0.0f	//minimum tilt angle
 		};
 		water.iterate(h_map.getHeightMap(), ocean_level, args);
+	}
+	if ((ImGui::Button("iterate 1000"))) {
+		float args[] = {
+			0.5f,	//time increment
+			1.0f,	//cross sectional area of connecting pipes
+			9.8f,	//gravity constant
+			0.5f,	//pipe length
+			1.0f,	//grid x distance
+			1.0f,	//grid y distance
+
+			0.1f,	//sediment capacity constant
+			1.0f,	//dissolving constant
+			1.0f,	//deposition constant
+			0.0f	//minimum tilt angle
+		};
+		for (int i = 0; i < 500; i++) {
+			water.iterate(h_map.getHeightMap(), ocean_level, args);
+		}
 	}
 
 	if (ImGui::Button("compress")) {

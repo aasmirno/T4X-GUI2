@@ -69,7 +69,7 @@ private:
 
 	//tile map parameters
 	TileMap tiles;
-	float ocean_level = 0.5f;
+	float ocean_level = 0.42f;
 	float beach_height = 0.02f;
 	float mountain_height = 0.9f;
 
