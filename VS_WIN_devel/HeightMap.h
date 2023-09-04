@@ -14,9 +14,9 @@ class HeightMap : public BaseMap
 {
 private:
 	//enums
-	enum ElevationType : uint16_t { L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12, L13, L14, L15, L16};
+	enum ElevationType : uint16_t { L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12, L13, L14, L15, L16 };
 	enum Direction { L, R, U, D };
-	enum BoundaryType { CONVERG_CNT, DIVERG_CNT, CONVERG_OCN, DIVERG_OCN, CONVERG_OCNCNT, NONE};
+	enum BoundaryType { CONVERG_CNT, DIVERG_CNT, CONVERG_OCN, DIVERG_OCN, CONVERG_OCNCNT, NONE };
 
 	//heightmap metdata
 	std::vector<uint16_t> height_map_ids;
@@ -193,7 +193,7 @@ public:
 
 	//initialise height map to 0.0f
 	void initialise(int w, int h) {
-		BaseMap::initialise(w,h);
+		BaseMap::initialise(w, h);
 		refresh();
 	}
 
@@ -205,7 +205,7 @@ public:
 
 		height_map_ids.clear();
 		height_map_ids.resize(height * width);
-		
+
 		plates.clear();
 		voronoi_ids.clear();
 	}
@@ -215,12 +215,41 @@ public:
 	* ------------------------------------------------------------------------------
 	*/
 	//add noise to current height map
-	void addNoise(FastNoiseLite &noise, float octave_weight) {
+	void addNoise(FastNoiseLite& noise, float octave_weight) {
 		for (size_t index = 0; index < height_map.size(); index++)
 		{
 			height_map[index] += ((noise.GetNoise((float)(index % width), (float)(index / height)) + 1.0) * octave_weight);
 		}
+	}
 
+	//condition values: 0 = no condition, 1 = plate check, 2 = above sea level
+	int gradientMax(uint8_t condition, int time_out) {
+		int start = getRand(2);
+		int startX = start % width;
+		int startY = start / width;
+		bool moved = true;
+
+		while (moved) {
+			float curr_max = height_map[startY * width + startX];
+			moved = false;
+			int xoff[] = { -1, 1, 0, 0 };
+			int yoff[] = { 0, 0, -1, 1 };
+			int nx = startX;
+			int ny = startY;
+
+			for (int i = 0; i < 4; i++) {
+				if (coordCheck(startY + yoff[i], startX + xoff[i]) && height_map[(startY + yoff[i]) * width + (startX + xoff[i])] > curr_max) {
+					curr_max = height_map[(startY + yoff[i]) * width];
+					moved = true;
+					nx = startX + xoff[i];
+					ny = startY + yoff[i];
+				}
+			}
+			startX = nx;
+			startY = ny;
+		}
+
+		return startY * width + startX;
 	}
 
 	//subtract noise from current height map
@@ -236,8 +265,9 @@ public:
 		}
 	}
 
-	//get random point on map
-	int getRand() {
+	//get random point on map given a condition and a time out value
+	//condition values: 0 = no condition, 1 = plate check, 2 = above sea level
+	int getRand(uint8_t condition, int time_out) {
 		std::random_device rd;
 		std::mt19937 mt(rd());
 
@@ -255,6 +285,18 @@ public:
 				return -1;
 			}
 		}
+
+		return search_y * width + search_x;
+	}
+
+	int getRand(int g) {
+		std::random_device rd;
+		std::mt19937 mt(rd());
+
+		std::uniform_real_distribution<> coordx(0, width - 3);
+		std::uniform_real_distribution<> coordy(0, height - 3);
+		int search_x = (int)coordx(mt);
+		int search_y = (int)coordy(mt);
 
 		return search_y * width + search_x;
 	}
@@ -320,7 +362,7 @@ public:
 				FAULT_PROFILE_CVG_OC_O[i] = -0.1;
 			}
 			else if (i < 50) {
-				FAULT_PROFILE_CVG_OC_O[i] = -0.02 * (-i+50);
+				FAULT_PROFILE_CVG_OC_O[i] = -0.02 * (-i + 50);
 			}
 			//continent convergence
 			if (i < 5) {
@@ -338,16 +380,18 @@ public:
 			//conitnent side subduction
 			if (i < 5) {
 				FAULT_PROFILE_CVG_OC_C[i] = 0.0;
-			} else if (i < 32) {
+			}
+			else if (i < 32) {
 				FAULT_PROFILE_CVG_C[i] = 0.005 * (i - 20);
 				FAULT_PROFILE_CVG_OC_C[i] = 0.005 * (i - 20);
-			}else if (i < 37) {
+			}
+			else if (i < 37) {
 				FAULT_PROFILE_CVG_C[i] = 0.1;
 				FAULT_PROFILE_CVG_OC_C[i] = 0.1;
 			}
 			else if (i < 50) {
 				FAULT_PROFILE_CVG_C[i] = 0.005 * ((-i) + 50);
-				FAULT_PROFILE_CVG_OC_C[i] = 0.005 *((-i) + 50);
+				FAULT_PROFILE_CVG_OC_C[i] = 0.005 * ((-i) + 50);
 			}
 		}
 
@@ -371,7 +415,7 @@ public:
 		//generate origins
 		printf("creating plates:\n");
 		for (int i = 0; i < num_plates; i++) {
-			printf("	Plate %d\n",i);
+			printf("	Plate %d\n", i);
 			int plate_org = getRand();
 			if (plate_org == -1) {
 				break;
@@ -418,7 +462,7 @@ public:
 			//assign point to plate
 			plates[closest_plate_index].indicies.insert({ index,0 });
 			height_map[index] = plates[closest_plate_index].base_height;
-			
+
 		}
 
 		//assign plate direction vectors
@@ -582,7 +626,7 @@ public:
 				float height_origin = height_map[plates[plate_index].origin];	//get current plate height
 
 				std::queue<std::pair<int, float>> search_queue; //<index, closest ocean plate height>
-				std::unordered_map<int, int> visited;	
+				std::unordered_map<int, int> visited;
 				//seed bfs queue with all ocean boundary tiles
 				for (auto& point : plates[plate_index].boundary_points) {
 					if (plates[point.second].type == 0) {
@@ -614,7 +658,7 @@ public:
 							) {
 
 							//add to queue
-							search_queue.push({ ty * width + tx, dist_pair.second});
+							search_queue.push({ ty * width + tx, dist_pair.second });
 							visited.insert({ ty * width + tx, 0 });
 						}
 
@@ -627,7 +671,7 @@ public:
 	//get closest ocean boundary point <distance, ocean plate height>
 	std::pair<float, float> distToOcean(int index, int plate) {
 		if (!coordCheck(index) || !coordCheck(plate)) {
-			return {-1,-1};
+			return { -1,-1 };
 		}
 		int closest_index = 0;
 		float neighbor_height = 0.0f;
@@ -701,7 +745,7 @@ public:
 
 					int tx = cx + x_off[off];
 					int ty = cy + y_off[off];
-					int dist = (int)coordDist(ty * width + tx, curr_index.seed) - (abs(noise.GetNoise((float)tx, (float)ty))*5);
+					int dist = (int)coordDist(ty * width + tx, curr_index.seed) - (abs(noise.GetNoise((float)tx, (float)ty)) * 5);
 
 					if (coordCheck(tx, ty)
 						&& plates[plate_index].indicies.find(ty * width + tx) != plates[plate_index].indicies.end()
@@ -720,25 +764,27 @@ public:
 	}
 
 	//apply a base noise profile
-	void applyNoiseProfile(float ocean_level){
+	void applyNoiseProfile(float ocean_level) {
 		FastNoiseLite noise;	//simplex
 		noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
 		std::random_device rd;
 		noise.SetSeed(rd());
 
 		//apply general terrain
+		noise.SetFractalType(FastNoiseLite::FractalType_None);
 		noise.SetFrequency(0.01);
 		for (int index = 0; index < height_map.size(); index++) {
 			if (height_map[index] > ocean_level) {
-				height_map[index] += std::abs(noise.GetNoise((float)(index % width), (float)getPlate(index))) * 0.2;
+				height_map[index] += std::abs(noise.GetNoise((float)(index % width), (float)(index / width))) * 0.2;
 			}
 		}
 
 		//apply mountain profile
-		noise.SetFrequency(0.05);
+		noise.SetFrequency(0.01);
+		noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
 		for (int index = 0; index < height_map.size(); index++) {
 			if (height_map[index] > 0.6) {
-				height_map[index] += std::abs(noise.GetNoise((float)(index % width), (float)getPlate(index))) * 0.2;
+				height_map[index] += std::abs(noise.GetNoise((float)(index % width), (float)(index / width))) * 0.2;
 			}
 		}
 
@@ -747,7 +793,7 @@ public:
 		noise.SetFractalType(FastNoiseLite::FractalType_FBm);
 		for (int index = 0; index < height_map.size(); index++) {
 			if (height_map[index] > ocean_level) {
-				height_map[index] += std::abs(noise.GetNoise((float)(index % width), (float)(index / height))) * 0.05;
+				height_map[index] += std::abs(noise.GetNoise((float)(index % width), (float)(index / width))) * 0.05;
 			}
 		}
 	}
@@ -871,6 +917,63 @@ public:
 		}
 
 		return NONE;
+	}
+
+	void applyGaussian(int sigma, int kernel_size) {
+		//create convolutional filter
+		std::vector<std::pair<int, float>> gaussian;
+
+		//ensure kernel size is acceptable
+		kernel_size = (kernel_size % 2 == 1) ? kernel_size : kernel_size + 1;
+
+		//assign offset and weight
+		for (int i = 0; i < kernel_size; i++) {
+			float gauss_exp = exp(-(pow(i - (kernel_size / 2), 2) / (2 * pow(sigma, 2))));
+			float gauss_c = 1 / (std::sqrt(2 * 3.1415926 * pow(sigma, 2)));
+			gaussian.push_back({ i - (kernel_size / 2), gauss_c * gauss_exp });
+		}
+
+
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				//apply gaussian to points
+				int num_points = kernel_size;
+				float convolved_value = 0.0f;
+				for (auto off : gaussian) {
+					if (coordCheck(x + off.first, y)) {
+						convolved_value += off.second * height_map[y * width + (x + off.first)];
+					}
+					else {
+						num_points--;
+					}
+				}
+				height_map[y * width + x] = convolved_value;
+			}
+		}
+
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				//apply gaussian to points
+				int num_points = kernel_size;
+				float convolved_value = 0.0f;
+				for (auto off : gaussian) {
+					if (coordCheck(y + off.first, x)) {
+						convolved_value += off.second * height_map[(y + off.first) * width + x];
+					}
+					else {
+						num_points--;
+					}
+				}
+				height_map[y * width + x] = convolved_value;
+			}
+		}
+
+	}
+
+	void createRivers() {
+		for (int i = 0; i < 4; i++) {
+			printf("max at: %d\n", gradientMax());
+		}
 	}
 };
 

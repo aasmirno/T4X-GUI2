@@ -297,7 +297,7 @@ public:
 				int y_off[] = { 0, 0, 1, -1,  -1, -1, 1,  1 };
 				for (int i = 0; i < 4; i++) {
 					int neighbor_index = (curr_y + y_off[i]) * width + (curr_x + x_off[i]);
-					if (coordCheck(curr_y + y_off[i], curr_x + x_off[i]) && height_map[neighbor_index] > ocean_level) {
+					if (coordCheck(curr_x + x_off[i], curr_y + y_off[i]) && height_map[neighbor_index] > ocean_level) {
 						int opp_index = 1;
 						switch (i) {
 						case 1:
@@ -423,12 +423,14 @@ public:
 				//calculate x component angle
 				float height_left_x = coordCheck(curr_x - 1, curr_y) ? height_map[index - 1] : height_map[index];
 				float height_right_x = coordCheck(curr_x + 1, curr_y) ? height_map[index + 1] : height_map[index];
-				tilt_angles[index].x_angle = std::atan2(abs(height_right_x - height_left_x), 3.0f);
+				float angle = std::atan2(abs(height_right_x - height_left_x), 3.0f);
+				tilt_angles[index].x_angle = (angle > min_tilt_angle) ? angle : min_tilt_angle;
 
 				//calculate x component angle
 				float height_left_y = coordCheck(curr_x, curr_y - 1) ? height_map[index - width] : height_map[index];
 				float height_right_y = coordCheck(curr_x, curr_y + 1) ? height_map[index + width] : height_map[index];
-				tilt_angles[index].y_angle = std::atan2(abs(height_right_y - height_left_y), 3.0f);
+				angle = std::atan2(abs(height_right_y - height_left_y), 3.0f);
+				tilt_angles[index].y_angle = (angle > min_tilt_angle) ? angle : min_tilt_angle;
 			}
 		}
 	}

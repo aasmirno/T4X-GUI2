@@ -395,19 +395,21 @@ void Map::drawDebug(int mx, int my) {
 		water.updateErosionExterior(h_map.getHeightMap(), ocean_level);
 	}
 	ImGui::SameLine();
+
+
 	if ((ImGui::Button("iterate"))) {
 		float args[] = {
 			0.5f,	//time increment
 			1.0f,	//cross sectional area of connecting pipes
 			9.8f,	//gravity constant
 			0.5f,	//pipe length
-			1.0f,	//grid x distance
-			1.0f,	//grid y distance
+			0.3f,	//grid x distance
+			0.3f,	//grid y distance
 
-			0.1f,	//sediment capacity constant
-			1.0f,	//dissolving constant
+			0.5f,	//sediment capacity constant
+			0.7f,	//dissolving constant
 			1.0f,	//deposition constant
-			0.0f	//minimum tilt angle
+			0.2f	//minimum tilt angle
 		};
 		water.iterate(h_map.getHeightMap(), ocean_level, args);
 	}
@@ -417,13 +419,13 @@ void Map::drawDebug(int mx, int my) {
 			1.0f,	//cross sectional area of connecting pipes
 			9.8f,	//gravity constant
 			0.5f,	//pipe length
-			1.0f,	//grid x distance
-			1.0f,	//grid y distance
+			0.3f,	//grid x distance
+			0.3f,	//grid y distance
 
-			0.1f,	//sediment capacity constant
-			1.0f,	//dissolving constant
+			0.5f,	//sediment capacity constant
+			0.7f,	//dissolving constant
 			1.0f,	//deposition constant
-			0.0f	//minimum tilt angle
+			0.2f	//minimum tilt angle
 		};
 		for (int i = 0; i < 500; i++) {
 			water.iterate(h_map.getHeightMap(), ocean_level, args);
@@ -447,12 +449,22 @@ void Map::drawDebug(int mx, int my) {
 	ImGui::Text("	outflow: %f", water.getTotalOut());
 
 	std::vector<int> neighbors = h_map.getBoundaryList(my * map_width + mx);
-	ImGui::Text("plate index '' '': %d", h_map.getPlate(my * map_width + mx) );
-	ImGui::Text("dist to ocean: %f, height: %f", h_map.distToOcean(my* map_width + mx, h_map.getPlate(my* map_width + mx)).first, h_map.distToOcean(my* map_width + mx, h_map.getPlate(my* map_width + mx)).second);
+	ImGui::Text("plate index '' '': %d", h_map.getPlate(my * map_width + mx));
+	ImGui::Text("dist to ocean: %f, height: %f", h_map.distToOcean(my * map_width + mx, h_map.getPlate(my * map_width + mx)).first, h_map.distToOcean(my * map_width + mx, h_map.getPlate(my * map_width + mx)).second);
 	ImGui::Text("Neighbors");
 	for (auto& n : neighbors) {
 		ImGui::Text("	Plate %d", n);
 	}
+
+	if (ImGui::Button("apply gaussian")) {
+		h_map.applyGaussian(3, 9);
+	}
+	if (ImGui::Button("add noise p")){
+		h_map.applyNoiseProfile(ocean_level);
+	}
+	if (ImGui::Button("f max"))
+		h_map.createRivers();
+
 	ImGui::End();
 }
 
