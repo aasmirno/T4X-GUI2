@@ -6,15 +6,13 @@ build
 
 #visual studio development files
 .vs
-VS_WIN_devel/Debug
-VS_WIN_devel/x64/
-VS_WIN_devel/natural_earth_vector.zip
+vs_dev/Debug
+vs_dev/UnitTesting/
+vs_dev/x64/
+vs_dev/natural_earth_vector.zip
 
 #libraries
 lib/
-
-#unit testing suite
-/UnitTestint
 
 
 *.sln
