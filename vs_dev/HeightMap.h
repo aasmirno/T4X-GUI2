@@ -74,26 +74,6 @@ private:
 
 	std::vector<uint16_t> voronoi_ids;
 	std::vector<Plate> plates;
-
-	//erosion params
-	std::vector<std::vector<int>> erosionBrushIndices;
-	std::vector<std::vector<float>> erosionBrushWeights;
-	int erosionRadius = 1;
-	float inertia = .05f; // At zero, water will instantly change direction to flow downhill. At 1, water will never change direction. 
-	float sedimentCapacityFactor = 3; // Multiplier for how much sediment a droplet can carry
-	float minSedimentCapacity = .01f; // Used to prevent carry capacity getting too close to zero on flatter terrain
-
-	float erodeSpeed = .5f;
-
-	float depositSpeed = .3f;
-
-	float evaporateSpeed = .01f;
-	float gravity = 4;
-	int maxDropletLifetime = 30;
-
-	float initialWaterVolume = 1;
-	float initialSpeed = 1;
-
 public:
 	float getMaxHeight() { return max_height; }
 
@@ -222,34 +202,38 @@ public:
 		}
 	}
 
-	//condition values: 0 = no condition, 1 = plate check, 2 = above sea level
-	int gradientMax(uint8_t condition, int time_out) {
-		int start = getRand(2);
-		int startX = start % width;
-		int startY = start / width;
-		bool moved = true;
+	//get random point on map given a condition and a time out value
+	//if the number of attempts exceeds the timeout value, the function returns -1
+	int getRand(int time_out) {
+		//initialise prng components
+		std::random_device rd;
 
-		while (moved) {
-			float curr_max = height_map[startY * width + startX];
-			moved = false;
-			int xoff[] = { -1, 1, 0, 0 };
-			int yoff[] = { 0, 0, -1, 1 };
-			int nx = startX;
-			int ny = startY;
+		std::mt19937 mt(rd());
 
-			for (int i = 0; i < 4; i++) {
-				if (coordCheck(startY + yoff[i], startX + xoff[i]) && height_map[(startY + yoff[i]) * width + (startX + xoff[i])] > curr_max) {
-					curr_max = height_map[(startY + yoff[i]) * width];
-					moved = true;
-					nx = startX + xoff[i];
-					ny = startY + yoff[i];
-				}
+		std::uniform_real_distribution<> coordx(0, width - 3);
+		std::uniform_real_distribution<> coordy(0, height - 3);
+		int search_x = (int)coordx(mt);	//gauranteed to be in bounds
+		int search_y = (int)coordy(mt);	//gauranteed to be in bounds
+
+		int iterations = 0;
+		bool found = false;
+
+		while (!found) {
+			//update search point
+			search_x = (int)coordx(mt);
+			search_y = (int)coordy(mt);
+
+			//check found condition
+			found = orgCheck(search_y * width + search_x);
+
+			//check timeout condition
+			iterations++;
+			if (iterations > time_out) {
+				return -1;
 			}
-			startX = nx;
-			startY = ny;
 		}
 
-		return startY * width + startX;
+		return search_y * width + search_x;
 	}
 
 	//subtract noise from current height map
@@ -263,42 +247,6 @@ public:
 				height_map[index] = 0;
 			}
 		}
-	}
-
-	//get random point on map given a condition and a time out value
-	//condition values: 0 = no condition, 1 = plate check, 2 = above sea level
-	int getRand(uint8_t condition, int time_out) {
-		std::random_device rd;
-		std::mt19937 mt(rd());
-
-		std::uniform_real_distribution<> coordx(0, width - 3);
-		std::uniform_real_distribution<> coordy(0, height - 3);
-		int search_x = (int)coordx(mt);
-		int search_y = (int)coordy(mt);
-		int iterations = 0;
-
-		while (!orgCheck(search_y * width + search_x)) {
-			search_x = (int)coordx(mt);
-			search_y = (int)coordy(mt);
-			iterations++;
-			if (iterations > 30) {
-				return -1;
-			}
-		}
-
-		return search_y * width + search_x;
-	}
-
-	int getRand(int g) {
-		std::random_device rd;
-		std::mt19937 mt(rd());
-
-		std::uniform_real_distribution<> coordx(0, width - 3);
-		std::uniform_real_distribution<> coordy(0, height - 3);
-		int search_x = (int)coordx(mt);
-		int search_y = (int)coordy(mt);
-
-		return search_y * width + search_x;
 	}
 
 	//get angle between motion vectors
@@ -416,7 +364,7 @@ public:
 		printf("creating plates:\n");
 		for (int i = 0; i < num_plates; i++) {
 			printf("	Plate %d\n", i);
-			int plate_org = getRand();
+			int plate_org = getRand(30);
 			if (plate_org == -1) {
 				break;
 			}
@@ -957,7 +905,7 @@ public:
 				int num_points = kernel_size;
 				float convolved_value = 0.0f;
 				for (auto off : gaussian) {
-					if (coordCheck(y + off.first, x)) {
+					if (coordCheck(x, y +off.first)) {
 						convolved_value += off.second * height_map[(y + off.first) * width + x];
 					}
 					else {
@@ -970,10 +918,5 @@ public:
 
 	}
 
-	void createRivers() {
-		for (int i = 0; i < 4; i++) {
-			printf("max at: %d\n", gradientMax());
-		}
-	}
 };
 

@@ -226,13 +226,13 @@ void Map::draw(int mx, int my) {
 	drawDebug(mx, my);
 
 	//bind and draw base textures
-	updateBase();
+	//updateBase();
 	glBindVertexArray(base_vao_id);
 	glDrawArrays(GL_POINTS, 0, map_width * map_height);
 
 	//bind and draw overlay textures
 	if (draw_air_temp || draw_surface_temp || draw_clouds || draw_resources || draw_pv || draw_water || draw_velocity) {
-		updateOverlay();
+		//updateOverlay();
 		glBindVertexArray(overlay_vao_id);
 		glDrawArrays(GL_POINTS, 0, map_width * map_height);
 	}
@@ -398,39 +398,23 @@ void Map::drawDebug(int mx, int my) {
 
 
 	if ((ImGui::Button("iterate"))) {
-		float args[] = {
-			0.5f,	//time increment
-			1.0f,	//cross sectional area of connecting pipes
-			9.8f,	//gravity constant
-			0.5f,	//pipe length
-			0.3f,	//grid x distance
-			0.3f,	//grid y distance
-
-			0.5f,	//sediment capacity constant
-			0.7f,	//dissolving constant
-			1.0f,	//deposition constant
-			0.2f	//minimum tilt angle
-		};
 		water.iterate(h_map.getHeightMap(), ocean_level, args);
 	}
 	if ((ImGui::Button("iterate 1000"))) {
-		float args[] = {
-			0.5f,	//time increment
-			1.0f,	//cross sectional area of connecting pipes
-			9.8f,	//gravity constant
-			0.5f,	//pipe length
-			0.3f,	//grid x distance
-			0.3f,	//grid y distance
-
-			0.5f,	//sediment capacity constant
-			0.7f,	//dissolving constant
-			1.0f,	//deposition constant
-			0.2f	//minimum tilt angle
-		};
 		for (int i = 0; i < 500; i++) {
 			water.iterate(h_map.getHeightMap(), ocean_level, args);
 		}
 	}
+	if (ImGui::Button("apply gaussian")) {
+		h_map.applyGaussian(3, 9);
+	}
+
+	if (ImGui::Button("add noise p")) {
+		h_map.applyNoiseProfile(ocean_level);
+	}
+
+	if (ImGui::Button("f max"))
+		water.createRivers(ocean_level, h_map.getHeightMap());
 
 	if (ImGui::Button("compress")) {
 		h_map.compress();
@@ -439,6 +423,18 @@ void Map::drawDebug(int mx, int my) {
 	if (ImGui::Button("lloyd-r")) {
 		h_map.lloydRelax();
 	}
+
+	ImGui::SliderFloat("time increment", &args[0], 0.0f, 2.0f);
+	ImGui::SliderFloat("pipe area", &args[1], 0.0f, 2.0f);
+	ImGui::SliderFloat("grav accel", &args[2], 0.1f, 10.0f);
+	ImGui::SliderFloat("pipe length", &args[3], 0.0f, 2.0f);
+	ImGui::SliderFloat("x grid dist", &args[4], 0.0f, 2.0f);
+	ImGui::SliderFloat("y grid dist", &args[5], 0.0f, 2.0f);
+	ImGui::SliderFloat("sediment cap", &args[6], 0.0f, 2.0f);
+	ImGui::SliderFloat("dissolving constant", &args[7], 0.0f, 2.0f);
+	ImGui::SliderFloat("deposition constant", &args[8], 0.0f, 2.0f);
+	ImGui::SliderFloat("min tilt angle", &args[9], 0.0f, 2.0f);
+	ImGui::SliderFloat("evap constant", &args[10], 0.0f, 2.0f);
 
 	ImGui::Text("height at (%d,%d): %f", mx, my, h_map.getHeight(mx, my));
 	ImGui::Text("water level at (%d,%d): %f", mx, my, water.getWaterAt(mx, my));
@@ -455,15 +451,6 @@ void Map::drawDebug(int mx, int my) {
 	for (auto& n : neighbors) {
 		ImGui::Text("	Plate %d", n);
 	}
-
-	if (ImGui::Button("apply gaussian")) {
-		h_map.applyGaussian(3, 9);
-	}
-	if (ImGui::Button("add noise p")){
-		h_map.applyNoiseProfile(ocean_level);
-	}
-	if (ImGui::Button("f max"))
-		h_map.createRivers();
 
 	ImGui::End();
 }

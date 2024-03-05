@@ -8,6 +8,9 @@
 #include <windows.h> 
 
 #include "ShaderManager.h";
+#include "Logger.h"
+#include "EventManager.h"
+#include "MenuHandler.h"
 
 #include <gl/glew.h>
 #include "imgui.h"
@@ -25,7 +28,9 @@
 */
 class MainController {
 private:
-	//sdl values
+	/*
+		sdl values
+	*/
 	int WINDOW_W = 1900;
 	int WINDOW_H = 1030;
 
@@ -37,7 +42,7 @@ private:
 		Unit Manager Section
 	*/
 	//camera controller
-	Camera cam;	
+	Camera cam;
 	int mouse_x = 0;
 	int mouse_y = 0;
 	bool mouse1_pressed = false;
@@ -45,18 +50,18 @@ private:
 	//game controller
 	GameControl game;
 
+	//event manager
+	std::vector<EventManager::StateEvent> events;
+
+	//menu manager
+	MenuHandler menus = MenuHandler(nullptr, -1, -1);
+
 	/*
 		Graphics and gui
 	*/
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
 	bool Running = true;	//run flag
 	bool debug = false;		//debug flag
-
-	//Imgui drawing flags
-	bool draw_demo = false;
-	bool draw_start = true;
-	bool draw_options = false;
-	bool draw_pause = false;
 
 	//game running flag
 	bool draw_game = false;
@@ -78,6 +83,8 @@ private:
 	*/
 	void GameLoop();
 
+	void onEvent(EventManager::StateEvent);
+
 	/*
 		clear and free grpahical systems
 	*/
@@ -96,17 +103,6 @@ private:
 	*/
 	void menuHandler();
 
-	/*
-		Imgui menus
-	*/
-	//draw imgui debug menu
-	void DebugMenu();
-	//draw start menu
-	void drawStart();
-	//draw options menu
-	void drawOpts();
-	//draw game pause menu
-	void drawPauseMenu();
 public:
 	MainController();
 	int Start();

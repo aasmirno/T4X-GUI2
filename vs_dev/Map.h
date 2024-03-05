@@ -98,7 +98,19 @@ private:
 
 	//water map params
 	WaterMap water;
-
+	float args[11] = {
+			1.0f,	//time increment
+			1.0f,	//cross sectional area of connecting pipes
+			9.8f,	//gravity constant
+			0.5f,	//pipe length
+			0.1f,	//grid x distance
+			0.1f,	//grid y distance
+			0.5f,	//sediment capacity constant
+			0.3f,	//dissolving constant
+			1.0f,	//deposition constant
+			0.2f,	//minimum tilt angle
+			0.2f	//evap const
+	};
 
 	//map data
 	int map_width = 700;

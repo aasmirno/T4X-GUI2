@@ -1,11 +1,16 @@
 #include "MainController.h"
 
 MainController::MainController() {
+	void (*fcn)(EventManager::StateEvent) { &onEvent };
 
+	menus = MenuHandler(fcn, WINDOW_W, WINDOW_H);
 }
 
 bool MainController::genInit() {
-	// Setup SDL
+	/*
+		SDL setup
+	*/
+	//initialise all sdl modules
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
 		printf("sdl init error: %s\n", SDL_GetError());
@@ -19,14 +24,12 @@ bool MainController::genInit() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
 
-	// From 2.0.18: Enable native IME.
+	// From 2.0.18: Enable native IME 
+	//useless please delete
 #ifdef SDL_HINT_IME_SHOW_UI
 	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 #endif
 
-	/*
-		SDL setup
-	*/
 	// Create window with graphics context
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);	//use double buffer
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);		//set depth buffer bits to 24
@@ -59,7 +62,8 @@ bool MainController::genInit() {
 		return false;
 	}
 
-	printf("sdl initialised\n");
+	printf("sdl initialised succesfully\n");
+
 	/*
 		Glew/Gl setup
 	*/
@@ -80,6 +84,7 @@ bool MainController::genInit() {
 	/*
 		ImGui setup
 	*/
+	//check safeguard and create imgui context
 	IMGUI_CHECKVERSION();
 	im_context = ImGui::CreateContext();
 
@@ -92,21 +97,17 @@ bool MainController::genInit() {
 	style.WindowPadding = ImVec2(0, 0);
 	style.ItemSpacing = ImVec2(4, 1);
 
-
-	/*
-		Internal setup
-	*/
+	//check for GL errors
 	GLenum err;
-	//check for errors
 	if ((err = glGetError()) != GL_NO_ERROR) {
 		printf("%d", err);
 	}
-
+	
 	return true;
 }
 
 int MainController::Start() {
-	//try to initialise required systems
+	//try to initialise dependency systems
 	if (genInit() != true) {
 		return -1;
 	}
@@ -168,9 +169,16 @@ int MainController::Start() {
 
 		//conduct game loop
 		GameLoop();
+	
+		event_manager.debugEvents();
+		event_manager.clear();
 	}
 
 	return 0;
+}
+
+void MainController::onEvent(EventManager::StateEvent) {
+
 }
 
 void MainController::EventHandle(SDL_Event& event) {
@@ -245,15 +253,11 @@ void MainController::Render() {
 	//drawing logic
 	if (draw_game) {
 		game.Draw();
-		if (draw_pause)
-			drawPauseMenu();
+
 	}
 	else {
 		menuHandler();
 	}
-
-	if (debug)
-		DebugMenu();
 
 	//render imgui components
 	ImGui::Render();
@@ -289,133 +293,43 @@ void MainController::Cleanup() {
 
 //handle menu drawing logic
 void MainController::menuHandler() {
-	if (draw_start)
+	menus.draw();
+	/*if (draw_start)
 		drawStart();
 	if (draw_options)
 		drawOpts();
 	if (draw_demo)
-		ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();*/
 }
 
-void MainController::DebugMenu() {
-	ImGui::Begin("Debug");
+//void MainController::DebugMenu() {
+//	ImGui::Begin("Debug");
+//
+//	ImGui::SeparatorText("Window");
+//	ImGui::Text("window size w: %d h: %d", WINDOW_W, WINDOW_H);
+//
+//	ImGui::SeparatorText("camera values");
+//
+//	if (draw_game) {
+//		if (ImGui::Button("reset cam")) {
+//			cam.reset(340, WINDOW_W, 106, WINDOW_H);
+//		}
+//	}
+//	ImGui::Text("mouse pos window(%d,%d), cam(%f,%f), map(%d, %d), index(%d)", mouse_x, mouse_y, cam.windowToCam(mouse_x, WINDOW_W), cam.windowToCam(mouse_y, WINDOW_H), cam.windowToTileX(mouse_x, WINDOW_W), cam.windowToTileY(mouse_y, WINDOW_H), cam.windowToTileY(mouse_y, WINDOW_H) * 600 + cam.windowToTileX(mouse_x, WINDOW_W));
+//	ImGui::Text("cam pos (org) xm,ym: (%f,%f), xw,yw (%f,%f)", cam.getX(), cam.getY(), cam.getWindowX(WINDOW_W), cam.getWindowY(WINDOW_H));
+//	float dx = cam.windowToCam(mouse_x, WINDOW_W) - cam.getX();
+//	float dy = cam.windowToCam(mouse_y, WINDOW_H) - cam.getY();
+//	float r1x = dx / 6000;
+//	float r1y = dy / 6000;
+//
+//	ImGui::Text("dif dx,dy(%f,%f), /x,/y(%f,%f), /z(%f,%f)", dx, dy, r1x, r1y, r1x / cam.getZoom(), r1y / cam.getZoom());
+//	ImGui::Text("dist mpos to: origin(%f,%f), 0,0 (%d,%d)", mouse_x - cam.getX(), mouse_y - cam.getY(), mouse_x - (int)(WINDOW_W / 2), mouse_y - (int)(WINDOW_H / 2));
+//	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
+//	ImGui::Text("mouse1_pressed: %d", mouse1_pressed);
+//
+//	ImGui::SeparatorText("imgui controls");
+//	ImGui::Text("imgui io flags wantMouse: %d wantKeyboard: %d", ImGui::GetIO().WantCaptureMouse, ImGui::GetIO().WantCaptureKeyboard);
+//
+//	ImGui::End();
+//}
 
-	ImGui::SeparatorText("Window");
-	ImGui::Text("window size w: %d h: %d", WINDOW_W, WINDOW_H);
-
-	ImGui::SeparatorText("camera values");
-
-	if (draw_game) {
-		if (ImGui::Button("reset cam")) {
-			cam.reset(340, WINDOW_W, 106, WINDOW_H);
-		}
-	}
-	ImGui::Text("mouse pos window(%d,%d), cam(%f,%f), map(%d, %d), index(%d)", mouse_x, mouse_y, cam.windowToCam(mouse_x, WINDOW_W), cam.windowToCam(mouse_y, WINDOW_H), cam.windowToTileX(mouse_x, WINDOW_W), cam.windowToTileY(mouse_y, WINDOW_H), cam.windowToTileY(mouse_y, WINDOW_H) * 600 + cam.windowToTileX(mouse_x, WINDOW_W));
-	ImGui::Text("cam pos (org) xm,ym: (%f,%f), xw,yw (%f,%f)", cam.getX(), cam.getY(), cam.getWindowX(WINDOW_W), cam.getWindowY(WINDOW_H));
-	float dx = cam.windowToCam(mouse_x, WINDOW_W) - cam.getX();
-	float dy = cam.windowToCam(mouse_y, WINDOW_H) - cam.getY();
-	float r1x = dx / 6000;
-	float r1y = dy / 6000;
-
-	ImGui::Text("dif dx,dy(%f,%f), /x,/y(%f,%f), /z(%f,%f)", dx, dy, r1x, r1y, r1x / cam.getZoom(), r1y / cam.getZoom());
-	ImGui::Text("dist mpos to: origin(%f,%f), 0,0 (%d,%d)", mouse_x - cam.getX(), mouse_y - cam.getY(), mouse_x - (int)(WINDOW_W / 2), mouse_y - (int)(WINDOW_H / 2));
-	ImGui::Text("current zoom (transform multiplier): %f ", cam.getZoom());
-	ImGui::Text("mouse1_pressed: %d", mouse1_pressed);
-
-	ImGui::SeparatorText("imgui controls");
-	ImGui::Text("imgui io flags wantMouse: %d wantKeyboard: %d", ImGui::GetIO().WantCaptureMouse, ImGui::GetIO().WantCaptureKeyboard);
-
-	ImGui::End();
-}
-
-void MainController::drawStart() {
-	assert(draw_options == false && draw_game == false);
-
-	ImGuiWindowFlags flags = 0;
-	flags |= ImGuiWindowFlags_NoMove;
-	flags |= ImGuiWindowFlags_NoResize;
-	flags |= ImGuiWindowFlags_NoCollapse;
-
-	ImGui::SetNextWindowPos(ImVec2{ (float)WINDOW_W / 2 - 200,(float)WINDOW_H / 2 - 200 });
-	ImGui::SetNextWindowSize(ImVec2{ 400,400 });
-
-	ImGui::Begin("Main Menu", NULL, flags);
-
-	//new button
-	if (ImGui::Button("New Game", ImVec2{ 400,30 })) {
-		draw_game = true;
-		draw_start = false;
-		game.init(exit_flag);
-		cam.setTransformLoc(game.getMapTransformLoc());
-		cam.reset(340, WINDOW_W, 106, WINDOW_H);
-	}
-
-	//loading button
-	if (ImGui::Button("Load Game", ImVec2{ 400,30 })) {
-
-	}
-
-	//options
-	if (ImGui::Button("Options", ImVec2{ 400,30 })) {
-		draw_options = true;
-		draw_start = false;
-	}
-
-	//exit
-	if (ImGui::Button("Exit", ImVec2{ 400,30 })) {
-		Running = false;
-	}
-
-	ImGui::End();
-}
-
-void MainController::drawOpts() {
-	ImGuiWindowFlags flags = 0;
-	flags |= ImGuiWindowFlags_NoMove;
-	flags |= ImGuiWindowFlags_NoResize;
-	flags |= ImGuiWindowFlags_NoCollapse;
-
-	ImGui::SetNextWindowPos(ImVec2{ (float)WINDOW_W / 2 - 200,(float)WINDOW_H / 2 - 200 });
-	ImGui::SetNextWindowSize(ImVec2{ 400,400 });
-
-	ImGui::Begin("Options", NULL, flags);
-
-	//show internal debug
-	ImGui::Checkbox("Show internal debug menu", &debug);
-
-	//show imgui demo window
-	ImGui::Checkbox("Show ImGui demo window", &draw_demo);
-	//go back to main menu
-	if (ImGui::Button("Back", ImVec2{ 400,30 })) {
-		draw_options = false;
-		draw_start = true;
-	}
-	ImGui::End();
-}
-
-void MainController::drawPauseMenu() {
-	game.Pause();
-	ImGuiWindowFlags flags = 0;
-	flags |= ImGuiWindowFlags_NoMove;
-	flags |= ImGuiWindowFlags_NoResize;
-	flags |= ImGuiWindowFlags_NoCollapse;
-
-	ImGui::SetNextWindowPos(ImVec2{ (float)WINDOW_W / 2 - 200,(float)WINDOW_H / 2 - 200 });
-
-	ImGui::SetNextWindowSize(ImVec2{ 400,400 });
-	ImGui::Begin("Options", NULL, flags);
-
-	//show internal debug
-	ImGui::Checkbox("Show internal debug menu", &debug);
-
-	//show imgui demo window
-	ImGui::Checkbox("Show ImGui demo window", &draw_demo);
-	//go back to main menu
-	if (ImGui::Button("Exit to main Menu", ImVec2{ 400,30 })) {
-		draw_game = false;
-		draw_start = true;
-		draw_pause = false;
-		game.unPause();
-	}
-	ImGui::End();
-}

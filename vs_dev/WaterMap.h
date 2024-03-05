@@ -1,10 +1,12 @@
 #pragma once
 #include <vector>
+#include <unordered_map>
 #include "BaseMap.h"
 
 
 class WaterMap : public BaseMap {
 private:
+	//one water tile
 	struct WaterTile {
 		float velocity_horizontal = 0.0f;
 		float velocity_vertical = 0.0f;
@@ -23,6 +25,7 @@ private:
 
 	std::vector<WaterTile> water_map;
 	std::vector<uint16_t> id_array;
+	std::unordered_map<int, int> river_tiles;
 
 	float dT = 0.5f;	//time increment
 	float A = 1.0f;		//cross sectional area of connecting pipes
@@ -35,6 +38,7 @@ private:
 	float Ks = 0.1f;				//dissolving constant
 	float Kd = 0.5f;				//deposition constant
 	float min_tilt_angle = 0.0f;	//minimum terrain tilt angle
+	float evaporation = 0.1f;		//evaporation per iteration
 	std::vector<Angle> tilt_angles;		//precalculated terrain tilt angles
 
 	//debug
@@ -96,7 +100,13 @@ public:
 			else {
 				id_array[index] = 16;
 			}
+
+			//draw rivers
+			/*if (river_tiles.find(index) != river_tiles.end()) {
+				id_array[index] = 15;
+			}*/
 		}
+
 		return &id_array[0];
 	}
 	uint16_t* getVelocityField() {
@@ -173,7 +183,7 @@ public:
 	/*
 		Perform one entire iteration of erosion algorithm
 	*/
-	void iterate(std::vector<float>& height_map, float ocean_level, float args[10]) {
+	void iterate(std::vector<float>& height_map, float ocean_level, float args[11]) {
 		dT = args[0];
 		A = args[1];
 		g = args[2];
@@ -185,6 +195,7 @@ public:
 		Ks = args[7];
 		Kd = args[8];
 		min_tilt_angle = args[9];
+		evaporation = args[10];
 
 		std::random_device rd;
 		std::mt19937 mt(rd());
@@ -192,6 +203,9 @@ public:
 		std::uniform_real_distribution<> coordx(0, width - 3);
 		std::uniform_real_distribution<> coordy(0, height - 3);
 
+		for (auto source : river_tiles) {
+			water_map[source.first].surface_water += 0.5f;
+		}
 		//addWater(water_map, height_map, mt, coordx, coordy, 10000, 0.1f, ocean_level);
 		updateFlow(height_map, water_map, ocean_level);
 		updateWater(water_map, height_map, ocean_level);
@@ -220,7 +234,7 @@ public:
 
 		std::uniform_real_distribution<> coordx(0, width - 3);
 		std::uniform_real_distribution<> coordy(0, height - 3);
-		addWater(water_map, height_map, mt, coordx, coordy, height * width * 0.25f , 0.5f, ocean_level);
+		addWater(water_map, height_map, mt, coordx, coordy, height * width * 0.25f, 0.5f, ocean_level);
 	}
 	void addWater(std::vector<WaterTile>& water_map, std::vector<float>& height_map,
 		std::mt19937& erand, std::uniform_real_distribution<>& xrand, std::uniform_real_distribution<>& yrand,
@@ -365,8 +379,6 @@ public:
 				velocity_denom_y += water_map[((index / width) + 1) * width + index % width].outflow[3];
 			}
 			water_map[index].velocity_vertical = velocity_denom_y / 2;
-
-
 		}
 	}
 
@@ -382,8 +394,8 @@ public:
 		for (int index = 0; index < water_map.size(); index++) {
 			if (height_map[index] > ocean_level) {
 				//calculate suspension capacity
-				float C = Kc 
-					* std::sin(std::sqrt(std::pow(tilt_angles[index].x_angle, 2) + std::pow(tilt_angles[index].y_angle,2))) 
+				float C = Kc
+					* std::sin(std::sqrt(std::pow(tilt_angles[index].x_angle, 2) + std::pow(tilt_angles[index].y_angle, 2)))
 					* std::sqrt(std::pow(water_map[index].velocity_horizontal, 2.0f) + std::pow(water_map[index].velocity_vertical, 2.0f));
 
 				//dissolve or deposit based on suspension capacity
@@ -453,6 +465,118 @@ public:
 
 		for (auto& tile : water_map) {
 			tile.suspended_sediment = tile.sediment_new;
+		}
+	}
+
+	/*
+		Evaporate water
+	*/
+	void evaporate(std::vector<float>& height_map, float ocean_level, std::vector<WaterTile>& water_map) {
+		for (int index = 0; index < height_map.size(); index++) {
+			if (height_map[index] > ocean_level) {
+				water_map[index].surface_water = (water_map[index].surface_water - evaporation >= 0) ? water_map[index].surface_water - evaporation  : 0.0f;
+			}
+		}
+	}
+
+
+	//get random point on map given a condition and a time out value
+	//if the number of attempts exceeds the timeout value, the function returns -1
+	int getRand(int time_out, std::vector<float>& height_map, float ocean_level) {
+		//initialise prng components
+		std::random_device rd;
+		std::mt19937 mt(rd());
+
+		std::uniform_real_distribution<> coordx(0, width - 3);
+		std::uniform_real_distribution<> coordy(0, height - 3);
+		int search_x = (int)coordx(mt);	//gauranteed to be in bounds
+		int search_y = (int)coordy(mt);	//gauranteed to be in bounds
+
+		int iterations = 0;
+		bool found = false;
+
+		while (!found) {
+			//update search point
+			search_x = (int)coordx(mt);
+			search_y = (int)coordy(mt);
+
+			//check found condition
+			found = height_map[search_y * width + search_x] > ocean_level;
+			//check timeout condition
+			iterations++;
+			if (iterations > time_out) {
+				return -1;
+			}
+		}
+
+		return search_y * width + search_x;
+	}
+
+	//find a local maximum from a randomly generated point
+	int gradientMax(float ocean_level, std::vector<float>& height_map) {
+		int start = getRand(5, height_map, ocean_level);
+		if (start == -1)
+			return -1;
+		int startX = start % width;
+		int startY = start / width;
+		bool moved = true;
+
+		while (moved) {
+			float curr_max = height_map[startY * width + startX];
+			moved = false;
+			int xoff[] = { -1, 1, 0, 0 };
+			int yoff[] = { 0, 0, -1, 1 };
+			int nx = startX;
+			int ny = startY;
+
+			for (int i = 0; i < 4; i++) {
+				if (coordCheck(startY + yoff[i], startX + xoff[i]) && height_map[(startY + yoff[i]) * width + (startX + xoff[i])] > curr_max) {
+					curr_max = height_map[(startY + yoff[i]) * width + startX + xoff[i]];
+					moved = true;
+					nx = startX + xoff[i];
+					ny = startY + yoff[i];
+				}
+			}
+			startX = nx;
+			startY = ny;
+		}
+
+		return startY * width + startX;
+	}
+
+	void createRivers(float ocean_level, std::vector<float>& height_map) {
+		river_tiles.clear();
+		for (int i = 0; i < 10; i++) {
+			int curr_tile = gradientMax(ocean_level, height_map);
+			if (curr_tile != -1) {
+				printf("starting at %d,%d\n", curr_tile % width, curr_tile / width);
+				river_tiles[curr_tile];
+				float curr_height = height_map[curr_tile];
+				bool timeout = false;
+				int iters = 0;
+
+				while (curr_height > ocean_level && timeout == false) {
+					river_tiles[curr_tile];
+					int xoff[] = { -1, 1, 0, 0 };
+					int yoff[] = { 0, 0, -1, 1 };
+					int nx = curr_tile % width;
+					int ny = curr_tile / width;
+
+					for (int i = 0; i < 4; i++) {
+						if (coordCheck(curr_tile % width + xoff[i], curr_tile / width + yoff[i]) && height_map[(curr_tile / width + yoff[i]) * width + (curr_tile % width + xoff[i])] < curr_height) {
+							curr_height = height_map[(curr_tile / width + yoff[i]) * width + curr_tile % width + xoff[i]];
+							nx = curr_tile % width + xoff[i];
+							ny = curr_tile / width + yoff[i];
+						}
+					}
+
+					curr_tile = ny * width + nx;
+					iters++;
+					if (iters > 100) {
+						timeout = true;
+					}
+				}
+			}
 		}
 	}
 };

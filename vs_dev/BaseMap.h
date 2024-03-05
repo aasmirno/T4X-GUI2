@@ -1,11 +1,14 @@
 #pragma once
 #include <iostream>
+#include <random>
 #include <cmath>
 
 class BaseMap {
 protected:
 	int height = 0;
 	int width = 0;
+
+
 
 	//check bounds
 	bool coordCheck(int x, int y) {
@@ -19,7 +22,6 @@ protected:
 	float coordDist(int i1, int i2) {
 		return std::sqrt(pow(i1 % width - i2 % width, 2) + pow(i1 / width - i2 / width, 2));
 	}
-
 public:
 	int getHeight() { return height; }
 	int getWidth() { return width; }
