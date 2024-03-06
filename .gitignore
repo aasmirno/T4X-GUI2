@@ -1,5 +1,5 @@
 #vscode and wsl development files
-CMakeLists.txt
+#CMakeLists.txt
 CMakeFiles/
 build
 .vscode
