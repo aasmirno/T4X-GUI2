@@ -29,8 +29,8 @@ private:
         Window Data
     */
     //initial window values
-	int WINDOW_W = 1900;
-	int WINDOW_H = 1030;
+	int WINDOW_W = 500;
+	int WINDOW_H = 200;
 
     Vec4 clear_color = Vec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
 

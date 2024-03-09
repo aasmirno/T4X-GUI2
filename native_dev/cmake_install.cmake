@@ -1,4 +1,4 @@
-# Install script for directory: /home/bonkhound/src/T4X-GUI2/native_dev
+# Install script for directory: /home/bonkhound/Source/T4X-GUI2/native_dev
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/bonkhound/src/T4X-GUI2/native_dev/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/bonkhound/Source/T4X-GUI2/native_dev/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

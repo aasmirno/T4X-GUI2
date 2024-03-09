@@ -8,7 +8,10 @@ int main(int argc, char* argv[]) {
     std::cout << "Engine start\n";
     
     Renderer r;
-    r.initialise();
+    if(!r.initialise()){
+        std::cout << "FATAL ERROR: failed to initialise render manager\n";
+        return 0;
+    }
 
     r.addRenderObject();
     r.addRenderObject();

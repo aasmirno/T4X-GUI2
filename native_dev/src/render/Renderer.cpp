@@ -13,12 +13,12 @@ bool Renderer::initialise()
             return false;
         }
 
-        // Set SDL attributes to GL 4.5 + GLSL 450
-        const char *glsl_version = "#version 450";
+        // Set SDL attributes to GL 4.2 + GLSL 420
+        const char *glsl_version = "#version 420";
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
         // Create window with graphics context
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); // use double buffer
@@ -38,7 +38,7 @@ bool Renderer::initialise()
         // try create opengl context
         if ((gl_context = SDL_GL_CreateContext(main_window)) == NULL)
         {
-            printf("gl_context Error: %s\n", SDL_GetError());
+            printf("SDL error: %s\n", SDL_GetError());
             return false;
         }
 
@@ -66,7 +66,7 @@ bool Renderer::initialise()
         GLenum glewError = glewInit();
         if (glewError != GLEW_OK)
         {
-            printf("glew error: %d\n", glewError);
+            printf("glew initialisation error: %d\n", glewError);
             return false;
         }
         printf("glew initialised\n");
