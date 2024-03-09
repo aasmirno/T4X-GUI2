@@ -157,6 +157,51 @@ src/main.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/build/T4X.dir/build.make CMakeFiles/build/T4X.dir/src/main.s
 .PHONY : src/main.s
 
+# target to build an object file
+src/render/RenderObject.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/build/T4X.dir/build.make CMakeFiles/build/T4X.dir/src/render/RenderObject.o
+.PHONY : src/render/RenderObject.o
+
+# target to preprocess a source file
+src/render/RenderObject.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/build/T4X.dir/build.make CMakeFiles/build/T4X.dir/src/render/RenderObject.i
+.PHONY : src/render/RenderObject.i
+
+# target to generate assembly for a file
+src/render/RenderObject.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/build/T4X.dir/build.make CMakeFiles/build/T4X.dir/src/render/RenderObject.s
+.PHONY : src/render/RenderObject.s
+
+# target to build an object file
+src/render/Renderer.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/build/T4X.dir/build.make CMakeFiles/build/T4X.dir/src/render/Renderer.o
+.PHONY : src/render/Renderer.o
+
+# target to preprocess a source file
+src/render/Renderer.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/build/T4X.dir/build.make CMakeFiles/build/T4X.dir/src/render/Renderer.i
+.PHONY : src/render/Renderer.i
+
+# target to generate assembly for a file
+src/render/Renderer.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/build/T4X.dir/build.make CMakeFiles/build/T4X.dir/src/render/Renderer.s
+.PHONY : src/render/Renderer.s
+
+# target to build an object file
+src/render/ShapeObject.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/build/T4X.dir/build.make CMakeFiles/build/T4X.dir/src/render/ShapeObject.o
+.PHONY : src/render/ShapeObject.o
+
+# target to preprocess a source file
+src/render/ShapeObject.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/build/T4X.dir/build.make CMakeFiles/build/T4X.dir/src/render/ShapeObject.i
+.PHONY : src/render/ShapeObject.i
+
+# target to generate assembly for a file
+src/render/ShapeObject.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/build/T4X.dir/build.make CMakeFiles/build/T4X.dir/src/render/ShapeObject.s
+.PHONY : src/render/ShapeObject.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -169,6 +214,15 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/render/RenderObject.o"
+	@echo "... src/render/RenderObject.i"
+	@echo "... src/render/RenderObject.s"
+	@echo "... src/render/Renderer.o"
+	@echo "... src/render/Renderer.i"
+	@echo "... src/render/Renderer.s"
+	@echo "... src/render/ShapeObject.o"
+	@echo "... src/render/ShapeObject.i"
+	@echo "... src/render/ShapeObject.s"
 .PHONY : help
 
 

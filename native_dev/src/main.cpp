@@ -1,26 +1,19 @@
-#include <GL/glew.h>
-#include <SDL2/SDL.h>
+#pragma once
 #include <stdio.h>
 #include <iostream>
 
+#include "Renderer.h"
+
 int main(int argc, char* argv[]) {
-    std::cout << "main run\n";
+    std::cout << "Engine start\n";
     
-    if(SDL_Init(SDL_INIT_VIDEO)){
-        return -1;
+    Renderer r;
+    r.initialise();
+
+    r.addRenderObject();
+    for(int i = 0; i < 500; i++){
+        r.render();
     }
-
-    SDL_Window *window = SDL_CreateWindow("SDL2 Window",
-                                          SDL_WINDOWPOS_CENTERED,
-                                          SDL_WINDOWPOS_CENTERED,
-                                          500, 500,
-                                          0);
-
-
-    SDL_Surface *window_surface = SDL_GetWindowSurface(window);
-    SDL_UpdateWindowSurface(window);
-
-    SDL_Delay(5000);
 
     return 0;
 }
