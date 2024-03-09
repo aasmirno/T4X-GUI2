@@ -11,6 +11,7 @@ int main(int argc, char* argv[]) {
     r.initialise();
 
     r.addRenderObject();
+    r.addRenderObject();
     for(int i = 0; i < 500; i++){
         r.render();
     }

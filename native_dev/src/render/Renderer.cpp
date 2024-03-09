@@ -102,10 +102,10 @@ bool Renderer::addRenderObject(){
         printf("failed to initialise render object\n");
         return false;
     }
-    obj.addVertex(0.0f,  0.5f,  0.0f);
+    obj.addVertex(active_objects.size(),  0.5f,  0.0f);
     obj.addVertex(0.5f, -0.5f,  0.0f);
     obj.addVertex(-0.5f, -0.5f,  0.0f);
-    obj.addVertex(-0.5f, 0.5f,  0.0f);
+    obj.setColor(active_objects.size(), 0.5f,  0.0f, 1.0f);
 
     //add it to active objects
     active_objects.push_back(obj);

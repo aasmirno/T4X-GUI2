@@ -17,6 +17,12 @@ bool ShapeObject::updateBuffers(){
     return true;
 }
 
+void ShapeObject::printDebug(){
+    printf("Debug information for render object: %d\n", object_id);
+    printf("    Type=Shape\n");
+    printf("    vertex_data=%d vertices:\n",vertex_data.size());
+}
+
 bool ShapeObject::genBuffers(){
     glGenBuffers(1, &vbo_id);       // generate a vertex buffer object
     glGenVertexArrays(1, &vao_id);	// gen a vertex array object
@@ -37,10 +43,17 @@ bool ShapeObject::genBuffers(){
     */
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
+    color_loc = glGetUniformLocation(shader_pid, "color");
+    if(color_loc == -1){
+        printf("could not find uniform render_obj=%d\n", object_id);
+        return false;
+    }
+
     //check gl errors
 	GLenum err;
 	if ((err = glGetError()) != GL_NO_ERROR) {
-		printf("gl error (TriangleObject::genBuffers)\n");
+		printf("render_obj=%d gl error: %d\n", object_id, err);
+        printf("    vbo_id=%d", vbo_id);
 		return false;
 	}
 
