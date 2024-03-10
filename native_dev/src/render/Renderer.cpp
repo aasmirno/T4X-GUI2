@@ -105,10 +105,12 @@ bool Renderer::addRenderObject(){
     obj.addVertex(active_objects.size(),  0.5f,  0.0f);
     obj.addVertex(0.5f, -0.5f,  0.0f);
     obj.addVertex(-0.5f, -0.5f,  0.0f);
-    obj.setColor(active_objects.size(), 0.5f,  0.0f, 1.0f);
+    obj.setColor(Vec4(active_objects.size(), 0.5f,  0.0f, 1.0f));
 
     //add it to active objects
     active_objects.push_back(obj);
+    printf("created render_object=%d\n", active_objects.size());
+    obj.printDebug();
     return true;
 }
 
@@ -149,7 +151,7 @@ GLuint Renderer::loadShader(std::string path, GLenum type){
 		GLint compiled = GL_FALSE;
 		glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compiled);
 		if (compiled != GL_TRUE) {
-			printf("shader %d compile error:\n%s\n", shader_id, shader_source);
+			printf("    shader %d compile error:\n%s\n", shader_id, shader_source);
 
 			//cleanup on comp failure
 			glDeleteShader(shader_id);
@@ -157,21 +159,22 @@ GLuint Renderer::loadShader(std::string path, GLenum type){
 		}
 	}
 	else {
-		printf("shader creation error: \n   bad file: %s\n", path.c_str());
+		printf("    shader creation error: \n   bad file: %s\n", path.c_str());
 		return 0;
 	}
 
 	//check shader created
 	if (shader_id == 0) {
-		printf("shader creation error\n");
+		printf("    shader creation error\n");
 		return 0;
 	}
 
-    printf("success loading shader=%d from %s\n", shader_id, path.c_str());
+    printf("    success loading shader=%d from %s\n", shader_id, path.c_str());
 	return shader_id;
 }
 
 bool Renderer::createProgram(){
+    printf("creating shader program:\n");
     //load vertex and fragment shader hardcoded
     GLuint vs = loadShader("resources/basevert.glvs", GL_VERTEX_SHADER);
     if(vs == 0) {return false;}

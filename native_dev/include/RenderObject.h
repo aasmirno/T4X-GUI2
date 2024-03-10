@@ -1,4 +1,5 @@
 #pragma once
+#include "Vector.h"
 #include <GL/glew.h>
 #include <stdio.h>
 #include <iostream>
@@ -37,6 +38,11 @@ class RenderObject{
                 shader_program: shader program to be used
         */
         bool initialise(int obj_id, GLuint shader_program);
+
+        /*
+            Dump debug information to the console
+        */
+        virtual void printDebug() = 0;
 
         /*
             Draw method for a render object, implemented by sub class

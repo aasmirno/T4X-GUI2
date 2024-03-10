@@ -7,6 +7,7 @@ class ShapeObject : public RenderObject{
         std::vector<float> vertex_data; //store vertex information for this object
         
         GLint color_loc = -1;
+        Vec4 shape_color = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
         /*
             Implementation of Render Object buffer generation function
@@ -19,7 +20,6 @@ class ShapeObject : public RenderObject{
         */
         virtual bool updateBuffers();
 
-        virtual void printDebug();
     public:
         /*
             add a point into the vertex data array
@@ -31,8 +31,12 @@ class ShapeObject : public RenderObject{
             updateBuffers();
         }
 
-        void setColor(float r, float g, float b, float a){
-            glUniform4f(color_loc, r, g, b, a);
+        virtual void printDebug();
+
+        void setColor(Vec4 color){
+            glUseProgram(shader_pid);           // set shader program
+            shape_color = color;
+            glUniform4f(color_loc, color.x, color.y, color.z, color.w);
         }
 
         /*
