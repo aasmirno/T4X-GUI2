@@ -2,8 +2,15 @@
 
 bool ShapeObject::draw(){
     glUseProgram(shader_pid);           // set shader program
+    printf("%f\n", shape_color.x);
+    glUniform4f(color_loc, 
+        (GLfloat)shape_color.x, 
+        (GLfloat)shape_color.y, 
+        (GLfloat)shape_color.z, 
+        (GLfloat)shape_color.w
+    ); //set color uniform
     glBindVertexArray(vao_id);          // bind vertex array
-    glDrawArrays(GL_TRIANGLES, 0, vertex_data.size() / 3);   // Draw the points 0 to 3 from the current vao with assigned shader program
+    glDrawArrays(GL_TRIANGLES, 0, vertex_data.size() / 3);   // Draw all points from the current vao with assigned shader program
     return true;
 }
 
@@ -19,6 +26,7 @@ void ShapeObject::printDebug(){
     printf("    shader_pid: %d\n", shader_pid);
     printf("    vao_id: %d\n", vao_id);
     printf("    vbo_id: %d\n", vbo_id);
+    printf("    shape_color: %f %f %f %f\n", shape_color.x, shape_color.y, shape_color.z, shape_color.w);
     printf("    vertex_data (%d vertices)\n", vertex_data.size() / 3);
     for(int i = 0; i < vertex_data.size(); i++){
         std::cout << vertex_data[i] << " ";
@@ -30,14 +38,14 @@ bool ShapeObject::genBuffers(){
     glGenBuffers(1, &vbo_id);       // generate a vertex buffer object
     glGenVertexArrays(1, &vao_id);	// gen a vertex array object
     if (vbo_id == -1 || vao_id == -1){
-        printf("buffer generation error (TriangleObject::genBuffers): vbo_id=%d vao_id=%d \n", vbo_id, vao_id);
+        printf("buffer generation error: vbo_id=%d vao_id=%d \n", vbo_id, vao_id);
         printDebug();
         return false;
     }
 
-    glBindVertexArray(vao_id); //focus va buffer
-    glEnableVertexAttribArray(0); //enable attrib array at 0
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_id);  //focus vb 
+    glBindVertexArray(vao_id);             //focus va buffer
+    glEnableVertexAttribArray(0);          //enable attrib array at 0
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_id); //focus vb 
 
     /*
         Format for vertex buffer (what a vertex should look like):
@@ -53,7 +61,6 @@ bool ShapeObject::genBuffers(){
         printDebug();
         return false;
     }
-    setColor(shape_color);
 
     //check gl errors
 	GLenum err;

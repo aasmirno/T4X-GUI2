@@ -34,9 +34,10 @@ class ShapeObject : public RenderObject{
         virtual void printDebug();
 
         void setColor(Vec4 color){
-            glUseProgram(shader_pid);           // set shader program
-            shape_color = color;
-            glUniform4f(color_loc, color.x, color.y, color.z, color.w);
+            shape_color.x = color.x;
+            shape_color.y = color.y;
+            shape_color.z = color.z;
+            shape_color.w = color.w;
         }
 
         /*

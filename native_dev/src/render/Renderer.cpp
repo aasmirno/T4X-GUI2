@@ -105,7 +105,8 @@ bool Renderer::addRenderObject(){
     obj.addVertex(active_objects.size(),  0.5f,  0.0f);
     obj.addVertex(0.5f, -0.5f,  0.0f);
     obj.addVertex(-0.5f, -0.5f,  0.0f);
-    obj.setColor(Vec4(active_objects.size(), 0.5f,  0.0f, 1.0f));
+
+    obj.setColor(Vec4((active_objects.size() + 1)*100 / 256.0, 0.0f, 0.0f, 1.0f));
 
     //add it to active objects
     active_objects.push_back(obj);
@@ -118,8 +119,8 @@ void Renderer::render(){
     if(!initialised){
         return;
     }
-    glClear(GL_COLOR_BUFFER_BIT);
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //Draw all active objects
     for(int i = 0; i < active_objects.size(); i++){
         active_objects[i].draw();
