@@ -2,7 +2,6 @@
 
 bool ShapeObject::draw(){
     glUseProgram(shader_pid);           // set shader program
-    printf("%f\n", shape_color.x);
     glUniform4f(color_loc, 
         (GLfloat)shape_color.x, 
         (GLfloat)shape_color.y, 

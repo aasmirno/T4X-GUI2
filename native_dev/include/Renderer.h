@@ -1,6 +1,7 @@
 #pragma once
 #include "RenderObject.h"
 #include "ShapeObject.h"
+#include "ShaderManager.h"
 
 #include <stdio.h>
 #include <iostream>
@@ -8,14 +9,6 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
-
-struct ShaderProgram{
-    // program id
-    GLuint program_id = 0;
-    // shader handles
-    GLuint vertex_shader = 0;
-    GLuint frag_shader = 0;
-};
 
 class Renderer{
 private:
@@ -44,7 +37,12 @@ private:
         Render Objects
     */
     std::vector<ShapeObject> active_objects; // vector of active render objects
+
+    /*
+        Shader values
+    */
     std::vector<ShaderProgram> active_programs; // vector of active shader programs
+    ShaderManager shader_manager;   //shader manager instance
 
     /*
         Create a gl shader from source and return its handle

@@ -169,32 +169,86 @@ src/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
-src/render/RenderObject.o: src/render/RenderObject.cpp.o
+src/render/RenderObjects/RenderObject.o: src/render/RenderObjects/RenderObject.cpp.o
 
-.PHONY : src/render/RenderObject.o
+.PHONY : src/render/RenderObjects/RenderObject.o
 
 # target to build an object file
-src/render/RenderObject.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObject.cpp.o
-.PHONY : src/render/RenderObject.cpp.o
+src/render/RenderObjects/RenderObject.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/RenderObject.cpp.o
+.PHONY : src/render/RenderObjects/RenderObject.cpp.o
 
-src/render/RenderObject.i: src/render/RenderObject.cpp.i
+src/render/RenderObjects/RenderObject.i: src/render/RenderObjects/RenderObject.cpp.i
 
-.PHONY : src/render/RenderObject.i
+.PHONY : src/render/RenderObjects/RenderObject.i
 
 # target to preprocess a source file
-src/render/RenderObject.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObject.cpp.i
-.PHONY : src/render/RenderObject.cpp.i
+src/render/RenderObjects/RenderObject.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/RenderObject.cpp.i
+.PHONY : src/render/RenderObjects/RenderObject.cpp.i
 
-src/render/RenderObject.s: src/render/RenderObject.cpp.s
+src/render/RenderObjects/RenderObject.s: src/render/RenderObjects/RenderObject.cpp.s
 
-.PHONY : src/render/RenderObject.s
+.PHONY : src/render/RenderObjects/RenderObject.s
 
 # target to generate assembly for a file
-src/render/RenderObject.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObject.cpp.s
-.PHONY : src/render/RenderObject.cpp.s
+src/render/RenderObjects/RenderObject.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/RenderObject.cpp.s
+.PHONY : src/render/RenderObjects/RenderObject.cpp.s
+
+src/render/RenderObjects/ShapeObject.o: src/render/RenderObjects/ShapeObject.cpp.o
+
+.PHONY : src/render/RenderObjects/ShapeObject.o
+
+# target to build an object file
+src/render/RenderObjects/ShapeObject.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/ShapeObject.cpp.o
+.PHONY : src/render/RenderObjects/ShapeObject.cpp.o
+
+src/render/RenderObjects/ShapeObject.i: src/render/RenderObjects/ShapeObject.cpp.i
+
+.PHONY : src/render/RenderObjects/ShapeObject.i
+
+# target to preprocess a source file
+src/render/RenderObjects/ShapeObject.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/ShapeObject.cpp.i
+.PHONY : src/render/RenderObjects/ShapeObject.cpp.i
+
+src/render/RenderObjects/ShapeObject.s: src/render/RenderObjects/ShapeObject.cpp.s
+
+.PHONY : src/render/RenderObjects/ShapeObject.s
+
+# target to generate assembly for a file
+src/render/RenderObjects/ShapeObject.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/ShapeObject.cpp.s
+.PHONY : src/render/RenderObjects/ShapeObject.cpp.s
+
+src/render/RenderObjects/TiledObject.o: src/render/RenderObjects/TiledObject.cpp.o
+
+.PHONY : src/render/RenderObjects/TiledObject.o
+
+# target to build an object file
+src/render/RenderObjects/TiledObject.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TiledObject.cpp.o
+.PHONY : src/render/RenderObjects/TiledObject.cpp.o
+
+src/render/RenderObjects/TiledObject.i: src/render/RenderObjects/TiledObject.cpp.i
+
+.PHONY : src/render/RenderObjects/TiledObject.i
+
+# target to preprocess a source file
+src/render/RenderObjects/TiledObject.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TiledObject.cpp.i
+.PHONY : src/render/RenderObjects/TiledObject.cpp.i
+
+src/render/RenderObjects/TiledObject.s: src/render/RenderObjects/TiledObject.cpp.s
+
+.PHONY : src/render/RenderObjects/TiledObject.s
+
+# target to generate assembly for a file
+src/render/RenderObjects/TiledObject.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TiledObject.cpp.s
+.PHONY : src/render/RenderObjects/TiledObject.cpp.s
 
 src/render/Renderer.o: src/render/Renderer.cpp.o
 
@@ -223,32 +277,32 @@ src/render/Renderer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Renderer.cpp.s
 .PHONY : src/render/Renderer.cpp.s
 
-src/render/ShapeObject.o: src/render/ShapeObject.cpp.o
+src/render/ShaderManager.o: src/render/ShaderManager.cpp.o
 
-.PHONY : src/render/ShapeObject.o
+.PHONY : src/render/ShaderManager.o
 
 # target to build an object file
-src/render/ShapeObject.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/ShapeObject.cpp.o
-.PHONY : src/render/ShapeObject.cpp.o
+src/render/ShaderManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/ShaderManager.cpp.o
+.PHONY : src/render/ShaderManager.cpp.o
 
-src/render/ShapeObject.i: src/render/ShapeObject.cpp.i
+src/render/ShaderManager.i: src/render/ShaderManager.cpp.i
 
-.PHONY : src/render/ShapeObject.i
+.PHONY : src/render/ShaderManager.i
 
 # target to preprocess a source file
-src/render/ShapeObject.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/ShapeObject.cpp.i
-.PHONY : src/render/ShapeObject.cpp.i
+src/render/ShaderManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/ShaderManager.cpp.i
+.PHONY : src/render/ShaderManager.cpp.i
 
-src/render/ShapeObject.s: src/render/ShapeObject.cpp.s
+src/render/ShaderManager.s: src/render/ShaderManager.cpp.s
 
-.PHONY : src/render/ShapeObject.s
+.PHONY : src/render/ShaderManager.s
 
 # target to generate assembly for a file
-src/render/ShapeObject.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/ShapeObject.cpp.s
-.PHONY : src/render/ShapeObject.cpp.s
+src/render/ShaderManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/ShaderManager.cpp.s
+.PHONY : src/render/ShaderManager.cpp.s
 
 # Help Target
 help:
@@ -262,15 +316,21 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
-	@echo "... src/render/RenderObject.o"
-	@echo "... src/render/RenderObject.i"
-	@echo "... src/render/RenderObject.s"
+	@echo "... src/render/RenderObjects/RenderObject.o"
+	@echo "... src/render/RenderObjects/RenderObject.i"
+	@echo "... src/render/RenderObjects/RenderObject.s"
+	@echo "... src/render/RenderObjects/ShapeObject.o"
+	@echo "... src/render/RenderObjects/ShapeObject.i"
+	@echo "... src/render/RenderObjects/ShapeObject.s"
+	@echo "... src/render/RenderObjects/TiledObject.o"
+	@echo "... src/render/RenderObjects/TiledObject.i"
+	@echo "... src/render/RenderObjects/TiledObject.s"
 	@echo "... src/render/Renderer.o"
 	@echo "... src/render/Renderer.i"
 	@echo "... src/render/Renderer.s"
-	@echo "... src/render/ShapeObject.o"
-	@echo "... src/render/ShapeObject.i"
-	@echo "... src/render/ShapeObject.s"
+	@echo "... src/render/ShaderManager.o"
+	@echo "... src/render/ShaderManager.i"
+	@echo "... src/render/ShaderManager.s"
 .PHONY : help
 
 

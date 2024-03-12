@@ -82,8 +82,17 @@ bool Renderer::initialise()
 		printf("%d", err);
 	}
 	
+    /*
+        Initialise shaders
+    */
     //create basic shader program
-    createProgram();
+    SourcePair program[] ={
+        SourcePair{"resources/basevert.glvs", GL_VERTEX_SHADER},
+        SourcePair{"resources/basefrag.glfs", GL_FRAGMENT_SHADER},
+        NULL
+    };
+    ShaderProgram basic = shader_manager.createProgram(&program[0], 2);
+    active_programs.push_back(basic);
 
     //toggle init flag
     initialised = true;
@@ -98,7 +107,7 @@ bool Renderer::addRenderObject(){
 
     // try to initialise a new shape object
     ShapeObject obj;
-    if(obj.initialise(active_objects.size() + 1, 3) == false){
+    if(obj.initialise(active_objects.size() + 1, active_programs[0].program_id) == false){
         printf("failed to initialise render object\n");
         return false;
     }
@@ -111,7 +120,6 @@ bool Renderer::addRenderObject(){
     //add it to active objects
     active_objects.push_back(obj);
     printf("created render_object=%d\n", active_objects.size());
-    obj.printDebug();
     return true;
 }
 
@@ -187,8 +195,7 @@ bool Renderer::createProgram(){
     glAttachShader(program, fs);
     glLinkProgram(program);
 
-    ShaderProgram new_program{program, vs, fs};
-    active_programs.push_back(new_program);
+    //active_programs.push_back(new_program);
 
     printf("created shader program: %d\n", program);
     return true;
