@@ -4,6 +4,7 @@ bool TileObject::draw()
 {
     glUseProgram(shader_pid);  // set shader program
     glBindVertexArray(vao_id); // bind vertex array
+    texture.load_texture();    // load texture into sampler
 
     glDrawArrays(GL_POINTS, 0, tile_data.size()); // Draw all points from the current vao with assigned shader program
     return true;
@@ -72,6 +73,10 @@ bool TileObject::genBuffers()
     }
     updateBuffers();
     return true;
+}
+
+bool TileObject::setTexture(const char* filename, unsigned w, unsigned h){
+    texture.initialise(filename, w, h);
 }
 
 void TileObject::setDims(int x_dim, int y_dim)

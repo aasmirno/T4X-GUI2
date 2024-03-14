@@ -54,10 +54,11 @@ private:
     std::vector<TileObject> tile_objects;
 
     /*
-        Shader values
+        Sub managers
     */
     std::vector<ShaderProgram> active_programs; // vector of active shader programs
     ShaderManager shader_manager;   //shader manager instance
+
 public:
     /*
         Initialise the rendering manager on startup
@@ -69,7 +70,16 @@ public:
         Create and track various types of render objects
     */
     bool addRenderObject();
-    bool addTileObject(int x_dim, int y_dim);
+
+    /*
+        Textured tile object:
+            x_dim: x dimension
+            y_dim: y_dimension
+            texture_source: path to texture file
+            texture_w: texture file width
+            texture_h: texture file height
+    */
+    bool addTileObject(int x_dim, int y_dim, const char* texture_source, unsigned texture_w, unsigned texture_h);
 
     /*
         Update global transform

@@ -15,7 +15,7 @@ bool GameManager::initialise()
         return false;
     }
     render_manager.addRenderObject();
-    render_manager.addTileObject(6,6);
+    render_manager.addTileObject(6,6, "resources/textures/TileSet32.png", 256, 256);
 
     input_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
 

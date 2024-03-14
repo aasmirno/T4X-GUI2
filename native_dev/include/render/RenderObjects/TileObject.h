@@ -1,5 +1,7 @@
 #pragma once
 #include "render/RenderObjects/RenderObject.h"
+#include "render/Texture.h"
+
 #include <glm/vec2.hpp>
 
 /*
@@ -17,6 +19,8 @@ private:
     glm::ivec2 dimensions{1,1};
     std::vector<uint16_t> tile_data; //store tile data
     
+    GLTexture texture;
+
     /*
         Implementation of Render Object buffer generation function
     */
@@ -34,6 +38,14 @@ public:
     */
     virtual bool draw();
 
+    /*
+        Set the texture for this object
+    */
+    bool setTexture(const char* filename, unsigned w, unsigned h);
+
+    /*
+        Set the dimensions for this object
+    */
     void setDims(int x_dim, int y_dim);
 
     void update_transform(GLfloat* transform);

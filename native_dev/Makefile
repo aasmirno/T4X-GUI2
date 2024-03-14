@@ -142,6 +142,33 @@ T4X/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/build
 .PHONY : T4X/fast
 
+src/PNG/lodepng.o: src/PNG/lodepng.cpp.o
+
+.PHONY : src/PNG/lodepng.o
+
+# target to build an object file
+src/PNG/lodepng.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/PNG/lodepng.cpp.o
+.PHONY : src/PNG/lodepng.cpp.o
+
+src/PNG/lodepng.i: src/PNG/lodepng.cpp.i
+
+.PHONY : src/PNG/lodepng.i
+
+# target to preprocess a source file
+src/PNG/lodepng.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/PNG/lodepng.cpp.i
+.PHONY : src/PNG/lodepng.cpp.i
+
+src/PNG/lodepng.s: src/PNG/lodepng.cpp.s
+
+.PHONY : src/PNG/lodepng.s
+
+# target to generate assembly for a file
+src/PNG/lodepng.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/PNG/lodepng.cpp.s
+.PHONY : src/PNG/lodepng.cpp.s
+
 src/game/GameManager.o: src/game/GameManager.cpp.o
 
 .PHONY : src/game/GameManager.o
@@ -358,6 +385,33 @@ src/render/ShaderManager.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/ShaderManager.cpp.s
 .PHONY : src/render/ShaderManager.cpp.s
 
+src/render/Texture.o: src/render/Texture.cpp.o
+
+.PHONY : src/render/Texture.o
+
+# target to build an object file
+src/render/Texture.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Texture.cpp.o
+.PHONY : src/render/Texture.cpp.o
+
+src/render/Texture.i: src/render/Texture.cpp.i
+
+.PHONY : src/render/Texture.i
+
+# target to preprocess a source file
+src/render/Texture.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Texture.cpp.i
+.PHONY : src/render/Texture.cpp.i
+
+src/render/Texture.s: src/render/Texture.cpp.s
+
+.PHONY : src/render/Texture.s
+
+# target to generate assembly for a file
+src/render/Texture.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Texture.cpp.s
+.PHONY : src/render/Texture.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -367,6 +421,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... T4X"
+	@echo "... src/PNG/lodepng.o"
+	@echo "... src/PNG/lodepng.i"
+	@echo "... src/PNG/lodepng.s"
 	@echo "... src/game/GameManager.o"
 	@echo "... src/game/GameManager.i"
 	@echo "... src/game/GameManager.s"
@@ -391,6 +448,9 @@ help:
 	@echo "... src/render/ShaderManager.o"
 	@echo "... src/render/ShaderManager.i"
 	@echo "... src/render/ShaderManager.s"
+	@echo "... src/render/Texture.o"
+	@echo "... src/render/Texture.i"
+	@echo "... src/render/Texture.s"
 .PHONY : help
 
 

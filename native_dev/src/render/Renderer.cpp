@@ -97,6 +97,7 @@ bool Renderer::initialise()
         ShaderProgram tiled = shader_manager.createProgram(&tile_program[0], 3);
         active_programs.push_back(tiled);
     }
+
     // toggle init flag
     initialised = true;
     return true;
@@ -159,7 +160,7 @@ bool Renderer::addRenderObject()
     return true;
 }
 
-bool Renderer::addTileObject(int x_dim, int y_dim)
+bool Renderer::addTileObject(int x_dim, int y_dim, const char* texture_source, unsigned texture_w, unsigned texture_h)
 {
     if (!initialised)
     {
@@ -171,6 +172,7 @@ bool Renderer::addTileObject(int x_dim, int y_dim)
     obj.initialise(tile_objects.size() + 1, active_programs[1].program_id);
     obj.update_transform(&transform[0][0]);
     obj.setDims(x_dim, y_dim);
+    obj.setTexture(texture_source, texture_w, texture_w);
 
     // add it to active objects
     tile_objects.push_back(obj);
