@@ -1,4 +1,4 @@
-#include "RenderObjects/TileObject.h"
+#include "render/RenderObjects/TileObject.h"
 
 bool TileObject::draw(){
     glUseProgram(shader_pid);           // set shader program

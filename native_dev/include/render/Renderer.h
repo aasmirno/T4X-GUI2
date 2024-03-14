@@ -29,7 +29,7 @@ private:
         glm::vec4(0.0, 0.0, 0.0, 1.0)
     );
 
-    Vec4 clear_color = Vec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
+    glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
 
     /*
 		sdl pointers

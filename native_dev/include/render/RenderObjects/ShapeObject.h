@@ -1,6 +1,5 @@
 #pragma once
-#include "RenderObjects/RenderObject.h"
-#include <vector>
+#include "render/RenderObjects/RenderObject.h"
 
 class ShapeObject : public RenderObject
 {
@@ -8,7 +7,7 @@ private:
     std::vector<float> vertex_data; // store vertex information for this object
 
     GLint color_loc = -1;
-    Vec4 shape_color = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    glm::vec4 shape_color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     /*
         Implementation of Render Object buffer generation function
@@ -35,7 +34,7 @@ public:
 
     virtual void printDebug();
 
-    void setColor(Vec4 color)
+    void setColor(glm::vec4 color)
     {
         shape_color.x = color.x;
         shape_color.y = color.y;

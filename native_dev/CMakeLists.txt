@@ -8,11 +8,15 @@ set(SDL2_PATH "/usr/lib/x86_64-linux-gnu/libSDL2.so")
 set(LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
 set(SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
-file(GLOB_RECURSE CPPS "${SOURCE_PATH}/*.cpp")
+file(GLOB_RECURSE CPPS_RENDER "${SOURCE_PATH}/render/*.cpp")
+file(GLOB_RECURSE CPPS_GAME "${SOURCE_PATH}/game/*.cpp")
+file(GLOB_RECURSE CPPS_INPUT "${SOURCE_PATH}/input/*.cpp")
 
 add_executable(${TARGET}
-    ${CPPS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Vector.h
+    "${SOURCE_PATH}/main.cpp"
+    ${CPPS_RENDER}
+    ${CPPS_INPUT}
+    ${CPPS_GAME}
 )
 
 target_include_directories(${TARGET} PUBLIC 

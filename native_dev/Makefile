@@ -142,6 +142,60 @@ T4X/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/build
 .PHONY : T4X/fast
 
+src/game/GameManager.o: src/game/GameManager.cpp.o
+
+.PHONY : src/game/GameManager.o
+
+# target to build an object file
+src/game/GameManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/game/GameManager.cpp.o
+.PHONY : src/game/GameManager.cpp.o
+
+src/game/GameManager.i: src/game/GameManager.cpp.i
+
+.PHONY : src/game/GameManager.i
+
+# target to preprocess a source file
+src/game/GameManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/game/GameManager.cpp.i
+.PHONY : src/game/GameManager.cpp.i
+
+src/game/GameManager.s: src/game/GameManager.cpp.s
+
+.PHONY : src/game/GameManager.s
+
+# target to generate assembly for a file
+src/game/GameManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/game/GameManager.cpp.s
+.PHONY : src/game/GameManager.cpp.s
+
+src/input/InputManager.o: src/input/InputManager.cpp.o
+
+.PHONY : src/input/InputManager.o
+
+# target to build an object file
+src/input/InputManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/input/InputManager.cpp.o
+.PHONY : src/input/InputManager.cpp.o
+
+src/input/InputManager.i: src/input/InputManager.cpp.i
+
+.PHONY : src/input/InputManager.i
+
+# target to preprocess a source file
+src/input/InputManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/input/InputManager.cpp.i
+.PHONY : src/input/InputManager.cpp.i
+
+src/input/InputManager.s: src/input/InputManager.cpp.s
+
+.PHONY : src/input/InputManager.s
+
+# target to generate assembly for a file
+src/input/InputManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/input/InputManager.cpp.s
+.PHONY : src/input/InputManager.cpp.s
+
 src/main.o: src/main.cpp.o
 
 .PHONY : src/main.o
@@ -313,6 +367,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... T4X"
+	@echo "... src/game/GameManager.o"
+	@echo "... src/game/GameManager.i"
+	@echo "... src/game/GameManager.s"
+	@echo "... src/input/InputManager.o"
+	@echo "... src/input/InputManager.i"
+	@echo "... src/input/InputManager.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

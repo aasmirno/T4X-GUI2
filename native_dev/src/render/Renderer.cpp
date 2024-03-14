@@ -1,4 +1,4 @@
-#include "Renderer.h"
+#include "render/Renderer.h"
 
 bool Renderer::initialise()
 {
@@ -6,13 +6,6 @@ bool Renderer::initialise()
         SDL setup
     */
     {
-        // initialise all sdl modules
-        if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
-        {
-            printf("sdl init error: %s\n", SDL_GetError());
-            return false;
-        }
-
         // Set SDL attributes to GL 4.2 + GLSL 420
         const char *glsl_version = "#version 420";
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
@@ -117,6 +110,7 @@ bool Renderer::addTileObject()
     // add it to active objects
     tile_objects.push_back(obj);
     printf("created render_object=%d\n", active_objects.size());
+    return true;
 }
 
 bool Renderer::addRenderObject()
@@ -139,7 +133,7 @@ bool Renderer::addRenderObject()
     obj.addVertex(0.5f, 0.0f,  1.0f);
     obj.addVertex(0.5f, -0.5f,  1.0f);
 
-    obj.setColor(Vec4((active_objects.size() + 1) * 100 / 256.0, 0.0f, 0.0f, 1.0f));
+    obj.setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
     // add it to active objects
     active_objects.push_back(obj);

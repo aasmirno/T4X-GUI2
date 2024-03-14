@@ -1,4 +1,4 @@
-#include "RenderObjects/RenderObject.h"
+#include "render/RenderObjects/RenderObject.h"
 
 bool RenderObject::initialise(int obj_id, GLuint shader_program){
     if(shader_program == 0){

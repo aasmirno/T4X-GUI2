@@ -1,4 +1,4 @@
-#include "RenderObjects/ShapeObject.h"
+#include "render/RenderObjects/ShapeObject.h"
 
 bool ShapeObject::draw(){
     glUseProgram(shader_pid);           // set shader program
