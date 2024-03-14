@@ -1,4 +1,4 @@
-#include "ShapeObject.h"
+#include "RenderObjects/ShapeObject.h"
 
 bool ShapeObject::draw(){
     glUseProgram(shader_pid);           // set shader program
@@ -25,8 +25,10 @@ void ShapeObject::printDebug(){
     printf("    shader_pid: %d\n", shader_pid);
     printf("    vao_id: %d\n", vao_id);
     printf("    vbo_id: %d\n", vbo_id);
-    printf("    shape_color: %f %f %f %f\n", shape_color.x, shape_color.y, shape_color.z, shape_color.w);
+    printf("    shape_color: %f %f %f %f\n", shape_color.x, shape_color.y, shape_color.z, shape_color.w);\
+
     printf("    vertex_data (%d vertices)\n", vertex_data.size() / 3);
+    std::cout << "      "; 
     for(int i = 0; i < vertex_data.size(); i++){
         std::cout << vertex_data[i] << " ";
     }
@@ -68,7 +70,5 @@ bool ShapeObject::genBuffers(){
         printDebug();
 		return false;
 	}
-
-    printf("buffers generated for render_obj=%d\n", object_id);
     return true;
 }

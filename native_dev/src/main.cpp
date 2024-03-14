@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     }
 
     r.addRenderObject();
-    r.addRenderObject();
+    r.addTileObject();
     for(int i = 0; i < 2000; i++){
         r.render();
     }

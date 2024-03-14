@@ -1,0 +1,23 @@
+#version 420 core     
+
+uniform mat4 projection;                //projection matrix
+
+layout (location = 0) in uint aTileId;  //same input as basic but with attribute location specified
+uniform ivec2 mapSize;                  //len 2 vector of size
+
+out VS_OUT {
+    uint tileId;
+} vs_out;
+
+void main()
+{
+    int i = gl_VertexID; //get array index of this vertex
+
+    //get x and y floats from vertex index and map size
+    float x = float(i % mapSize.x); //float(i & 15);
+    float y = float(i / mapSize.x); //float((i >> 4) & 15);
+  
+
+    gl_Position = vec4(x, y, 0, 1); //set position
+    vs_out.tileId = aTileId;        //set output block tile id to input tile id
+}

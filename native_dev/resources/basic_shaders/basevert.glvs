@@ -1,0 +1,9 @@
+#version 420 core
+
+uniform vec4 transform;
+in vec3 vert_pos;
+
+void main()
+{
+    gl_Position = vec4(vert_pos, 1.0);
+}

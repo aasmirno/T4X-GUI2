@@ -53,7 +53,9 @@ bool Renderer::initialise()
         if (SDL_GL_SetSwapInterval(1) == 0)
         {
             vsync_enabled = true;
-        } else {
+        }
+        else
+        {
             printf("vsync not supported\n");
         }
     }
@@ -76,127 +78,96 @@ bool Renderer::initialise()
         printf("openGL ver: %s, glsl ver: %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
     }
 
-    //check for GL errors
-	GLenum err;
-	if ((err = glGetError()) != GL_NO_ERROR) {
-		printf("%d", err);
-	}
-	
+    // check for GL errors
+    GLenum err;
+    if ((err = glGetError()) != GL_NO_ERROR)
+    {
+        printf("%d", err);
+    }
+
     /*
         Initialise shaders
     */
-    //create basic shader program
-    SourcePair program[] ={
-        SourcePair{"resources/basevert.glvs", GL_VERTEX_SHADER},
-        SourcePair{"resources/basefrag.glfs", GL_FRAGMENT_SHADER},
-        NULL
-    };
-    ShaderProgram basic = shader_manager.createProgram(&program[0], 2);
-    active_programs.push_back(basic);
+    {
+        // create basic shader program
+        SourcePair basic_program[] = {
+            SourcePair{"resources/basic_shaders/basevert.glvs", GL_VERTEX_SHADER},
+            SourcePair{"resources/basic_shaders/basefrag.glfs", GL_FRAGMENT_SHADER}};
+        ShaderProgram basic = shader_manager.createProgram(&basic_program[0], 2);
+        active_programs.push_back(basic);
 
-    //toggle init flag
+        // create tileid map shader
+        SourcePair tile_program[] = {
+            SourcePair{"resources/tiled_shaders/tilevert.glvs", GL_VERTEX_SHADER},
+            SourcePair{"resources/tiled_shaders/tilegeom.glgs", GL_GEOMETRY_SHADER},
+            SourcePair{"resources/tiled_shaders/tilefrag.glfs", GL_FRAGMENT_SHADER}};
+        ShaderProgram tiled = shader_manager.createProgram(&tile_program[0], 3);
+        active_programs.push_back(tiled);
+    }
+    // toggle init flag
     initialised = true;
-	return true;
+    return true;
 }
 
-bool Renderer::addRenderObject(){
-    if(!initialised){
+bool Renderer::addTileObject()
+{
+    TileObject obj;
+    obj.initialise(tile_objects.size() + 1, active_programs[1].program_id);
+    obj.update_transform(&transform[0][0]);
+    // add it to active objects
+    tile_objects.push_back(obj);
+    printf("created render_object=%d\n", active_objects.size());
+}
+
+bool Renderer::addRenderObject()
+{
+    if (!initialised)
+    {
         printf("render manager not initialised\n");
         return false;
     }
 
     // try to initialise a new shape object
     ShapeObject obj;
-    if(obj.initialise(active_objects.size() + 1, active_programs[0].program_id) == false){
+    if (obj.initialise(active_objects.size() + 1, active_programs[0].program_id) == false)
+    {
         printf("failed to initialise render object\n");
         return false;
     }
-    obj.addVertex(active_objects.size(),  0.5f,  0.0f);
-    obj.addVertex(0.5f, -0.5f,  0.0f);
-    obj.addVertex(-0.5f, -0.5f,  0.0f);
 
-    obj.setColor(Vec4((active_objects.size() + 1)*100 / 256.0, 0.0f, 0.0f, 1.0f));
+    obj.addVertex(0.0f,  0.0f,  1.0f);
+    obj.addVertex(0.5f, 0.0f,  1.0f);
+    obj.addVertex(0.5f, -0.5f,  1.0f);
 
-    //add it to active objects
+    obj.setColor(Vec4((active_objects.size() + 1) * 100 / 256.0, 0.0f, 0.0f, 1.0f));
+
+    // add it to active objects
     active_objects.push_back(obj);
     printf("created render_object=%d\n", active_objects.size());
+    obj.printDebug();
+
     return true;
 }
 
-void Renderer::render(){
-    if(!initialised){
+void Renderer::render()
+{
+    if (!initialised)
+    {
         return;
     }
 
+    transform[0][0] += 0.0005; transform[1][1] += 0.0005;
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //Draw all active objects
-    for(int i = 0; i < active_objects.size(); i++){
-        active_objects[i].draw();
+    // Draw all active objects
+    for (int i = 0; i < active_objects.size(); i++)
+    {
+       active_objects[i].draw();
+    }
+    for (int i = 0; i < tile_objects.size(); i++)
+    {
+        tile_objects[i].draw();
     }
 
     SDL_GL_SwapWindow(main_window);
-}
-
-GLuint Renderer::loadShader(std::string path, GLenum type){
-	GLuint shader_id = 0;
-
-	std::string shader_raw;
-	std::ifstream file_source(path.c_str());
-
-	if (file_source) {
-		//read file
-		shader_raw.assign((std::istreambuf_iterator< char >(file_source)), std::istreambuf_iterator< char >());
-
-		//create shader and set source
-		shader_id = glCreateShader(type);
-
-		const GLchar* shader_source = shader_raw.c_str();
-		glShaderSource(shader_id, 1, (const GLchar**)&shader_source, NULL);
-
-		//compile
-		glCompileShader(shader_id);
-
-		//error checking
-		GLint compiled = GL_FALSE;
-		glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compiled);
-		if (compiled != GL_TRUE) {
-			printf("    shader %d compile error:\n%s\n", shader_id, shader_source);
-
-			//cleanup on comp failure
-			glDeleteShader(shader_id);
-			return 0;
-		}
-	}
-	else {
-		printf("    shader creation error: \n   bad file: %s\n", path.c_str());
-		return 0;
-	}
-
-	//check shader created
-	if (shader_id == 0) {
-		printf("    shader creation error\n");
-		return 0;
-	}
-
-    printf("    success loading shader=%d from %s\n", shader_id, path.c_str());
-	return shader_id;
-}
-
-bool Renderer::createProgram(){
-    printf("creating shader program:\n");
-    //load vertex and fragment shader hardcoded
-    GLuint vs = loadShader("resources/basevert.glvs", GL_VERTEX_SHADER);
-    if(vs == 0) {return false;}
-    GLuint fs = loadShader("resources/basefrag.glfs", GL_FRAGMENT_SHADER);
-    if(fs == 0) {glDeleteShader(vs); return false;}
-
-    GLuint program = glCreateProgram(); //create new gl context program
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-
-    //active_programs.push_back(new_program);
-
-    printf("created shader program: %d\n", program);
-    return true;
 }

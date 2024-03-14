@@ -1,6 +1,8 @@
 #pragma once
-#include "RenderObject.h"
-#include "ShapeObject.h"
+#include "RenderObjects/RenderObject.h"
+#include "RenderObjects/ShapeObject.h"
+#include "RenderObjects/TileObject.h"
+
 #include "ShaderManager.h"
 
 #include <stdio.h>
@@ -9,15 +11,23 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+#include <glm/mat4x4.hpp>
 
 class Renderer{
 private:
     /*
-        Window Data
+        Window Data and transform data
     */
     //initial window values
-	int WINDOW_W = 500;
-	int WINDOW_H = 200;
+	int WINDOW_W = 600;
+	int WINDOW_H = 600;
+
+    glm::mat4 transform = glm::mat4(
+        glm::vec4(0.166, 0.0, 0.0, 0.0),
+        glm::vec4(0.0, 0.166, 0.0, 0.0),
+        glm::vec4(0.0, 0.0, 1.0, 0.0),
+        glm::vec4(0.0, 0.0, 0.0, 1.0)
+    );
 
     Vec4 clear_color = Vec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
 
@@ -37,27 +47,13 @@ private:
         Render Objects
     */
     std::vector<ShapeObject> active_objects; // vector of active render objects
+    std::vector<TileObject> tile_objects;
 
     /*
         Shader values
     */
     std::vector<ShaderProgram> active_programs; // vector of active shader programs
     ShaderManager shader_manager;   //shader manager instance
-
-    /*
-        Create a gl shader from source and return its handle
-            path: path to source file
-            type: type of shader
-                GL_VERTEX_SHADER
-                GL_FRAGMENT_SHADER
-                etc.
-    */
-    GLuint loadShader(std::string path, GLenum type);
-
-    /*
-        Create a shader program
-    */
-    bool createProgram();
 public:
     /*
         Initialise the rendering manager on startup
@@ -66,6 +62,7 @@ public:
     bool initialise();
 
     bool addRenderObject();
+    bool addTileObject();
 
     /*
         Update the window if necessary and swap buffers
