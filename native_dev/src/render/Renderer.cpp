@@ -102,20 +102,29 @@ bool Renderer::initialise()
     return true;
 }
 
-bool Renderer::addTileObject()
-{
-    TileObject obj;
-    obj.initialise(tile_objects.size() + 1, active_programs[1].program_id);
-    obj.update_transform(&transform[0][0]);
-    // add it to active objects
-    tile_objects.push_back(obj);
-    printf("created render_object=%d\n", active_objects.size());
-    return true;
-}
+void Renderer::adj_transform(int event_value){
+    if (!initialised)
+    {
+        printf("ERROR: render manager not initialised\n");
+        return;
+    }
 
-void Renderer::adj_transform(float factor){
+    float factor = 1.0f;
+    if(event_value < 0 && transform[0][0] > min_transform){ //scroll wheel back: zoom out
+        factor = 0.9;
+    } else if(transform[0][0] < max_transform){ //scroll wheel forward: zoom in
+        factor = 1.1f;
+    }
+
     transform[0][0] *= factor;
-    transform[1][1] *= factor;
+    if(transform[0][0] < min_transform){
+        transform[0][0] = min_transform;
+    }
+    if(transform[0][0] > max_transform){
+        transform[0][0] = max_transform;
+    }
+
+    transform[1][1] = transform[0][0];
     for(int i = 0; i < tile_objects.size(); i++){
         tile_objects[i].update_transform(&transform[0][0]);
     }
@@ -125,7 +134,7 @@ bool Renderer::addRenderObject()
 {
     if (!initialised)
     {
-        printf("render manager not initialised\n");
+        printf("ERROR: render manager not initialised\n");
         return false;
     }
 
@@ -146,8 +155,26 @@ bool Renderer::addRenderObject()
     // add it to active objects
     active_objects.push_back(obj);
     printf("created render_object=%d\n", active_objects.size());
-    obj.printDebug();
 
+    return true;
+}
+
+bool Renderer::addTileObject(int x_dim, int y_dim)
+{
+    if (!initialised)
+    {
+        printf("ERROR: render manager not initialised\n");
+        return false;
+    }
+
+    TileObject obj;
+    obj.initialise(tile_objects.size() + 1, active_programs[1].program_id);
+    obj.update_transform(&transform[0][0]);
+    obj.setDims(x_dim, y_dim);
+
+    // add it to active objects
+    tile_objects.push_back(obj);
+    printf("created render_object=%d\n", active_objects.size());
     return true;
 }
 
@@ -155,10 +182,9 @@ void Renderer::render()
 {
     if (!initialised)
     {
+        printf("ERROR: render manager not initialised\n");
         return;
     }
-
-    transform[0][0] += 0.0005; transform[1][1] += 0.0005;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Draw all active objects

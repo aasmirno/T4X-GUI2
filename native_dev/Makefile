@@ -277,32 +277,32 @@ src/render/RenderObjects/ShapeObject.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/ShapeObject.cpp.s
 .PHONY : src/render/RenderObjects/ShapeObject.cpp.s
 
-src/render/RenderObjects/TiledObject.o: src/render/RenderObjects/TiledObject.cpp.o
+src/render/RenderObjects/TileObject.o: src/render/RenderObjects/TileObject.cpp.o
 
-.PHONY : src/render/RenderObjects/TiledObject.o
+.PHONY : src/render/RenderObjects/TileObject.o
 
 # target to build an object file
-src/render/RenderObjects/TiledObject.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TiledObject.cpp.o
-.PHONY : src/render/RenderObjects/TiledObject.cpp.o
+src/render/RenderObjects/TileObject.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TileObject.cpp.o
+.PHONY : src/render/RenderObjects/TileObject.cpp.o
 
-src/render/RenderObjects/TiledObject.i: src/render/RenderObjects/TiledObject.cpp.i
+src/render/RenderObjects/TileObject.i: src/render/RenderObjects/TileObject.cpp.i
 
-.PHONY : src/render/RenderObjects/TiledObject.i
+.PHONY : src/render/RenderObjects/TileObject.i
 
 # target to preprocess a source file
-src/render/RenderObjects/TiledObject.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TiledObject.cpp.i
-.PHONY : src/render/RenderObjects/TiledObject.cpp.i
+src/render/RenderObjects/TileObject.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TileObject.cpp.i
+.PHONY : src/render/RenderObjects/TileObject.cpp.i
 
-src/render/RenderObjects/TiledObject.s: src/render/RenderObjects/TiledObject.cpp.s
+src/render/RenderObjects/TileObject.s: src/render/RenderObjects/TileObject.cpp.s
 
-.PHONY : src/render/RenderObjects/TiledObject.s
+.PHONY : src/render/RenderObjects/TileObject.s
 
 # target to generate assembly for a file
-src/render/RenderObjects/TiledObject.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TiledObject.cpp.s
-.PHONY : src/render/RenderObjects/TiledObject.cpp.s
+src/render/RenderObjects/TileObject.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TileObject.cpp.s
+.PHONY : src/render/RenderObjects/TileObject.cpp.s
 
 src/render/Renderer.o: src/render/Renderer.cpp.o
 
@@ -382,9 +382,9 @@ help:
 	@echo "... src/render/RenderObjects/ShapeObject.o"
 	@echo "... src/render/RenderObjects/ShapeObject.i"
 	@echo "... src/render/RenderObjects/ShapeObject.s"
-	@echo "... src/render/RenderObjects/TiledObject.o"
-	@echo "... src/render/RenderObjects/TiledObject.i"
-	@echo "... src/render/RenderObjects/TiledObject.s"
+	@echo "... src/render/RenderObjects/TileObject.o"
+	@echo "... src/render/RenderObjects/TileObject.i"
+	@echo "... src/render/RenderObjects/TileObject.s"
 	@echo "... src/render/Renderer.o"
 	@echo "... src/render/Renderer.i"
 	@echo "... src/render/Renderer.s"

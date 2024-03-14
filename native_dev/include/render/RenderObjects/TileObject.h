@@ -1,5 +1,6 @@
 #pragma once
 #include "render/RenderObjects/RenderObject.h"
+#include <glm/vec2.hpp>
 
 /*
     TODO:
@@ -13,8 +14,7 @@ private:
     GLint transform_loc = -1; //transform matrix uniform location
     GLint dimension_loc = -1; //tile dimension location
 
-    GLint dim_x = 1;
-    GLint dim_y = 1;
+    glm::ivec2 dimensions{1,1};
     std::vector<uint16_t> tile_data; //store tile data
     
     /*
@@ -33,6 +33,8 @@ public:
         Implementation of Render Object draw function, draws vertices in vertex_data
     */
     virtual bool draw();
+
+    void setDims(int x_dim, int y_dim);
 
     void update_transform(GLfloat* transform);
 

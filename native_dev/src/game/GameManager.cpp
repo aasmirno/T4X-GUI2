@@ -15,7 +15,7 @@ bool GameManager::initialise()
         return false;
     }
     render_manager.addRenderObject();
-    render_manager.addTileObject();
+    render_manager.addTileObject(6,6);
 
     input_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
 
@@ -35,12 +35,7 @@ void GameManager::handleEvent(SDL_Event e){
     if(e.type == SDL_QUIT){
         running = false;
     } else if(e.type = SDL_MOUSEWHEEL){
-        if(e.wheel.y > 0){
-            render_manager.adj_transform(1.1);
-        } else {
-            render_manager.adj_transform(0.1);
-        }
-        printf("%d\n", e.wheel.y);
+        render_manager.adj_transform(e.wheel.y);
     }
 }
 

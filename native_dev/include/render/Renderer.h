@@ -6,6 +6,7 @@
 #include "ShaderManager.h"
 
 #include <stdio.h>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -23,11 +24,14 @@ private:
 	int WINDOW_H = 600;
 
     glm::mat4 transform = glm::mat4(
-        glm::vec4(0.166, 0.0, 0.0, 0.0),
-        glm::vec4(0.0, 0.166, 0.0, 0.0),
+        glm::vec4(0.05, 0.0, 0.0, 0.0),
+        glm::vec4(0.0, 0.05, 0.0, 0.0),
         glm::vec4(0.0, 0.0, 1.0, 0.0),
         glm::vec4(0.0, 0.0, 0.0, 1.0)
     );
+    const float min_transform = 0.05f;
+    const float max_transform = 1.0f;
+
 
     glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);	//background color
 
@@ -61,10 +65,16 @@ public:
     */
     bool initialise();
 
+    /*
+        Create and track various types of render objects
+    */
     bool addRenderObject();
-    bool addTileObject();
+    bool addTileObject(int x_dim, int y_dim);
 
-    void adj_transform(float factor);
+    /*
+        Update global transform
+    */
+    void adj_transform(int event_value);
 
     /*
         Update the window if necessary and swap buffers
