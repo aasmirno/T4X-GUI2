@@ -14,7 +14,8 @@ private:
     /*
         game state variables
     */
-    static bool running;
+    bool running;
+
 public:
     GameManager() {}
     ~GameManager() {}
@@ -32,7 +33,7 @@ public:
     bool loop();
 
     /*
-        function pointer for events
+         Handle event function
     */
-    static void handleEvent(SDL_Event e);
+    void handleEvent(SDL_Event e);
 };

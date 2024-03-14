@@ -113,6 +113,14 @@ bool Renderer::addTileObject()
     return true;
 }
 
+void Renderer::adj_transform(float factor){
+    transform[0][0] *= factor;
+    transform[1][1] *= factor;
+    for(int i = 0; i < tile_objects.size(); i++){
+        tile_objects[i].update_transform(&transform[0][0]);
+    }
+}
+
 bool Renderer::addRenderObject()
 {
     if (!initialised)

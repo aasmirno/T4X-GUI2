@@ -1,7 +1,5 @@
 #include <game/GameManager.h>
 
-bool GameManager::running;
-
 bool GameManager::initialise()
 {
     // initialise all sdl modules
@@ -19,7 +17,7 @@ bool GameManager::initialise()
     render_manager.addRenderObject();
     render_manager.addTileObject();
 
-    input_manager.set_handler(&handleEvent);
+    input_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
 
     running = true;
     run();
@@ -36,6 +34,13 @@ bool GameManager::run(){
 void GameManager::handleEvent(SDL_Event e){
     if(e.type == SDL_QUIT){
         running = false;
+    } else if(e.type = SDL_MOUSEWHEEL){
+        if(e.wheel.y > 0){
+            render_manager.adj_transform(1.1);
+        } else {
+            render_manager.adj_transform(0.1);
+        }
+        printf("%d\n", e.wheel.y);
     }
 }
 

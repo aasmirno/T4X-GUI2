@@ -4,16 +4,17 @@
 #else
 #include <SDL2/SDL_opengl.h>
 #endif
+#include <functional>
 
 class InputManager{
 private:
-    void (*event_handler)(SDL_Event event);
+   std::function<void(SDL_Event)> event_handler;
 
 public:
     InputManager(){}
     ~InputManager(){}
 
-    void set_handler(void (*event_handle)(SDL_Event e)){
+    void set_handler(std::function<void(SDL_Event)> event_handle){
         event_handler = event_handle;
     }
     bool pollEvent();

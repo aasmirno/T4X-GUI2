@@ -64,6 +64,8 @@ public:
     bool addRenderObject();
     bool addTileObject();
 
+    void adj_transform(float factor);
+
     /*
         Update the window if necessary and swap buffers
     */
