@@ -8,24 +8,21 @@ set(SDL2_PATH "/usr/lib/x86_64-linux-gnu/libSDL2.so")
 set(LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
 set(SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
-file(GLOB_RECURSE CPPS_RENDER "${SOURCE_PATH}/render/*.cpp")
-file(GLOB_RECURSE CPPS_GAME "${SOURCE_PATH}/game/*.cpp")
-file(GLOB_RECURSE CPPS_INPUT "${SOURCE_PATH}/input/*.cpp")
-file(GLOB_RECURSE CPPS_PNG "${SOURCE_PATH}/PNG/*.cpp")
+file(GLOB_RECURSE CPPS "${SOURCE_PATH}/*.cpp")
 
 add_executable(${TARGET}
-    "${SOURCE_PATH}/main.cpp"
-    ${CPPS_PNG}
-    ${CPPS_RENDER}
-    ${CPPS_INPUT}
-    ${CPPS_GAME}
+    ${CPPS}
 )
+
+target_compile_options(${TARGET} PRIVATE -g)
 
 target_include_directories(${TARGET} PUBLIC 
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
 target_link_libraries(${TARGET} 
+    "${LIB_PATH}/FastNoise2/libFastNoise.so"
+    "${LIB_PATH}/FastNoise2/libFastNoiseD.so"
     "${LIB_PATH}/glew/lib64/libGLEW.so"
     "${LIB_PATH}/glew/lib64/libGLEW.so.2.2"
     "${LIB_PATH}/glew/lib64/libGLEW.so.2.2.0"

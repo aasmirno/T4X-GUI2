@@ -6,14 +6,14 @@ bool TileObject::draw()
     glBindVertexArray(vao_id); // bind vertex array
     texture.load_texture();    // load texture into sampler
 
-    glDrawArrays(GL_POINTS, 0, tile_data.size()); // Draw all points from the current vao with assigned shader program
+    glDrawArrays(GL_POINTS, 0, dimensions.x * dimensions.y); // Draw all points from the current vao with assigned shader program
     return true;
 }
 
 bool TileObject::updateBuffers()
 {
     glBindBuffer(GL_ARRAY_BUFFER, vbo_id);                                                             // focus vbo for this render object
-    glBufferData(GL_ARRAY_BUFFER, tile_data.size() * sizeof(uint16_t), &tile_data[0], GL_STATIC_DRAW); // insert data from vertex_data
+    glBufferData(GL_ARRAY_BUFFER, dimensions.x * dimensions.y * sizeof(uint16_t), data, GL_STATIC_DRAW); // insert data from vertex_data
     return true;
 }
 
@@ -44,7 +44,7 @@ bool TileObject::genBuffers()
             size: 1
             type: GLuint
     */
-    glVertexAttribPointer(0, 1, GL_UNSIGNED_INT, GL_FALSE, 0, NULL);
+    glVertexAttribIPointer(0, 1, GL_UNSIGNED_SHORT, 0, 0);
 
     // Get uniform locations
     transform_loc = glGetUniformLocation(shader_pid, "projection");
@@ -77,19 +77,15 @@ bool TileObject::genBuffers()
 
 bool TileObject::setTexture(const char* filename, unsigned w, unsigned h){
     texture.initialise(filename, w, h);
+    printf("%d\n", texture.size());
+    return true;
 }
 
 void TileObject::setDims(int x_dim, int y_dim)
 {
-    tile_data.clear();
     if (y_dim != x_dim)
     {
         printf("ERROR: mismatched dims for tile obj: x=%d, y=%d\n", x_dim, y_dim);
-    }
-
-    for (int i = 0; i < (x_dim * y_dim); i++)
-    {
-        tile_data.push_back(1);
     }
 
     dimensions.x = x_dim;
@@ -103,4 +99,10 @@ void TileObject::printDebug()
 {
     printf("debug info for TileObject %d\n", object_id);
     printf("    shader_pid: %d\n", shader_pid);
+}
+
+void TileObject::setData(uint16_t* new_data, int x_dim, int y_dim){
+    setDims(x_dim, y_dim);
+    data = new_data;
+    updateBuffers();
 }

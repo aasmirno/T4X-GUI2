@@ -11,7 +11,7 @@ bool InputManager::pollEvent(){
                 event_handler(event);
                 break;
             default:
-                printf("%d\n", event.type);
+                break;
         }
     }
     return false;

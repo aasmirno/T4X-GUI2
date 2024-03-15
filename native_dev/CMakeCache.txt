@@ -216,6 +216,9 @@ CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 //Single output directory for building all executables.
 EXECUTABLE_OUTPUT_PATH:PATH=
 
+//The directory containing a CMake configuration file for FastNoise2.
+FastNoise2_DIR:PATH=/home/bonkhound/src/T4X-GUI2/native_dev/lib/FastNoise2/lib/cmake/FastNoise2
+
 //Single output directory for building all libraries.
 LIBRARY_OUTPUT_PATH:PATH=
 

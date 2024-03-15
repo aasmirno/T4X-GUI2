@@ -4,22 +4,16 @@
 
 #include <glm/vec2.hpp>
 
-/*
-    TODO:
-        add data interaction methods
-        add texturing
-*/
-
 class TileObject : public RenderObject
 {
 private:
     GLint transform_loc = -1; //transform matrix uniform location
-    GLint dimension_loc = -1; //tile dimension location
+    GLint dimension_loc = -1; //tile dimension uniform location
 
-    glm::ivec2 dimensions{1,1};
-    std::vector<uint16_t> tile_data; //store tile data
+    glm::ivec2 dimensions{1,1};      //tile data dimensions
     
-    GLTexture texture;
+    uint16_t* data; //pointer to data
+    GLTexture texture;  //textures
 
     /*
         Implementation of Render Object buffer generation function
@@ -31,6 +25,11 @@ private:
             Sends vertex data into vertex buffer
     */
     virtual bool updateBuffers();
+
+    /*
+        Set the dimensions for this object
+    */
+    void setDims(int x_dim, int y_dim);
 
 public:
     /*
@@ -44,10 +43,13 @@ public:
     bool setTexture(const char* filename, unsigned w, unsigned h);
 
     /*
-        Set the dimensions for this object
+        update tile data
     */
-    void setDims(int x_dim, int y_dim);
+    void setData(uint16_t* new_data, int x_dim, int y_dim);
 
+    /*
+        Set transform matrix for this object
+    */
     void update_transform(GLfloat* transform);
 
     virtual void printDebug();

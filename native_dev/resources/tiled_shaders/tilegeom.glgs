@@ -13,7 +13,7 @@ layout (triangle_strip, max_vertices = 4) out;  //define output as 4 vertices in
 void main() {
     uint tileId = gs_in[0].tileId & 255u;   //bitwise &: tile id(0000 to 1000) against max ubyte (11111111)
     float tileX = float(tileId & 7u) / 8.0;   //bitwise &: tile id (0000 to 1000) against 8(1111): get x coordinate on texture
-    float tileY = float((tileId >> 3u) & 7u) / 8.0; //always zero if tile types < 15: get y coordinate on texture
+    float tileY = float((tileId >> 3u) & 7u) / 8.0; //always zero if tile types < 8: get y coordinate on texture
     
     const float B = 1 / 256.0;  //border buffer (1/256) = px border
     const float S = 1 / 8.0;    //tex size (1/8.0 = 32 px, 1/16 = 16 px)

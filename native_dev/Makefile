@@ -196,6 +196,33 @@ src/game/GameManager.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/game/GameManager.cpp.s
 .PHONY : src/game/GameManager.cpp.s
 
+src/game/map/Map.o: src/game/map/Map.cpp.o
+
+.PHONY : src/game/map/Map.o
+
+# target to build an object file
+src/game/map/Map.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/game/map/Map.cpp.o
+.PHONY : src/game/map/Map.cpp.o
+
+src/game/map/Map.i: src/game/map/Map.cpp.i
+
+.PHONY : src/game/map/Map.i
+
+# target to preprocess a source file
+src/game/map/Map.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/game/map/Map.cpp.i
+.PHONY : src/game/map/Map.cpp.i
+
+src/game/map/Map.s: src/game/map/Map.cpp.s
+
+.PHONY : src/game/map/Map.s
+
+# target to generate assembly for a file
+src/game/map/Map.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/game/map/Map.cpp.s
+.PHONY : src/game/map/Map.cpp.s
+
 src/input/InputManager.o: src/input/InputManager.cpp.o
 
 .PHONY : src/input/InputManager.o
@@ -427,6 +454,9 @@ help:
 	@echo "... src/game/GameManager.o"
 	@echo "... src/game/GameManager.i"
 	@echo "... src/game/GameManager.s"
+	@echo "... src/game/map/Map.o"
+	@echo "... src/game/map/Map.i"
+	@echo "... src/game/map/Map.s"
 	@echo "... src/input/InputManager.o"
 	@echo "... src/input/InputManager.i"
 	@echo "... src/input/InputManager.s"

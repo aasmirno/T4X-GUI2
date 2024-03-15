@@ -18,6 +18,17 @@ struct ShaderProgram
     GLuint program_id = 0;
     // shader handles
     std::vector<GLuint> shader_handles;
+
+    bool clear(){
+        for(int i = 0; i < shader_handles.size(); i++){
+            glDeleteShader(shader_handles[i]);
+        }
+        
+        glDeleteProgram(program_id);
+        program_id = 0;
+        shader_handles.clear();
+        return true;
+    }
 };
 
 class ShaderManager

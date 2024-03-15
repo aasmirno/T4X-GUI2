@@ -22,6 +22,10 @@ public:
     */
     bool initialise(const char *filename, unsigned w, unsigned h);
 
+    size_t size(){
+        return data.size();
+    }
+
     /*
         load a texture into the sampler
     */

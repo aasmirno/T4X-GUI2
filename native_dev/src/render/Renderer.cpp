@@ -103,6 +103,12 @@ bool Renderer::initialise()
     return true;
 }
 
+void Renderer::shutdown(){
+    for(int i = 0; i < active_programs.size();i++){
+        active_programs[i].clear();
+    }
+}
+
 void Renderer::adj_transform(int event_value){
     if (!initialised)
     {
@@ -131,20 +137,20 @@ void Renderer::adj_transform(int event_value){
     }
 }
 
-bool Renderer::addRenderObject()
+RenderObject* Renderer::addRenderObject()
 {
     if (!initialised)
     {
         printf("ERROR: render manager not initialised\n");
-        return false;
+        return nullptr;
     }
 
     // try to initialise a new shape object
     ShapeObject obj;
-    if (obj.initialise(active_objects.size() + 1, active_programs[0].program_id) == false)
+    if (!obj.initialise(active_objects.size() + 1, active_programs[0].program_id))
     {
         printf("failed to initialise render object\n");
-        return false;
+        return nullptr;
     }
 
     obj.addVertex(0.0f,  0.0f,  1.0f);
@@ -156,28 +162,41 @@ bool Renderer::addRenderObject()
     // add it to active objects
     active_objects.push_back(obj);
     printf("created render_object=%d\n", active_objects.size());
-
-    return true;
+    printf("Test");
+    return &active_objects.back();
 }
 
-bool Renderer::addTileObject(int x_dim, int y_dim, const char* texture_source, unsigned texture_w, unsigned texture_h)
+TileObject* Renderer::addTileObject(int x_dim, int y_dim, uint16_t* data, const char* texture_source, unsigned texture_w, unsigned texture_h)
 {
     if (!initialised)
     {
         printf("ERROR: render manager not initialised\n");
-        return false;
+        return nullptr;
     }
 
+    if(data == nullptr){
+        printf("ERROR: bad data pointer in addTileObject");
+        return nullptr;
+    }
+
+
     TileObject obj;
-    obj.initialise(tile_objects.size() + 1, active_programs[1].program_id);
-    obj.update_transform(&transform[0][0]);
-    obj.setDims(x_dim, y_dim);
-    obj.setTexture(texture_source, texture_w, texture_w);
+    int id = tile_objects.size() + 1;
+    if(!obj.initialise(id, active_programs[1].program_id)){
+        printf("Shape object initialisation failed\n");
+        return nullptr;
+    }      //call basic initialisation function
+    obj.update_transform(&transform[0][0]);                 //update the transform to current transform
+    printf("updated transform\n");
+    obj.setData(data, x_dim, y_dim);                        //set the tile data
+    printf("set data\n");
+    obj.setTexture(texture_source, texture_w, texture_w);   //load a texture
+    printf("set texture\n");
 
     // add it to active objects
     tile_objects.push_back(obj);
-    printf("created render_object=%d\n", active_objects.size());
-    return true;
+    printf("created tile_object=%d\n", id);
+    return &tile_objects.back();
 }
 
 void Renderer::render()

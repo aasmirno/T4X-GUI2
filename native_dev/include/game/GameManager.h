@@ -1,5 +1,6 @@
 #include "render/Renderer.h"
 #include "input/InputManager.h"
+#include "map/Map.h"
 
 /*
     Overarching game managment class
@@ -10,6 +11,11 @@ class GameManager
 private:
     Renderer render_manager;
     InputManager input_manager;
+
+    /*
+        Map variables
+    */
+    Map game_map;
 
     /*
         game state variables
