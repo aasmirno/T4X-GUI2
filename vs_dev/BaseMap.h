@@ -8,8 +8,6 @@ protected:
 	int height = 0;
 	int width = 0;
 
-
-
 	//check bounds
 	bool coordCheck(int x, int y) {
 		return x >= 0 && x < width && y >= 0 && y < height;

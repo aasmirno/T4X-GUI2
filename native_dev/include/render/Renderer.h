@@ -1,9 +1,5 @@
 #pragma once
-#include "RenderObjects/RenderObject.h"
-#include "RenderObjects/ShapeObject.h"
 #include "RenderObjects/TileObject.h"
-
-#include "ShaderManager.h"
 
 #include <stdio.h>
 #include <cmath>
@@ -24,6 +20,7 @@ private:
     int WINDOW_W = 600;
     int WINDOW_H = 600;
 
+    //transform data
     glm::mat4 transform = glm::mat4(
         glm::vec4(0.05, 0.0, 0.0, 0.0),
         glm::vec4(0.0, 0.05, 0.0, 0.0),
@@ -31,6 +28,8 @@ private:
         glm::vec4(0.0, 0.0, 0.0, 1.0));
     const float min_transform = 0.05f;
     const float max_transform = 1.0f;
+    const float move_speed = 0.01f;
+
 
     glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f); // background color
 
@@ -49,14 +48,7 @@ private:
     /*
         Render Objects
     */
-    std::vector<ShapeObject> active_objects; // vector of active render objects
     std::vector<TileObject> tile_objects;
-
-    /*
-        Sub managers
-    */
-    std::vector<ShaderProgram> active_programs; // vector of active shader programs
-    ShaderManager shader_manager;               // shader manager instance
 
 public:
     /*
@@ -66,12 +58,7 @@ public:
     bool initialise();
 
     /*
-        Create and track various types of render objects
-    */
-    RenderObject *addRenderObject();
-
-    /*
-        Textured tile object:
+        Create tiled texture object:
             x_dim: x dimension
             y_dim: y_dimension
             texture_source: path to texture file
@@ -84,6 +71,13 @@ public:
 
     /*
         Update global transform
+            int event value:
+                -3: down
+                -2: left
+                -1: zoom out
+                1: zoom in
+                2: right
+                3: up
     */
     void adj_transform(int event_value);
 

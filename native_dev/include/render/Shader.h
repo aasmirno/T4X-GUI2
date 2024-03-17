@@ -12,36 +12,21 @@ struct SourcePair
     GLenum type;       // source shader type
 };
 
-struct ShaderProgram
+class Shader
 {
-    // program id
-    GLuint program_id = 0;
+private:
     // shader handles
     std::vector<GLuint> shader_handles;
 
-    bool clear(){
-        for(int i = 0; i < shader_handles.size(); i++){
-            glDeleteShader(shader_handles[i]);
-        }
-        
-        glDeleteProgram(program_id);
-        program_id = 0;
-        shader_handles.clear();
-        return true;
-    }
-};
-
-class ShaderManager
-{
-private:
     /* 
         loadShader:
         load a shader of a certain type from a source file
         returns 0 on shader fail else returns shader handle
     */
     GLuint loadShader(std::string path, GLenum type);
-
 public:
+    GLuint program_id = 0;  //opengl shader handle
+
     /*
         createProgram:
         Creates a shader program given an array of source pairs consisting of {file path to source, shader type}
@@ -49,7 +34,7 @@ public:
             uint num_shaders: number of shaders in the program
             returns a struct with program and seperate shader handles
     */
-    ShaderProgram createProgram(SourcePair *program, uint num_shaders);
+    bool createProgram(SourcePair *program, uint num_shaders);
 
-    bool deleteProgram(ShaderProgram program);
+    bool deleteProgram();
 };

@@ -6,15 +6,21 @@
 #endif
 #include <functional>
 
-class InputManager{
+class InputManager
+{
 private:
-   std::function<void(SDL_Event)> event_handler;
-
+    std::function<void(SDL_Event)> event_handler;
+    bool KEYS[322]; //keyboard event state
 public:
-    InputManager(){}
-    ~InputManager(){}
+    InputManager() {}
+    ~InputManager() {}
 
-    void set_handler(std::function<void(SDL_Event)> event_handle){
+    bool* getKeys(){
+        return &KEYS[0];
+    }
+
+    void set_handler(std::function<void(SDL_Event)> event_handle)
+    {
         event_handler = event_handle;
     }
     bool pollEvent();

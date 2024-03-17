@@ -20,7 +20,6 @@ protected:
     /*
         GL handles
     */
-    GLuint shader_pid = 0; // shader program handle
     GLuint vao_id = -1;    // vertex array object handle
     GLuint vbo_id = -1;    // vertex buffer object handle
 
@@ -38,9 +37,8 @@ public:
     /*
         Initialise the render object
             obj_id: render object id
-            shader_program: shader program to be used
     */
-    bool initialise(int obj_id, GLuint shader_program);
+    bool initialise(int obj_id);
 
     /*
         Dump debug information to the console

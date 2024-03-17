@@ -78,34 +78,14 @@ bool Renderer::initialise()
         printf("%d", err);
     }
 
-    /*
-        Initialise shaders
-    */
-    {
-        // create basic shader program
-        SourcePair basic_program[] = {
-            SourcePair{"resources/basic_shaders/basevert.glvs", GL_VERTEX_SHADER},
-            SourcePair{"resources/basic_shaders/basefrag.glfs", GL_FRAGMENT_SHADER}};
-        ShaderProgram basic = shader_manager.createProgram(&basic_program[0], 2);
-        active_programs.push_back(basic);
-
-        // create tileid map shader
-        SourcePair tile_program[] = {
-            SourcePair{"resources/tiled_shaders/tilevert.glvs", GL_VERTEX_SHADER},
-            SourcePair{"resources/tiled_shaders/tilegeom.glgs", GL_GEOMETRY_SHADER},
-            SourcePair{"resources/tiled_shaders/tilefrag.glfs", GL_FRAGMENT_SHADER}};
-        ShaderProgram tiled = shader_manager.createProgram(&tile_program[0], 3);
-        active_programs.push_back(tiled);
-    }
-
     // toggle init flag
     initialised = true;
     return true;
 }
 
 void Renderer::shutdown(){
-    for(int i = 0; i < active_programs.size();i++){
-        active_programs[i].clear();
+    for(int i = 0; i < tile_objects.size(); i++){
+        tile_objects[i].cleanup();
     }
 }
 
@@ -137,35 +117,6 @@ void Renderer::adj_transform(int event_value){
     }
 }
 
-RenderObject* Renderer::addRenderObject()
-{
-    if (!initialised)
-    {
-        printf("ERROR: render manager not initialised\n");
-        return nullptr;
-    }
-
-    // try to initialise a new shape object
-    ShapeObject obj;
-    if (!obj.initialise(active_objects.size() + 1, active_programs[0].program_id))
-    {
-        printf("failed to initialise render object\n");
-        return nullptr;
-    }
-
-    obj.addVertex(0.0f,  0.0f,  1.0f);
-    obj.addVertex(0.5f, 0.0f,  1.0f);
-    obj.addVertex(0.5f, -0.5f,  1.0f);
-
-    obj.setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
-    // add it to active objects
-    active_objects.push_back(obj);
-    printf("created render_object=%d\n", active_objects.size());
-    printf("Test");
-    return &active_objects.back();
-}
-
 TileObject* Renderer::addTileObject(int x_dim, int y_dim, uint16_t* data, const char* texture_source, unsigned texture_w, unsigned texture_h)
 {
     if (!initialised)
@@ -179,23 +130,18 @@ TileObject* Renderer::addTileObject(int x_dim, int y_dim, uint16_t* data, const 
         return nullptr;
     }
 
-
     TileObject obj;
     int id = tile_objects.size() + 1;
-    if(!obj.initialise(id, active_programs[1].program_id)){
+    if(!obj.initialise(id)){
         printf("Shape object initialisation failed\n");
         return nullptr;
     }      //call basic initialisation function
     obj.update_transform(&transform[0][0]);                 //update the transform to current transform
-    printf("updated transform\n");
     obj.setData(data, x_dim, y_dim);                        //set the tile data
-    printf("set data\n");
     obj.setTexture(texture_source, texture_w, texture_w);   //load a texture
-    printf("set texture\n");
 
     // add it to active objects
     tile_objects.push_back(obj);
-    printf("created tile_object=%d\n", id);
     return &tile_objects.back();
 }
 
@@ -209,10 +155,6 @@ void Renderer::render()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Draw all active objects
-    for (int i = 0; i < active_objects.size(); i++)
-    {
-       active_objects[i].draw();
-    }
     for (int i = 0; i < tile_objects.size(); i++)
     {
         tile_objects[i].draw();

@@ -2,13 +2,14 @@
 
 bool GameManager::initialise()
 {
+    printf("Engine Start:\n");
     // initialise all sdl modules
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         printf("ERROR: SDL failed to initialise %s\n", SDL_GetError());
         return false;
     }
-    printf("SDL initialised\n");
+    printf("    SDL initialised\n");
 
     //try and initialise the rendering manager
     if (render_manager.initialise() == false)
@@ -16,29 +17,22 @@ bool GameManager::initialise()
         printf("ERROR: render manager failed to initialise\n");
         return false;
     }
-    printf("render manager initialised\n");
+    printf("    render manager initialised\n");
 
     unsigned x = 100;
     unsigned y = 200;
     //initialise the game map
     game_map.initialise(x, y);
-    printf("gamemap initialised\n");
+    printf("    gamemap initialised\n");
 
     //set callback for event handler
     input_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
-    printf("input manager initialised\n");
+    printf("    input manager initialised\n");
 
 
     /*
         TESTING
     */
-    RenderObject* test_triangle= render_manager.addRenderObject();
-    if(test_triangle == nullptr){
-        printf("test_triangle is fucked\n");
-        return false;
-    }
-    printf("Test");
-
     TileObject* map_graphic = render_manager.addTileObject(x,y, game_map.getData(), "resources/textures/TileSet32.png", 256, 256);
     if(map_graphic == nullptr){
         printf("engine startup failed");
@@ -50,6 +44,7 @@ bool GameManager::initialise()
     run();
 
     //clean up
+    printf("Engine shutting down\n");
     render_manager.shutdown();
 
     return true;
@@ -73,5 +68,10 @@ void GameManager::handleEvent(SDL_Event e){
 bool GameManager::loop(){
     render_manager.render();
     input_manager.pollEvent();
+    bool* keys = input_manager.getKeys();
+    if(keys[SDLK_w]){
+        render_manager.adj_transform(3);
+    }
+
     return true;
 }

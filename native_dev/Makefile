@@ -304,33 +304,6 @@ src/render/RenderObjects/RenderObject.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/RenderObject.cpp.s
 .PHONY : src/render/RenderObjects/RenderObject.cpp.s
 
-src/render/RenderObjects/ShapeObject.o: src/render/RenderObjects/ShapeObject.cpp.o
-
-.PHONY : src/render/RenderObjects/ShapeObject.o
-
-# target to build an object file
-src/render/RenderObjects/ShapeObject.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/ShapeObject.cpp.o
-.PHONY : src/render/RenderObjects/ShapeObject.cpp.o
-
-src/render/RenderObjects/ShapeObject.i: src/render/RenderObjects/ShapeObject.cpp.i
-
-.PHONY : src/render/RenderObjects/ShapeObject.i
-
-# target to preprocess a source file
-src/render/RenderObjects/ShapeObject.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/ShapeObject.cpp.i
-.PHONY : src/render/RenderObjects/ShapeObject.cpp.i
-
-src/render/RenderObjects/ShapeObject.s: src/render/RenderObjects/ShapeObject.cpp.s
-
-.PHONY : src/render/RenderObjects/ShapeObject.s
-
-# target to generate assembly for a file
-src/render/RenderObjects/ShapeObject.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/ShapeObject.cpp.s
-.PHONY : src/render/RenderObjects/ShapeObject.cpp.s
-
 src/render/RenderObjects/TileObject.o: src/render/RenderObjects/TileObject.cpp.o
 
 .PHONY : src/render/RenderObjects/TileObject.o
@@ -385,32 +358,32 @@ src/render/Renderer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Renderer.cpp.s
 .PHONY : src/render/Renderer.cpp.s
 
-src/render/ShaderManager.o: src/render/ShaderManager.cpp.o
+src/render/Shader.o: src/render/Shader.cpp.o
 
-.PHONY : src/render/ShaderManager.o
+.PHONY : src/render/Shader.o
 
 # target to build an object file
-src/render/ShaderManager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/ShaderManager.cpp.o
-.PHONY : src/render/ShaderManager.cpp.o
+src/render/Shader.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Shader.cpp.o
+.PHONY : src/render/Shader.cpp.o
 
-src/render/ShaderManager.i: src/render/ShaderManager.cpp.i
+src/render/Shader.i: src/render/Shader.cpp.i
 
-.PHONY : src/render/ShaderManager.i
+.PHONY : src/render/Shader.i
 
 # target to preprocess a source file
-src/render/ShaderManager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/ShaderManager.cpp.i
-.PHONY : src/render/ShaderManager.cpp.i
+src/render/Shader.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Shader.cpp.i
+.PHONY : src/render/Shader.cpp.i
 
-src/render/ShaderManager.s: src/render/ShaderManager.cpp.s
+src/render/Shader.s: src/render/Shader.cpp.s
 
-.PHONY : src/render/ShaderManager.s
+.PHONY : src/render/Shader.s
 
 # target to generate assembly for a file
-src/render/ShaderManager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/ShaderManager.cpp.s
-.PHONY : src/render/ShaderManager.cpp.s
+src/render/Shader.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Shader.cpp.s
+.PHONY : src/render/Shader.cpp.s
 
 src/render/Texture.o: src/render/Texture.cpp.o
 
@@ -466,18 +439,15 @@ help:
 	@echo "... src/render/RenderObjects/RenderObject.o"
 	@echo "... src/render/RenderObjects/RenderObject.i"
 	@echo "... src/render/RenderObjects/RenderObject.s"
-	@echo "... src/render/RenderObjects/ShapeObject.o"
-	@echo "... src/render/RenderObjects/ShapeObject.i"
-	@echo "... src/render/RenderObjects/ShapeObject.s"
 	@echo "... src/render/RenderObjects/TileObject.o"
 	@echo "... src/render/RenderObjects/TileObject.i"
 	@echo "... src/render/RenderObjects/TileObject.s"
 	@echo "... src/render/Renderer.o"
 	@echo "... src/render/Renderer.i"
 	@echo "... src/render/Renderer.s"
-	@echo "... src/render/ShaderManager.o"
-	@echo "... src/render/ShaderManager.i"
-	@echo "... src/render/ShaderManager.s"
+	@echo "... src/render/Shader.o"
+	@echo "... src/render/Shader.i"
+	@echo "... src/render/Shader.s"
 	@echo "... src/render/Texture.o"
 	@echo "... src/render/Texture.i"
 	@echo "... src/render/Texture.s"

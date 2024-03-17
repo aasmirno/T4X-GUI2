@@ -1,7 +1,8 @@
 #vscode and wsl development files
 #CMakeLists.txt
 CMakeFiles/
-build
+CMakeCache.txt
+build/
 .vscode
 
 #visual studio development files
@@ -10,10 +11,6 @@ vs_dev/Debug
 vs_dev/UnitTesting/
 vs_dev/x64/
 vs_dev/natural_earth_vector.zip
-
-#libraries
-lib/
-
 
 *.sln
 *.vcxproj

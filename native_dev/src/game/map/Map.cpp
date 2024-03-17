@@ -27,12 +27,7 @@ bool Map::initialise(unsigned map_x, unsigned map_y){
     fnFractal->SetLacunarity(2.600);
 
     fnFractal->GenUniformGrid2D(elevation.data(), 0, 0, height, width, 0.1f, 1337);
-
-    for(int i = 0; i < height * width; i++){
-        printf("%f ", elevation[i]);
-    }
-
-    printf("initialised map\n");
+    return true;
 }
 
 uint16_t* Map::getData(){

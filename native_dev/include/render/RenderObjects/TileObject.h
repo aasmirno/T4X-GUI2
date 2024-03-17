@@ -1,24 +1,28 @@
 #pragma once
 #include "render/RenderObjects/RenderObject.h"
 #include "render/Texture.h"
+#include "render/Shader.h"
 
 #include <glm/vec2.hpp>
 
 class TileObject : public RenderObject
 {
 private:
-    GLint transform_loc = -1; //transform matrix uniform location
-    GLint dimension_loc = -1; //tile dimension uniform location
+    GLint transform_loc = -1;       //transform matrix uniform location
+    GLint dimension_loc = -1;       //tile dimension uniform location
 
-    glm::ivec2 dimensions{1,1};      //tile data dimensions
+    glm::ivec2 dimensions{1,1};     //tile data dimensions
     
-    uint16_t* data; //pointer to data
-    GLTexture texture;  //textures
+    uint16_t* data;                 //pointer to data
+
+    GLTexture texture;              //texture for this object
+    Shader shader_prog;             //shader program for this object
 
     /*
         Implementation of Render Object buffer generation function
     */
     virtual bool genBuffers();
+
 
     /*
         Implementation of Render Object buffer update function
@@ -29,13 +33,25 @@ private:
     /*
         Set the dimensions for this object
     */
-    void setDims(int x_dim, int y_dim);
+    bool setDims(int x_dim, int y_dim);
+
+
+    /*
+        Check for object initialisation
+    */
+    bool checkInit();
 
 public:
+    /*
+        Cleanup functions to delete shaders and texture for this object
+    */
+   bool cleanup();
+
     /*
         Implementation of Render Object draw function, draws vertices in vertex_data
     */
     virtual bool draw();
+
 
     /*
         Set the texture for this object
@@ -45,12 +61,16 @@ public:
     /*
         update tile data
     */
-    void setData(uint16_t* new_data, int x_dim, int y_dim);
+    bool setData(uint16_t* new_data, int x_dim, int y_dim);
 
     /*
         Set transform matrix for this object
     */
-    void update_transform(GLfloat* transform);
+    bool update_transform(GLfloat* transform);
 
+
+    /*
+        Print debug information
+    */
     virtual void printDebug();
 };

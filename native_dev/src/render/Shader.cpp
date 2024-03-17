@@ -1,6 +1,6 @@
-#include "render/ShaderManager.h"
+#include "render/Shader.h"
 
-GLuint ShaderManager::loadShader(std::string path, GLenum type)
+GLuint Shader::loadShader(std::string path, GLenum type)
 {
 	GLuint shader_id = 0;
 
@@ -50,51 +50,50 @@ GLuint ShaderManager::loadShader(std::string path, GLenum type)
 	return shader_id;
 }
 
-ShaderProgram ShaderManager::createProgram(SourcePair *pair, uint num_shaders)
+bool Shader::createProgram(SourcePair *pair, uint num_shaders)
 {
-	ShaderProgram shaders;	//struct for program and shader handles	
-	GLuint program = glCreateProgram();
-	shaders.program_id = program;
+	program_id = glCreateProgram();
+	if(program_id == 0){
+		printf("ERROR: gl program create error\n");
+		return false;
+	}
 
 	bool shader_create_failure = false;
-	printf("creating new shader program\n");
 	for (uint i = 0; i < num_shaders; i++)
 	{
 		GLuint shader = loadShader(pair->source, pair->type);
-		if(shader == 0){ shader_create_failure = true; } else {shaders.shader_handles.push_back(shader); };
-		printf("    shader %d: %s : %d\n", i, pair->source, shader_create_failure);
+		if(shader == 0){ shader_create_failure = true; } else {shader_handles.push_back(shader); };
 		pair++;
 	}
 
 	if(shader_create_failure == true){
-		printf("shader creation failed\n");
-		deleteProgram(shaders);
-		return shaders;
+		printf("ERROR: shader creation failure\n");
+		deleteProgram();
+		return false;
 	}
 
-	for(int i = 0; i < shaders.shader_handles.size(); i++){
-		glAttachShader(program, shaders.shader_handles[i]);
+	for(int i = 0; i < shader_handles.size(); i++){
+		glAttachShader(program_id, shader_handles[i]);
 	}
-	glLinkProgram(program);
+	glLinkProgram(program_id);
 
-	printf("created shader program: %d\n", program);
-	return shaders;
+	return true;
 }
 
-bool ShaderManager::deleteProgram(ShaderProgram program){
-	if (program.program_id == 0){
-		printf("delete program error, program id=0");
+bool Shader::deleteProgram(){
+	if (program_id == 0){
+		printf("ERROR: attempted to delete shader program with id 0\n");
 		return false;
 	}
 	
 	//delete all shaders in program
-	for(int i = 0; i < program.shader_handles.size(); i++){
-		glDeleteShader(program.shader_handles[i]);
+	for(int i = 0; i < shader_handles.size(); i++){
+		glDeleteShader(shader_handles[i]);
 	}
-	program.shader_handles.clear();
+	shader_handles.clear();
 
 	//delete program
-	glDeleteProgram(program.program_id);
-	program.program_id = 0;
+	glDeleteProgram(program_id);
+	program_id = 0;
 	return true;
 }

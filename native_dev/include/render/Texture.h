@@ -11,23 +11,35 @@
 class GLTexture
 {
 private:
-    GLuint handle = -1;              // texture handle
+    GLuint handle = 0;               // texture handle
     int width = -1;                  // texture width
     int height = -1;                 // texture height
     std::vector<unsigned char> data; // Image data RGBA format
 
 public:
     /*
-        load a texture form a png file
+        Get size of image data array
     */
-    bool initialise(const char *filename, unsigned w, unsigned h);
-
     size_t size(){
         return data.size();
     }
 
     /*
+        Check for initialisation
+    */
+    bool active(){
+        return (handle != 0 && width != 0 && height != 0 && data.size() != 0);
+    }
+
+    /*
+        load a texture from a png file
+    */
+    bool createTexture(const char *filename, unsigned w, unsigned h);
+
+    bool deleteTexture();
+
+    /*
         load a texture into the sampler
     */
-    bool load_texture();
+    bool setActive();
 };

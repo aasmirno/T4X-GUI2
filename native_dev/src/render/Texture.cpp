@@ -1,6 +1,6 @@
 #include "render/Texture.h"
 
-bool GLTexture::initialise(const char *filename, unsigned w, unsigned h)
+bool GLTexture::createTexture(const char *filename, unsigned w, unsigned h)
 {
     //reset texture data
     handle = 0;
@@ -30,13 +30,20 @@ bool GLTexture::initialise(const char *filename, unsigned w, unsigned h)
     if (texture_handle == 0)
     {
         printf("ERROR: texture gen error\n");
-        return false;;
+        return false;
     }
     handle = texture_handle;
     return true;
 }
 
-bool GLTexture::load_texture(){
+bool GLTexture::deleteTexture(){
+    data.clear();
+    glDeleteTextures(1, &handle);
+    handle = 0;
+    return true;
+}
+
+bool GLTexture::setActive(){
     // error checking
         if (handle == -1)
         {
