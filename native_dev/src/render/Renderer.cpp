@@ -83,13 +83,16 @@ bool Renderer::initialise()
     return true;
 }
 
-void Renderer::shutdown(){
-    for(int i = 0; i < tile_objects.size(); i++){
+void Renderer::shutdown()
+{
+    for (int i = 0; i < tile_objects.size(); i++)
+    {
         tile_objects[i].cleanup();
     }
 }
 
-void Renderer::adj_transform(int event_value){
+void Renderer::adj_transform(int event_value)
+{
     if (!initialised)
     {
         printf("ERROR: render manager not initialised\n");
@@ -97,27 +100,68 @@ void Renderer::adj_transform(int event_value){
     }
 
     float factor = 1.0f;
-    if(event_value < 0 && transform[0][0] > min_transform){ //scroll wheel back: zoom out
+    if (event_value < 0 && transform[0][0] > min_transform)
+    { // scroll wheel back: zoom out
         factor = 0.9;
-    } else if(transform[0][0] < max_transform){ //scroll wheel forward: zoom in
+    }
+    else if (transform[0][0] < max_transform)
+    { // scroll wheel forward: zoom in
         factor = 1.1f;
     }
 
     transform[0][0] *= factor;
-    if(transform[0][0] < min_transform){
+    if (transform[0][0] < min_transform)
+    {
         transform[0][0] = min_transform;
     }
-    if(transform[0][0] > max_transform){
+    if (transform[0][0] > max_transform)
+    {
         transform[0][0] = max_transform;
     }
 
     transform[1][1] = transform[0][0];
-    for(int i = 0; i < tile_objects.size(); i++){
+    for (int i = 0; i < tile_objects.size(); i++)
+    {
         tile_objects[i].update_transform(&transform[0][0]);
     }
 }
 
-TileObject* Renderer::addTileObject(int x_dim, int y_dim, uint16_t* data, const char* texture_source, unsigned texture_w, unsigned texture_h)
+void Renderer::move_transform(char dir)
+{
+    if (!initialised)
+    {
+        printf("ERROR: render manager not initialised\n");
+        return;
+    }
+    float x = 0.0f; float y = 0.0f;
+
+    float curr_move_speed = move_speed / transform[0][0];   //adjust move speed based on transform level
+
+    switch (dir)
+    {
+    case 'w':
+        y -= curr_move_speed;
+        break;
+    case 'a':
+        x += curr_move_speed;
+        break;
+    case 's':
+        y += curr_move_speed;
+        break;
+    case 'd':
+        x -= curr_move_speed;
+        break;
+    default:
+        break;
+    }
+
+    for (int i = 0; i < tile_objects.size(); i++)
+    {
+        tile_objects[i].setOffset(x, y);
+    }
+}
+
+TileObject *Renderer::addTileObject(int x_dim, int y_dim, uint16_t *data, const char *texture_source, unsigned texture_w, unsigned texture_h)
 {
     if (!initialised)
     {
@@ -125,20 +169,22 @@ TileObject* Renderer::addTileObject(int x_dim, int y_dim, uint16_t* data, const 
         return nullptr;
     }
 
-    if(data == nullptr){
+    if (data == nullptr)
+    {
         printf("ERROR: bad data pointer in addTileObject");
         return nullptr;
     }
 
     TileObject obj;
     int id = tile_objects.size() + 1;
-    if(!obj.initialise(id)){
+    if (!obj.initialise(id))
+    {
         printf("Shape object initialisation failed\n");
         return nullptr;
-    }      //call basic initialisation function
-    obj.update_transform(&transform[0][0]);                 //update the transform to current transform
-    obj.setData(data, x_dim, y_dim);                        //set the tile data
-    obj.setTexture(texture_source, texture_w, texture_w);   //load a texture
+    }                                                     // call basic initialisation function
+    obj.update_transform(&transform[0][0]);               // update the transform to current transform
+    obj.setData(data, x_dim, y_dim);                      // set the tile data
+    obj.setTexture(texture_source, texture_w, texture_w); // load a texture
 
     // add it to active objects
     tile_objects.push_back(obj);

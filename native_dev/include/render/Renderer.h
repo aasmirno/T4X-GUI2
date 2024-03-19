@@ -26,7 +26,7 @@ private:
         glm::vec4(0.0, 0.05, 0.0, 0.0),
         glm::vec4(0.0, 0.0, 1.0, 0.0),
         glm::vec4(0.0, 0.0, 0.0, 1.0));
-    const float min_transform = 0.05f;
+    const float min_transform = 0.01f;
     const float max_transform = 1.0f;
     const float move_speed = 0.01f;
 
@@ -71,15 +71,10 @@ public:
 
     /*
         Update global transform
-            int event value:
-                -3: down
-                -2: left
-                -1: zoom out
-                1: zoom in
-                2: right
-                3: up
+                
     */
-    void adj_transform(int event_value);
+    void adj_transform(int event_value);    //zoom in or out
+    void move_transform(char dir);          //directional change
 
     /*
         Update the window if necessary and swap buffers

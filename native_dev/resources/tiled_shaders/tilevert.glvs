@@ -1,7 +1,8 @@
 #version 420 core     
 
 uniform mat4 projection;                //projection matrix
-uniform ivec2 dimensions;                  //len 2 vector of size
+uniform ivec2 dimensions;               //len 2 vector of size
+uniform vec2 offset;               
 
 layout (location = 0) in uint aTileId;  //same input as basic but with attribute location specified
 
@@ -18,6 +19,6 @@ void main()
     float y = float(i / dimensions.x); //float((i >> 4) & 15);
   
 
-    gl_Position = vec4(x, y, 0, 1); //set position
+    gl_Position = vec4(x + offset.x, y + offset.y, 0, 1); //set position
     vs_out.tileId = aTileId;        //set output block tile id to input tile id
 }

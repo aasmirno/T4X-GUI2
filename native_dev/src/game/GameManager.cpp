@@ -19,10 +19,8 @@ bool GameManager::initialise()
     }
     printf("    render manager initialised\n");
 
-    unsigned x = 100;
-    unsigned y = 200;
     //initialise the game map
-    game_map.initialise(x, y);
+    game_map.initialise(map_x, map_y);
     printf("    gamemap initialised\n");
 
     //set callback for event handler
@@ -33,7 +31,7 @@ bool GameManager::initialise()
     /*
         TESTING
     */
-    TileObject* map_graphic = render_manager.addTileObject(x,y, game_map.getData(), "resources/textures/TileSet32.png", 256, 256);
+    TileObject* map_graphic = render_manager.addTileObject(map_x,map_y, game_map.getData(), "resources/textures/TileSet32.png", 256, 256);
     if(map_graphic == nullptr){
         printf("engine startup failed");
         return false;
@@ -69,8 +67,18 @@ bool GameManager::loop(){
     render_manager.render();
     input_manager.pollEvent();
     bool* keys = input_manager.getKeys();
+
     if(keys[SDLK_w]){
-        render_manager.adj_transform(3);
+        render_manager.move_transform('w');
+    }
+    if(keys[SDLK_a]){
+        render_manager.move_transform('a');
+    }
+    if(keys[SDLK_s]){
+        render_manager.move_transform('s');
+    }
+    if(keys[SDLK_d]){
+        render_manager.move_transform('d');
     }
 
     return true;

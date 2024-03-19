@@ -16,11 +16,12 @@ private:
         Map variables
     */
     Map game_map;
-
+    uint map_x = 100;
+    uint map_y = 100;
     /*
         game state variables
     */
-    bool running;
+    bool running = false;
 
 public:
     GameManager() {}

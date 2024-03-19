@@ -102,6 +102,14 @@ bool TileObject::genBuffers()
         return false;
     }
 
+    offset_loc = glGetUniformLocation(shader_prog.program_id, "offset");
+    if (offset_loc == -1)
+    {
+        printf("could not find uniform %s render_obj=%d\n", "offset", object_id);
+        printDebug();
+        return false;
+    }
+
     // check gl errors
     GLenum err;
     if ((err = glGetError()) != GL_NO_ERROR)
@@ -145,6 +153,13 @@ bool TileObject::setData(uint16_t* new_data, int x_dim, int y_dim){
     return true;
 }
 
+bool TileObject::setOffset(GLfloat x_off, GLfloat y_off){
+    offset.x += x_off;
+    offset.y += y_off;
+    glUseProgram(shader_prog.program_id);          // set shader program
+    glUniform2f(offset_loc, offset.x, offset.y);   // update unif vals
+    return true;
+}
 
 void TileObject::printDebug()
 {
