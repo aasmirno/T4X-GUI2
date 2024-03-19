@@ -1,7 +1,7 @@
 #vscode and wsl development files
 #CMakeLists.txt
 CMakeFiles/
-CMakeCache.txt
+native_dev/build/
 build/
 .vscode
 
@@ -16,3 +16,4 @@ vs_dev/natural_earth_vector.zip
 *.vcxproj
 *.vcxproj.*
 
+native_dev/CMakeCache.txt
