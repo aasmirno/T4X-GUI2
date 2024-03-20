@@ -12,7 +12,7 @@ bool GameManager::initialise()
     printf("    SDL initialised\n");
 
     //try and initialise the rendering manager
-    if (render_manager.initialise() == false)
+    if (render_manager.initialise(600, 600) == false)
     {
         printf("ERROR: render manager failed to initialise\n");
         return false;
@@ -58,8 +58,10 @@ bool GameManager::run(){
 void GameManager::handleEvent(SDL_Event e){
     if(e.type == SDL_QUIT){
         running = false;
-    } else if(e.type = SDL_MOUSEWHEEL){
+    } else if(e.type == SDL_MOUSEWHEEL){
         render_manager.adj_transform(e.wheel.y);
+    } else if(e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_RESIZED){
+        render_manager.setScreenSize(e.window.data2, e.window.data1);
     }
 }
 

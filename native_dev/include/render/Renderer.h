@@ -26,9 +26,12 @@ private:
         glm::vec4(0.0, 0.05, 0.0, 0.0),
         glm::vec4(0.0, 0.0, 1.0, 0.0),
         glm::vec4(0.0, 0.0, 0.0, 1.0));
-    const float min_transform = 0.01f;
-    const float max_transform = 1.0f;
-    const float move_speed = 0.01f;
+    const float min_transform = 0.01f;  //minimum tranform value - controls max zoom out level
+    const float max_transform = 1.5f;   //max transform value - controls max zoom in
+    float adjustment_factor_W = 1.0f;   //width adjustment factor for max and min transform
+    float adjustment_factor_H = 1.0f;   //height ' '
+    const float move_speed = 0.01f;     //base traversal speed
+
 
 
     glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f); // background color
@@ -55,7 +58,7 @@ public:
         Initialise the rendering manager on startup
             Returns bool: false on initialisation error
     */
-    bool initialise();
+    bool initialise(int screen_height, int screen_width);
 
     /*
         Create tiled texture object:
@@ -75,6 +78,8 @@ public:
     */
     void adj_transform(int event_value);    //zoom in or out
     void move_transform(char dir);          //directional change
+
+    void setScreenSize(int width, int height);  //set screen size values and adjust viewport
 
     /*
         Update the window if necessary and swap buffers

@@ -1,8 +1,8 @@
 #version 420 core     
 
 uniform mat4 projection;                //projection matrix
-uniform ivec2 dimensions;               //len 2 vector of size
-uniform vec2 offset;               
+uniform ivec2 dimensions;               //len 2 vector for map dimensions
+uniform vec2 offset;                    //offset for initial tile
 
 layout (location = 0) in uint aTileId;  //same input as basic but with attribute location specified
 

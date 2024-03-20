@@ -1,6 +1,6 @@
 #include "render/Renderer.h"
 
-bool Renderer::initialise()
+bool Renderer::initialise(int screen_height, int screen_width)
 {
     /*
         SDL setup
@@ -49,7 +49,7 @@ bool Renderer::initialise()
         }
         else
         {
-            printf("vsync not supported\n");
+            printf("    vsync not supported\n");
         }
     }
     /*
@@ -61,14 +61,17 @@ bool Renderer::initialise()
         GLenum glewError = glewInit();
         if (glewError != GLEW_OK)
         {
-            printf("glew initialisation error: %d\n", glewError);
+            printf("    glew initialisation error: %d\n", glewError);
             return false;
         }
-        printf("glew initialised\n");
+        printf("    glew initialised\n");
 
         // set gl default color buffer values
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        printf("openGL ver: %s, glsl ver: %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
+        WINDOW_H = screen_height;
+        WINDOW_W = screen_width;
+        glViewport(0, 0, WINDOW_W, WINDOW_H);
+        printf("    Supported OpenGL version: %s, glsl ver: %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
     }
 
     // check for GL errors
@@ -100,26 +103,34 @@ void Renderer::adj_transform(int event_value)
     }
 
     float factor = 1.0f;
-    if (event_value < 0 && transform[0][0] > min_transform)
+    if (event_value < 0 && transform[0][0] > min_transform * adjustment_factor_H)
     { // scroll wheel back: zoom out
         factor = 0.9;
     }
-    else if (transform[0][0] < max_transform)
+    else if (transform[0][0] < max_transform * adjustment_factor_H)
     { // scroll wheel forward: zoom in
         factor = 1.1f;
     }
 
     transform[0][0] *= factor;
-    if (transform[0][0] < min_transform)
+    if (transform[0][0] < min_transform * adjustment_factor_H)
     {
-        transform[0][0] = min_transform;
+        transform[0][0] = min_transform * adjustment_factor_H;
     }
-    if (transform[0][0] > max_transform)
+    if (transform[0][0] > max_transform * adjustment_factor_H)
     {
-        transform[0][0] = max_transform;
+        transform[0][0] = max_transform * adjustment_factor_H;
     }
 
-    transform[1][1] = transform[0][0];
+    transform[1][1] *= factor;
+    if (transform[1][1] < min_transform * adjustment_factor_W)
+    {
+        transform[1][1] = min_transform * adjustment_factor_W;
+    }
+    if (transform[1][1] > max_transform * adjustment_factor_W)
+    {
+        transform[1][1] = max_transform * adjustment_factor_W;
+    }
     for (int i = 0; i < tile_objects.size(); i++)
     {
         tile_objects[i].update_transform(&transform[0][0]);
@@ -159,6 +170,21 @@ void Renderer::move_transform(char dir)
     {
         tile_objects[i].setOffset(x, y);
     }
+}
+
+void Renderer::setScreenSize(int width, int height){
+    transform[0][0] = (transform[0][0] * WINDOW_H / height);
+    transform[1][1] = (transform[1][1] * WINDOW_W / width);
+    adjustment_factor_H = (adjustment_factor_H * WINDOW_H / height);
+    adjustment_factor_W = (adjustment_factor_W * WINDOW_W / width);
+    for (int i = 0; i < tile_objects.size(); i++)
+    {
+        tile_objects[i].update_transform(&transform[0][0]);
+    }
+    WINDOW_W = width;
+    WINDOW_H = height;
+
+    glViewport(0,0, WINDOW_H, WINDOW_W);
 }
 
 TileObject *Renderer::addTileObject(int x_dim, int y_dim, uint16_t *data, const char *texture_source, unsigned texture_w, unsigned texture_h)
