@@ -7,6 +7,7 @@
 #include <PNG/lodepng.h>
 
 #include <vector>
+#include <algorithm>
 
 class GLTexture
 {

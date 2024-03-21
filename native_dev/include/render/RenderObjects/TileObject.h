@@ -1,9 +1,5 @@
 #pragma once
 #include "render/RenderObjects/RenderObject.h"
-#include "render/Texture.h"
-#include "render/Shader.h"
-
-#include <glm/vec2.hpp>
 
 class TileObject : public RenderObject
 {

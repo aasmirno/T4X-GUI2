@@ -304,6 +304,33 @@ src/render/RenderObjects/RenderObject.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/RenderObject.cpp.s
 .PHONY : src/render/RenderObjects/RenderObject.cpp.s
 
+src/render/RenderObjects/TexturedObject.o: src/render/RenderObjects/TexturedObject.cpp.o
+
+.PHONY : src/render/RenderObjects/TexturedObject.o
+
+# target to build an object file
+src/render/RenderObjects/TexturedObject.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TexturedObject.cpp.o
+.PHONY : src/render/RenderObjects/TexturedObject.cpp.o
+
+src/render/RenderObjects/TexturedObject.i: src/render/RenderObjects/TexturedObject.cpp.i
+
+.PHONY : src/render/RenderObjects/TexturedObject.i
+
+# target to preprocess a source file
+src/render/RenderObjects/TexturedObject.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TexturedObject.cpp.i
+.PHONY : src/render/RenderObjects/TexturedObject.cpp.i
+
+src/render/RenderObjects/TexturedObject.s: src/render/RenderObjects/TexturedObject.cpp.s
+
+.PHONY : src/render/RenderObjects/TexturedObject.s
+
+# target to generate assembly for a file
+src/render/RenderObjects/TexturedObject.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/RenderObjects/TexturedObject.cpp.s
+.PHONY : src/render/RenderObjects/TexturedObject.cpp.s
+
 src/render/RenderObjects/TileObject.o: src/render/RenderObjects/TileObject.cpp.o
 
 .PHONY : src/render/RenderObjects/TileObject.o
@@ -439,6 +466,9 @@ help:
 	@echo "... src/render/RenderObjects/RenderObject.o"
 	@echo "... src/render/RenderObjects/RenderObject.i"
 	@echo "... src/render/RenderObjects/RenderObject.s"
+	@echo "... src/render/RenderObjects/TexturedObject.o"
+	@echo "... src/render/RenderObjects/TexturedObject.i"
+	@echo "... src/render/RenderObjects/TexturedObject.s"
 	@echo "... src/render/RenderObjects/TileObject.o"
 	@echo "... src/render/RenderObjects/TileObject.i"
 	@echo "... src/render/RenderObjects/TileObject.s"

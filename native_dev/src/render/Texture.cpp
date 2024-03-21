@@ -29,7 +29,7 @@ bool GLTexture::createTexture(const char *filename, unsigned w, unsigned h)
     glGenTextures(1, &texture_handle);
     if (texture_handle == 0)
     {
-        printf("ERROR: texture gen error\n");
+        printf("ERROR: gl texture gen error\n");
         return false;
     }
     handle = texture_handle;

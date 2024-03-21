@@ -1,9 +1,14 @@
 #pragma once
 #include <GL/glew.h>
-#include <vector>
 #include <glm/vec4.hpp>
+#include <glm/vec2.hpp>
+
 #include <stdio.h>
 #include <iostream>
+#include <vector>
+
+#include "render/Texture.h"
+#include "render/Shader.h"
 
 /*
     Base class for render objects

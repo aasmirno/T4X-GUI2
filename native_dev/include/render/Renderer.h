@@ -1,5 +1,6 @@
 #pragma once
 #include "RenderObjects/TileObject.h"
+#include "RenderObjects/TexturedObject.h"
 
 #include <stdio.h>
 #include <cmath>
@@ -52,6 +53,7 @@ private:
         Render Objects
     */
     std::vector<TileObject> tile_objects;
+    std::vector<TexturedObject> texture_objects;
 
 public:
     /*
@@ -71,6 +73,15 @@ public:
     TileObject *addTileObject(int x_dim, int y_dim,
                               uint16_t* data,
                               const char *texture_source, unsigned texture_w, unsigned texture_h);
+
+
+    /*
+        Create tiled texture object:
+            texture_source: path to texture file
+            texture_w: texture file width
+            texture_h: texture file height
+    */
+    TexturedObject* addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h);
 
     /*
         Update global transform

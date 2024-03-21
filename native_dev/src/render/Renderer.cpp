@@ -92,6 +92,10 @@ void Renderer::shutdown()
     {
         tile_objects[i].cleanup();
     }
+    for (int i = 0; i < texture_objects.size(); i++)
+    {
+        texture_objects[i].cleanup();
+    }
 }
 
 void Renderer::adj_transform(int event_value)
@@ -131,9 +135,15 @@ void Renderer::adj_transform(int event_value)
     {
         transform[1][1] = max_transform * adjustment_factor_W;
     }
+
+
     for (int i = 0; i < tile_objects.size(); i++)
     {
         tile_objects[i].update_transform(&transform[0][0]);
+    }
+    for (int i = 0; i < texture_objects.size(); i++)
+    {
+        texture_objects[i].update_transform(&transform[0][0]);
     }
 }
 
@@ -217,6 +227,29 @@ TileObject *Renderer::addTileObject(int x_dim, int y_dim, uint16_t *data, const 
     return &tile_objects.back();
 }
 
+TexturedObject* Renderer::addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h){
+    if (!initialised)
+    {
+        printf("ERROR: render manager not initialised\n");
+        return nullptr;
+    }
+
+    TexturedObject object;
+    int id = texture_objects.size() + 1;
+    if (!object.initialise(id))
+    {
+        printf("Shape object initialisation failed\n");
+        return nullptr;
+    } 
+
+    object.update_transform(&transform[0][0]);               // update the transform to current transform
+    object.setTexture(texture_source, texture_w, texture_w); // load a texture
+
+    // add it to active objects
+    texture_objects.push_back(object);
+    return &texture_objects.back();
+}
+
 void Renderer::render()
 {
     if (!initialised)
@@ -230,6 +263,10 @@ void Renderer::render()
     for (int i = 0; i < tile_objects.size(); i++)
     {
         tile_objects[i].draw();
+    }
+    for (int i = 0; i < texture_objects.size(); i++)
+    {
+        texture_objects[i].draw();
     }
 
     SDL_GL_SwapWindow(main_window);
