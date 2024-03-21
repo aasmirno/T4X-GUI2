@@ -37,7 +37,7 @@ bool GameManager::initialise()
         return false;
     }
 
-    TexturedObject* logo_graphic = render_manager.addTexturedObject("resources/textures/Logo.png", 255, 48);
+    TexturedObject* logo_graphic = render_manager.addTexturedObject("resources/textures/Logo256.png", 256, 256);
     if(logo_graphic == nullptr){
         printf("engine startup failed");
         return false;

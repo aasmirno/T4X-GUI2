@@ -7,7 +7,7 @@
 class TexturedObject : public RenderObject{
     GLint transform_loc = -1; // transform matrix uniform location
 
-    glm::vec3 origin{0.0f ,0.0f, 0.0f};   //origin for this object
+    GLfloat origin[3] = {0.0f ,0.0f, 0.0f};   //origin for this object
     float height = 100;   float width = 100;    //height and width for this object
 
 

@@ -68,6 +68,9 @@ bool Renderer::initialise(int screen_height, int screen_width)
 
         // set gl default color buffer values
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         WINDOW_H = screen_height;
         WINDOW_W = screen_width;
         glViewport(0, 0, WINDOW_W, WINDOW_H);
@@ -136,7 +139,6 @@ void Renderer::adj_transform(int event_value)
         transform[1][1] = max_transform * adjustment_factor_W;
     }
 
-
     for (int i = 0; i < tile_objects.size(); i++)
     {
         tile_objects[i].update_transform(&transform[0][0]);
@@ -154,9 +156,10 @@ void Renderer::move_transform(char dir)
         printf("ERROR: render manager not initialised\n");
         return;
     }
-    float x = 0.0f; float y = 0.0f;
+    float x = 0.0f;
+    float y = 0.0f;
 
-    float curr_move_speed = move_speed / transform[0][0];   //adjust move speed based on transform level
+    float curr_move_speed = move_speed / transform[0][0]; // adjust move speed based on transform level
 
     switch (dir)
     {
@@ -182,7 +185,8 @@ void Renderer::move_transform(char dir)
     }
 }
 
-void Renderer::setScreenSize(int width, int height){
+void Renderer::setScreenSize(int width, int height)
+{
     transform[0][0] = (transform[0][0] * WINDOW_H / height);
     transform[1][1] = (transform[1][1] * WINDOW_W / width);
     adjustment_factor_H = (adjustment_factor_H * WINDOW_H / height);
@@ -194,7 +198,7 @@ void Renderer::setScreenSize(int width, int height){
     WINDOW_W = width;
     WINDOW_H = height;
 
-    glViewport(0,0, WINDOW_H, WINDOW_W);
+    glViewport(0, 0, WINDOW_H, WINDOW_W);
 }
 
 TileObject *Renderer::addTileObject(int x_dim, int y_dim, uint16_t *data, const char *texture_source, unsigned texture_w, unsigned texture_h)
@@ -227,7 +231,8 @@ TileObject *Renderer::addTileObject(int x_dim, int y_dim, uint16_t *data, const 
     return &tile_objects.back();
 }
 
-TexturedObject* Renderer::addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h){
+TexturedObject *Renderer::addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h)
+{
     if (!initialised)
     {
         printf("ERROR: render manager not initialised\n");
@@ -240,7 +245,7 @@ TexturedObject* Renderer::addTexturedObject(const char *texture_source, unsigned
     {
         printf("Shape object initialisation failed\n");
         return nullptr;
-    } 
+    }
 
     object.update_transform(&transform[0][0]);               // update the transform to current transform
     object.setTexture(texture_source, texture_w, texture_w); // load a texture

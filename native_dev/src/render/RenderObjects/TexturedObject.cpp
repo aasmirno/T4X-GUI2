@@ -64,7 +64,7 @@ bool TexturedObject::genBuffers(){
 
 bool TexturedObject::updateBuffers(){
     glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
-    glBufferData(GL_ARRAY_BUFFER, 1 * sizeof(float), &origin[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(float), &origin[0], GL_STATIC_DRAW);
     return true;
 }
 
@@ -85,6 +85,8 @@ bool TexturedObject::draw()
     glUseProgram(shader_prog.program_id);  // set shader program
     glBindVertexArray(vao_id);             // bind vertex array
     texture.setActive();                   // load texture into sampler
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     glDrawArrays(GL_POINTS, 0, 1);          //draw the object
 
