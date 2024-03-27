@@ -64,7 +64,7 @@ bool TexturedObject::genBuffers(){
 
 bool TexturedObject::updateBuffers(){
     glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
-    glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(float), &origin[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 2 * sizeof(float), &origin[0], GL_STATIC_DRAW);
     return true;
 }
 
@@ -74,6 +74,12 @@ bool TexturedObject::update_transform(GLfloat *transform)
     glUniformMatrix4fv(transform_loc, 1, GL_FALSE, transform);
     return true;
 }
+
+bool TexturedObject::update_origin(GLfloat x, GLfloat y){
+    origin[0] = x; origin[1] = y;
+    return true;
+}
+
 
 bool TexturedObject::setTexture(const char* filename, unsigned w, unsigned h){
     return texture.createTexture(filename, w, h);
