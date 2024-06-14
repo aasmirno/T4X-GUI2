@@ -2,8 +2,9 @@
 #CMakeLists.txt
 CMakeFiles/
 native_dev/build/
-build/
 .vscode
+
+native_dev/CMakeCache.txt
 
 #visual studio development files
 .vs
@@ -19,4 +20,4 @@ vs_dev/natural_earth_vector.zip
 native_dev/CMakeCache.txt
 native_dev/CMakeLists.txt
 
-/home/bonkhound/src/T4X-GUI2/(Game Engine Architecture) Jason Gregory - Game Engine Architecture-A K Peters_CRC Press (2018).pdf
+ignored/
