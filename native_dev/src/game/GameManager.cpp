@@ -11,7 +11,7 @@ bool GameManager::initialise()
     }
     printf("    SDL initialised\n");
 
-    //try and initialise the rendering manager
+    // try and initialise the rendering manager
     if (render_manager.initialise(600, 600) == false)
     {
         printf("ERROR: render manager failed to initialise\n");
@@ -19,75 +19,100 @@ bool GameManager::initialise()
     }
     printf("    render manager initialised\n");
 
-    //initialise the game map
+    // initialise the game map
     game_map.initialise(map_x, map_y);
     printf("    gamemap initialised\n");
 
-    //set callback for event handler
+    // set callback for event handler
     input_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
     printf("    input manager initialised\n");
-
 
     /*
         TESTING
     */
-    TileObject* map_graphic = render_manager.addTileObject(map_x,map_y, game_map.getData(), "resources/textures/TileSet32.png", 256, 256);
-    if(map_graphic == nullptr){
-        printf("engine startup failed");
-        return false;
-    }
+    //TexturedObject *logo_graphic = render_manager.addTexturedObject("resources/textures/Logo256.png", 255, 54);
+    //if (logo_graphic == nullptr)
+    //{
+    //    printf("engine startup failed");
+    //    return false;
+    //}
 
-    TexturedObject* logo_graphic = render_manager.addTexturedObject("resources/textures/Logo256.png", 256, 256);
-    logo_graphic->update_origin(-100.0f, 100.0f);
-    if(logo_graphic == nullptr){
-        printf("engine startup failed");
-        return false;
-    }
-
-    //start the game
+    MeshObject *test = render_manager.aMO();
+    // start the game
     running = true;
     run();
 
-    //clean up
+    // clean up
     printf("Engine shutting down\n");
     render_manager.shutdown();
 
     return true;
 }
 
-bool GameManager::run(){
-    while(running){
+bool GameManager::run()
+{
+    while (running)
+    {
         loop();
     }
     return true;
 }
 
-void GameManager::handleEvent(SDL_Event e){
-    if(e.type == SDL_QUIT){
+void GameManager::handleEvent(SDL_Event e)
+{
+    if (e.type == SDL_QUIT)
+    {
         running = false;
-    } else if(e.type == SDL_MOUSEWHEEL){
-        render_manager.adj_transform(e.wheel.y);
-    } else if(e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_RESIZED){
+    }
+    else if (e.type == SDL_MOUSEWHEEL)
+    {
+        render_manager.setScale(e.wheel.y);
+    }
+    else if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_RESIZED)
+    {
         render_manager.setScreenSize(e.window.data2, e.window.data1);
     }
 }
 
-bool GameManager::loop(){
+bool GameManager::loop()
+{
     render_manager.render();
     input_manager.pollEvent();
-    bool* keys = input_manager.getKeys();
+    bool *keys = input_manager.getKeys();
+    if(!keys){
+        printf("Manager failed to return key array!\n");
+        return false;
+    }
 
-    if(keys[SDLK_w]){
-        render_manager.move_transform('w');
+    if (keys[SDLK_w])
+    {
+        render_manager.setTranslation('w');
     }
-    if(keys[SDLK_a]){
-        render_manager.move_transform('a');
+    if (keys[SDLK_a])
+    {
+        render_manager.setTranslation('a');
     }
-    if(keys[SDLK_s]){
-        render_manager.move_transform('s');
+    if (keys[SDLK_s])
+    {
+        render_manager.setTranslation('s');
     }
-    if(keys[SDLK_d]){
-        render_manager.move_transform('d');
+    if (keys[SDLK_d])
+    {
+        render_manager.setTranslation('d');
+    }
+    if (keys[SDLK_q])
+    {
+        render_manager.setRotation(RD_Z, RD_LEFT);
+    }
+    if (keys[SDLK_e])
+    {
+        //render_manager.setTranslation('d');
+    }
+    if(keys[SDLK_i]){
+        render_manager.setTranslation('i');
+    }
+    if(keys[SDLK_j]){
+        render_manager.setTranslation('j');
     }
 
     return true;

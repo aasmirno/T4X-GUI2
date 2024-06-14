@@ -68,12 +68,15 @@ bool Renderer::initialise(int screen_height, int screen_width)
 
         // set gl default color buffer values
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glEnable(GL_CULL_FACE);
+
+        glEnable(GL_CULL_FACE); // Cull back facets
+        glFrontFace(GL_CCW);
+        glCullFace(GL_BACK);
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         WINDOW_H = screen_height;
         WINDOW_W = screen_width;
-        glViewport(0, 0, WINDOW_W, WINDOW_H);
         printf("    Supported OpenGL version: %s, glsl ver: %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
     }
 
@@ -91,17 +94,24 @@ bool Renderer::initialise(int screen_height, int screen_width)
 
 void Renderer::shutdown()
 {
-    for (int i = 0; i < tile_objects.size(); i++)
-    {
-        tile_objects[i].cleanup();
-    }
     for (int i = 0; i < texture_objects.size(); i++)
     {
         texture_objects[i].cleanup();
     }
 }
 
-void Renderer::adj_transform(int event_value)
+void Renderer::updateTransform(){
+    for (int i = 0; i < texture_objects.size(); i++)
+    {
+        texture_objects[i].setTransform(&transform[0][0]);
+    }
+    for (int i = 0; i < m_objects.size(); i++)
+    {
+        m_objects[i].setTransform(&transform[0][0]);
+    }
+}
+
+void Renderer::setScale(int event_value)
 {
     if (!initialised)
     {
@@ -110,46 +120,39 @@ void Renderer::adj_transform(int event_value)
     }
 
     float factor = 1.0f;
-    if (event_value < 0 && transform[0][0] > min_transform * adjustment_factor_H)
+    if (event_value < 0 && transform[0][0] > min_scale * adjustment_factor_H)
     { // scroll wheel back: zoom out
         factor = 0.9;
     }
-    else if (transform[0][0] < max_transform * adjustment_factor_H)
+    else if (transform[0][0] < max_scale * adjustment_factor_H)
     { // scroll wheel forward: zoom in
         factor = 1.1f;
     }
 
     transform[0][0] *= factor;
-    if (transform[0][0] < min_transform * adjustment_factor_H)
+    if (transform[0][0] < min_scale * adjustment_factor_H)
     {
-        transform[0][0] = min_transform * adjustment_factor_H;
+        transform[0][0] = min_scale * adjustment_factor_H;
     }
-    if (transform[0][0] > max_transform * adjustment_factor_H)
+    if (transform[0][0] > max_scale * adjustment_factor_H)
     {
-        transform[0][0] = max_transform * adjustment_factor_H;
+        transform[0][0] = max_scale * adjustment_factor_H;
     }
 
     transform[1][1] *= factor;
-    if (transform[1][1] < min_transform * adjustment_factor_W)
+    if (transform[1][1] < min_scale * adjustment_factor_W)
     {
-        transform[1][1] = min_transform * adjustment_factor_W;
+        transform[1][1] = min_scale * adjustment_factor_W;
     }
-    if (transform[1][1] > max_transform * adjustment_factor_W)
+    if (transform[1][1] > max_scale * adjustment_factor_W)
     {
-        transform[1][1] = max_transform * adjustment_factor_W;
+        transform[1][1] = max_scale * adjustment_factor_W;
     }
 
-    for (int i = 0; i < tile_objects.size(); i++)
-    {
-        tile_objects[i].update_transform(&transform[0][0]);
-    }
-    for (int i = 0; i < texture_objects.size(); i++)
-    {
-        texture_objects[i].update_transform(&transform[0][0]);
-    }
+    updateTransform();
 }
 
-void Renderer::move_transform(char dir)
+void Renderer::setTranslation(char direction)
 {
     if (!initialised)
     {
@@ -159,31 +162,49 @@ void Renderer::move_transform(char dir)
     float x = 0.0f;
     float y = 0.0f;
 
-    float curr_move_speed = move_speed / transform[0][0]; // adjust move speed based on transform level
+    // adjust move speed based on scaling level
+    float curr_move_speed = move_speed / transform[0][0];
 
-    switch (dir)
+    switch (direction)
     {
     case 'w':
-        y -= curr_move_speed;
+        transform[3][1] -= curr_move_speed;
         break;
     case 'a':
-        x += curr_move_speed;
+        transform[3][0] += curr_move_speed;
         break;
     case 's':
-        y += curr_move_speed;
+        transform[3][1] += curr_move_speed;
         break;
     case 'd':
-        x -= curr_move_speed;
+        transform[3][0] -= curr_move_speed;
         break;
+    case 'i':
+        transform[3][2] += curr_move_speed;
+        break;
+    case 'j':
+        transform[3][2] -= curr_move_speed;
     default:
         break;
     }
 
-    for (int i = 0; i < tile_objects.size(); i++)
-    {
-        tile_objects[i].setOffset(x, y);
-    }
+    std::cout << glm::to_string(transform) << "\n";
+    updateTransform();
 }
+
+void Renderer::setRotation(rAxis axis, rDirection direction){
+    if(axis == RD_Z && direction == RD_LEFT){
+        //transform[0][0] *= cos_t;
+        //transform[1][0] *= sin_t;
+        //transform[0][1] *= -sin_t;
+        //transform[1][1] *= cos_t;
+    }
+
+    std::cout << glm::to_string(transform) << "\n";
+
+    updateTransform();
+}
+
 
 void Renderer::setScreenSize(int width, int height)
 {
@@ -191,44 +212,10 @@ void Renderer::setScreenSize(int width, int height)
     transform[1][1] = (transform[1][1] * WINDOW_W / width);
     adjustment_factor_H = (adjustment_factor_H * WINDOW_H / height);
     adjustment_factor_W = (adjustment_factor_W * WINDOW_W / width);
-    for (int i = 0; i < tile_objects.size(); i++)
-    {
-        tile_objects[i].update_transform(&transform[0][0]);
-    }
     WINDOW_W = width;
     WINDOW_H = height;
 
     glViewport(0, 0, WINDOW_H, WINDOW_W);
-}
-
-TileObject *Renderer::addTileObject(int x_dim, int y_dim, uint16_t *data, const char *texture_source, unsigned texture_w, unsigned texture_h)
-{
-    if (!initialised)
-    {
-        printf("ERROR: render manager not initialised\n");
-        return nullptr;
-    }
-
-    if (data == nullptr)
-    {
-        printf("ERROR: bad data pointer in addTileObject");
-        return nullptr;
-    }
-
-    TileObject obj;
-    int id = tile_objects.size() + 1;
-    if (!obj.initialise(id))
-    {
-        printf("Shape object initialisation failed\n");
-        return nullptr;
-    }                                                     // call basic initialisation function
-    obj.update_transform(&transform[0][0]);               // update the transform to current transform
-    obj.setData(data, x_dim, y_dim);                      // set the tile data
-    obj.setTexture(texture_source, texture_w, texture_w); // load a texture
-
-    // add it to active objects
-    tile_objects.push_back(obj);
-    return &tile_objects.back();
 }
 
 TexturedObject *Renderer::addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h)
@@ -247,7 +234,7 @@ TexturedObject *Renderer::addTexturedObject(const char *texture_source, unsigned
         return nullptr;
     }
 
-    object.update_transform(&transform[0][0]);               // update the transform to current transform
+    object.setTransform(&transform[0][0]);               // update the transform to current transform
     object.setTexture(texture_source, texture_w, texture_w); // load a texture
 
     // add it to active objects
@@ -263,11 +250,12 @@ void Renderer::render()
         return;
     }
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
     // Draw all active objects
-    for (int i = 0; i < tile_objects.size(); i++)
+    for (int i = 0; i < m_objects.size(); i++)
     {
-        tile_objects[i].draw();
+        m_objects[i].draw();
     }
     for (int i = 0; i < texture_objects.size(); i++)
     {

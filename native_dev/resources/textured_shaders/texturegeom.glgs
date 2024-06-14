@@ -1,5 +1,7 @@
 #version 420 core
-uniform mat4 projection;    //projection matrix
+uniform mat4 projection;            //projection matrix
+uniform float height = 20.0;        //height uniform
+uniform float width = 50.0;         //width uniform
 
 out vec2 texCoord;
 
@@ -12,15 +14,15 @@ void main() {
     texCoord = vec2(0.0,1.0);
     EmitVertex();
 
-    gl_Position = projection * (gl_in[0].gl_Position + vec4(100.0, 0.0, 0.0, 0.0));   //bottom right
+    gl_Position = projection * (gl_in[0].gl_Position + vec4(width, 0.0, 0.0, 0.0));   //bottom right
     texCoord = vec2(1.0,1.0);
     EmitVertex();
 
-    gl_Position = projection * (gl_in[0].gl_Position + vec4(0.0, 100.0, 0.0, 0.0));   //top left
+    gl_Position = projection * (gl_in[0].gl_Position + vec4(0.0, height, 0.0, 0.0));   //top left
     texCoord = vec2(0.0,0.0);
     EmitVertex();
 
-    gl_Position = projection * (gl_in[0].gl_Position + vec4(100.0, 100.0, 0.0, 0.0));   //top right
+    gl_Position = projection * (gl_in[0].gl_Position + vec4(width, height, 0.0, 0.0));   //top right
     texCoord = vec2(1.0,0.0);
     EmitVertex();
 

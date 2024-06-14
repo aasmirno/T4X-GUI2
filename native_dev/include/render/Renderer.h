@@ -1,6 +1,6 @@
 #pragma once
-#include "RenderObjects/TileObject.h"
 #include "RenderObjects/TexturedObject.h"
+#include "RenderObjects/MeshObject.h"
 
 #include <stdio.h>
 #include <cmath>
@@ -10,6 +10,22 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 #include <glm/mat4x4.hpp>
+
+// glm debug extensions
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/ext.hpp>
+#include <glm/gtx/string_cast.hpp>
+
+enum rDirection {
+    RD_LEFT,
+    RD_RIGHT
+};
+
+enum rAxis {
+    RD_X,
+    RD_Y,
+    RD_Z
+};
 
 class Renderer
 {
@@ -21,21 +37,24 @@ private:
     int WINDOW_W = 600;
     int WINDOW_H = 600;
 
-    //transform data
+    // transform data
     glm::mat4 transform = glm::mat4(
-        glm::vec4(0.05, 0.0, 0.0, 0.0),
-        glm::vec4(0.0, 0.05, 0.0, 0.0),
-        glm::vec4(0.0, 0.0, 1.0, 0.0),
-        glm::vec4(0.0, 0.0, 0.0, 1.0));
-    const float min_transform = 0.01f;  //minimum tranform value - controls max zoom out level
-    const float max_transform = 1.5f;   //max transform value - controls max zoom in
-    float adjustment_factor_W = 1.0f;   //width adjustment factor for max and min transform
-    float adjustment_factor_H = 1.0f;   //height ' '
-    const float move_speed = 0.01f;     //base traversal speed
+        glm::vec4(1.0, 0.0, 0.0, 0.0),  // col1
+        glm::vec4(0.0, 1.0, 0.0, 0.0),  // col2
+        glm::vec4(0.0, 0.0, 1.0, 0.0),  // col3
+        glm::vec4(0.0, 0.0, 0.0, 1.0)); // col4: translation
+
+    const float min_scale = 0.01f;    // minimum tranform value - controls max zoom out level
+    const float max_scale = 100.5f;   // max transform value - controls max zoom in
+    float adjustment_factor_W = 1.0f; // width adjustment factor for max and min transform
+    float adjustment_factor_H = 1.0f; // height ' '
+    const float move_speed = 0.001f;  // base traversal speed
+    double rotation_angle = 1;
+    const double cos_t = glm::cos(rotation_angle);
+    const double sin_t = glm::sin(rotation_angle);
 
 
-
-    glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f); // background color
+    glm::vec4 clear_color = glm::vec4(0.0f, 0.0f, 0.0f, 1.00f); // background color
 
     /*
         sdl pointers
@@ -52,8 +71,10 @@ private:
     /*
         Render Objects
     */
-    std::vector<TileObject> tile_objects;
     std::vector<TexturedObject> texture_objects;
+    std::vector<MeshObject> m_objects;
+
+    void updateTransform();
 
 public:
     /*
@@ -64,33 +85,39 @@ public:
 
     /*
         Create tiled texture object:
-            x_dim: x dimension
-            y_dim: y_dimension
             texture_source: path to texture file
             texture_w: texture file width
             texture_h: texture file height
     */
-    TileObject *addTileObject(int x_dim, int y_dim,
-                              uint16_t* data,
-                              const char *texture_source, unsigned texture_w, unsigned texture_h);
+    TexturedObject *addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h);
+    MeshObject *aMO()
+    {
+        if (!initialised)
+        {
+            printf("ERROR: render manager not initialised\n");
+            return nullptr;
+        }
 
+        MeshObject object;
+        if (!object.initialise(1))
+        {
+            printf("Shape object initialisation failed\n");
+            return nullptr;
+        }
+        object.setTransform(&transform[0][0]);
+        // add it to active objects
+        m_objects.push_back(object);
+        return &m_objects.back();
+    }
 
     /*
-        Create tiled texture object:
-            texture_source: path to texture file
-            texture_w: texture file width
-            texture_h: texture file height
+        Global transform update methods
     */
-    TexturedObject* addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h);
+    void setScale(int event_value);              // zoom in or out
+    void setTranslation(char direction);         // adjust translation
+    void setRotation(rAxis axis, rDirection direction); // rotate
 
-    /*
-        Update global transform
-                
-    */
-    void adj_transform(int event_value);    //zoom in or out
-    void move_transform(char dir);          //directional change
-
-    void setScreenSize(int width, int height);  //set screen size values and adjust viewport
+    void setScreenSize(int width, int height); // set screen size values and adjust viewport
 
     /*
         Update the window if necessary and swap buffers

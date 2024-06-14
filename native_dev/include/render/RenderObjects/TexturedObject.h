@@ -1,27 +1,38 @@
 #include "render/RenderObjects/RenderObject.h"
 
-
 /*
     Renderable object representing a textured rectangle
 */
-class TexturedObject : public RenderObject{
-    GLint transform_loc = -1;   // transform matrix uniform location
-    GLint origin_loc = -1;      // object origin location
+class TexturedObject : public RenderObject
+{
+    GLint transform_loc = -1; // transform matrix uniform location
+    GLint height_loc = -1;    // height uniform location
+    GLint width_loc = -1;     // width uniform location
 
-    GLfloat origin[2] = {0.0f ,0.0f};   //origin for this object
-    float height = 100;   float width = 100;    //height and width for this object
+    GLfloat origin[2] = {0.0f, 0.0f}; // origin for this object
+    GLfloat height = 100.0f;
+    GLfloat width = 100.0f; // height and width for this object
 
-
-    GLTexture texture;  // texture for this object
-    Shader shader_prog; // shader program for this object
+    GLTexture texture; // texture for this object
 private:
     /*
         Implementation of Render Object buffer generation function
     */
     virtual bool genBuffers();
+
+    /*
+        udateBuffers:
+        Push current object attributes to gl buffer
+    */
     virtual bool updateBuffers();
 
 public:
+    /*
+        Getters
+    */
+    GLfloat *getOrigin() { return &origin[0]; }
+    GLfloat getHeight() { return height; }
+    GLfloat getWidth() { return width; }
 
     /*
         Print debug info for this object
@@ -31,10 +42,12 @@ public:
     /*
         Draw this object
     */
-    virtual bool draw();
+    virtual void draw();
 
     /*
         Set texture for this object
+            const char *filename: relative filepath for texture source
+            unsigned w, h: texture dimensions
     */
     bool setTexture(const char *filename, unsigned w, unsigned h);
 
@@ -42,21 +55,28 @@ public:
         update transform for this object
             GLfloat* transform: pointer to [0][0] of a 4x4 transform matrix
     */
-    bool update_transform(GLfloat *transform);
+    bool setTransform(GLfloat *transform);
 
     /*
         update origin for this object
             GLfloat x,y: x and y floats for bottom right corner of the texture
     */
-    bool update_origin(GLfloat x, GLfloat y);
+    bool setOrigin(GLfloat x, GLfloat y);
 
     /*
-        Destroy any memory using object belogning to this instance
+        Update height or width
+            GLfloat new_height/width: new heigth/width value
     */
-    bool cleanup(){
-        shader_prog.deleteProgram();    //delete shaders
-        texture.deleteTexture();        //delete texture
+    bool setHeigth(GLfloat new_height);
+    bool setWidth(GLfloat new_width);
+
+    /*
+        Destroy any memory using object belonging to this instance
+    */
+    bool cleanup()
+    {
+        shader.deleteProgram(); // delete shaders
+        texture.deleteTexture();     // delete texture
         return true;
     }
-
 };

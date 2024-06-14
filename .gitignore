@@ -17,3 +17,6 @@ vs_dev/natural_earth_vector.zip
 *.vcxproj.*
 
 native_dev/CMakeCache.txt
+native_dev/CMakeLists.txt
+
+/home/bonkhound/src/T4X-GUI2/(Game Engine Architecture) Jason Gregory - Game Engine Architecture-A K Peters_CRC Press (2018).pdf

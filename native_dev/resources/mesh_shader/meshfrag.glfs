@@ -1,0 +1,10 @@
+#version 420 core
+
+in float Height;
+out vec4 frag_color;
+
+void main()
+{
+    float h = Height;
+    frag_color = vec4(h, h, h, 1.0);
+}
