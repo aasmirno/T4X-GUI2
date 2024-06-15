@@ -12,6 +12,8 @@ private:
 
     GLint projection_location = -1; // projection uniform location
 
+
+    const uint NUM_SHADERS = 4;
     int num_vert = 15;
     GLfloat test_vertices[15] = {
         -0.5f, 0.5f, 0.0f,  // tl
@@ -22,9 +24,9 @@ private:
 
     std::vector<GLfloat> vertices;
 
-    unsigned width = 100;   //mesh width
-    unsigned heigth = 100;  //mesh height
-    unsigned patch_resolution = 20; //tesselation patch resolution
+    float width = 100;   //mesh width
+    float heigth = 100;  //mesh height
+    unsigned patch_resolution = 10; //tesselation patch resolution
 
 public:
     bool setTransform(GLfloat *transform);

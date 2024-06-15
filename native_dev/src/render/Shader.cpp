@@ -26,7 +26,7 @@ GLuint Shader::loadShader(std::string path, GLenum type)
 		glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compiled);
 		if (compiled != GL_TRUE)
 		{
-			printf("    shader %d compile error:\n%s\n", shader_id, shader_source);
+			printf("    shader compile error:\n		%s\n", path.c_str());
 
 			// cleanup on comp failure
 			glDeleteShader(shader_id);
@@ -96,4 +96,17 @@ bool Shader::deleteProgram(){
 	glDeleteProgram(program_id);
 	program_id = 0;
 	return true;
+}
+
+void Shader::printDebug(){
+	printf("[ SHADER DEBUG ]\n");
+	if(program_id == 0){
+		printf("	prog_id = 0, shader failed or uninitialised\n");
+		return;
+	}
+
+	printf("	program_id=%d\n", program_id);
+	GLint debug = 0;
+	glGetProgramiv(program_id, GL_ATTACHED_SHADERS, &debug);
+	printf("	num shaders =%d\n", debug);
 }

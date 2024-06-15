@@ -36,5 +36,7 @@ public:
     */
     bool createProgram(SourcePair *program, uint num_shaders);
 
+    void printDebug();
+
     bool deleteProgram();
 };

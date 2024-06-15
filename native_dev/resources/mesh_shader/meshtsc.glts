@@ -12,7 +12,7 @@ void main()
     //TextureCoord[gl_InvocationID] = TexCoord[gl_InvocationID];
 
     // ----------------------------------------------------------------------
-    // invocation zero controls tessellation levels for the entire patch
+    // invocation zero controls tessellation levels for the entire patch (tess levels global within patch)
     if (gl_InvocationID == 0)
     {
         gl_TessLevelOuter[0] = 16;
