@@ -1,3 +1,4 @@
+// mesh fragment shader
 #version 420 core
 
 in float Height;

@@ -67,13 +67,27 @@ bool MeshObject::genBuffers()
     }
 
     // get uniform locations
-    projection_location = glGetUniformLocation(shader.program_id, "projection");
-    if (projection_location == -1)
+    auto ploc = shader.getLocation("projection");
+    if (!ploc.first)
     {
-        printf("could not find uniform %s render_obj=%d\n", "projection", object_id);
-        printDebug();
         return false;
     }
+    projection_location = ploc.second;
+
+    auto mloc = shader.getLocation("model");
+    if (!mloc.first)
+    {
+        return false;
+    }
+    model_location = mloc.second;
+
+    auto vloc = shader.getLocation("model");
+    if (!vloc.first)
+    {
+        return false;
+    }
+    view_location = vloc.second;
+
 
     // generate mesh vertices
     for (int i = 0; i < patch_resolution - 1; i++)

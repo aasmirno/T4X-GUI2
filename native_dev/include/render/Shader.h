@@ -27,6 +27,8 @@ private:
 public:
     GLuint program_id = 0;  //opengl shader handle
 
+    std::pair<bool, GLint> getLocation(std::string uniform);
+
     /*
         createProgram:
         Creates a shader program given an array of source pairs consisting of {file path to source, shader type}

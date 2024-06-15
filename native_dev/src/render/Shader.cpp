@@ -26,7 +26,7 @@ GLuint Shader::loadShader(std::string path, GLenum type)
 		glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compiled);
 		if (compiled != GL_TRUE)
 		{
-			printf("    shader compile error:\n		%s\n", path.c_str());
+			printf("[ SHADER ERROR ] compile error:\n	%s\n", path.c_str());
 
 			// cleanup on comp failure
 			glDeleteShader(shader_id);
@@ -35,29 +35,41 @@ GLuint Shader::loadShader(std::string path, GLenum type)
 	}
 	else
 	{
-		printf("    shader creation error: \n   bad file: %s\n", path.c_str());
+		printf("[ SHADER ERROR ] source file error: %s\n", path.c_str());
 		return 0;
 	}
 
 	// check shader created
 	if (shader_id == 0)
 	{
-		printf("    shader creation error\n");
+		printf("[ SHADER ERROR ] creation error\n");
 		return 0;
 	}
 
-	printf("    success loading shader=%d from %s\n", shader_id, path.c_str());
+	printf("[ SHADER ] loaded shader = %d from %s\n", shader_id, path.c_str());
 	return shader_id;
+}
+
+std::pair<bool, GLint> Shader::getLocation(std::string uniform){
+	GLint location = glGetUniformLocation(program_id, uniform.c_str());
+	if (location == -1)
+    {
+        printf("[ SHADER ERROR ] Could not find uniform %s\n", uniform);
+        printDebug();
+        return std::pair<bool, GLint>(false, 0);
+    }
+	return std::pair<bool, GLint>(true, location);
 }
 
 bool Shader::createProgram(SourcePair *pair, uint num_shaders)
 {
 	program_id = glCreateProgram();
 	if(program_id == 0){
-		printf("ERROR: gl program create error\n");
+		printf("[ SHADER ERROR ]: gl program create error\n");
 		return false;
 	}
 
+	// wait till end to delete bad program
 	bool shader_create_failure = false;
 	for (uint i = 0; i < num_shaders; i++)
 	{
@@ -67,7 +79,7 @@ bool Shader::createProgram(SourcePair *pair, uint num_shaders)
 	}
 
 	if(shader_create_failure == true){
-		printf("ERROR: shader creation failure\n");
+		printf("[ SHADER ERROR ]: shader creation failure\n");
 		deleteProgram();
 		return false;
 	}
@@ -82,7 +94,7 @@ bool Shader::createProgram(SourcePair *pair, uint num_shaders)
 
 bool Shader::deleteProgram(){
 	if (program_id == 0){
-		printf("ERROR: attempted to delete shader program with id 0\n");
+		printf("[ SHADER ERROR ]: attempted to delete shader program with id 0\n");
 		return false;
 	}
 	
