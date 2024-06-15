@@ -277,6 +277,33 @@ src/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+src/render/Camera.o: src/render/Camera.cpp.o
+
+.PHONY : src/render/Camera.o
+
+# target to build an object file
+src/render/Camera.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Camera.cpp.o
+.PHONY : src/render/Camera.cpp.o
+
+src/render/Camera.i: src/render/Camera.cpp.i
+
+.PHONY : src/render/Camera.i
+
+# target to preprocess a source file
+src/render/Camera.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Camera.cpp.i
+.PHONY : src/render/Camera.cpp.i
+
+src/render/Camera.s: src/render/Camera.cpp.s
+
+.PHONY : src/render/Camera.s
+
+# target to generate assembly for a file
+src/render/Camera.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/T4X.dir/build.make CMakeFiles/T4X.dir/src/render/Camera.cpp.s
+.PHONY : src/render/Camera.cpp.s
+
 src/render/RenderObjects/MeshObject.o: src/render/RenderObjects/MeshObject.cpp.o
 
 .PHONY : src/render/RenderObjects/MeshObject.o
@@ -436,6 +463,9 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/render/Camera.o"
+	@echo "... src/render/Camera.i"
+	@echo "... src/render/Camera.s"
 	@echo "... src/render/RenderObjects/MeshObject.o"
 	@echo "... src/render/RenderObjects/MeshObject.i"
 	@echo "... src/render/RenderObjects/MeshObject.s"

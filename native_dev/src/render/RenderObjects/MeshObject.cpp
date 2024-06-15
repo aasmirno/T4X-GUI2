@@ -30,8 +30,8 @@ void MeshObject::draw()
 {
     glPatchParameteri(GL_PATCH_VERTICES, 4); // set patch parameter for tesselation shader
 
-    glUseProgram(shader.program_id); // set shader program
-    glBindVertexArray(vao_id);       // bind vertex array
+    glUseProgram(shader.program_id);        // set shader program
+    glBindVertexArray(vao_id);              // bind vertex array
 
     glDrawArrays(GL_PATCHES, 0, 4 * patch_resolution * patch_resolution);
 }
@@ -55,8 +55,8 @@ bool MeshObject::genBuffers()
     */
     SourcePair texture_program[NUM_SHADERS] = {
         SourcePair{"resources/mesh_shader/meshvert.glvs", GL_VERTEX_SHADER},
-        SourcePair{"resources/mesh_shader/meshtsc.glts", GL_TESS_CONTROL_SHADER},
-        SourcePair{"resources/mesh_shader/meshtse.glts", GL_TESS_EVALUATION_SHADER},
+        SourcePair{"resources/mesh_shader/meshtsc.tesc", GL_TESS_CONTROL_SHADER},
+        SourcePair{"resources/mesh_shader/meshtse.tese", GL_TESS_EVALUATION_SHADER},
         SourcePair{"resources/mesh_shader/meshfrag.glfs", GL_FRAGMENT_SHADER}};
     bool shader_success = shader.createProgram(&texture_program[0], NUM_SHADERS);
     if (!shader_success)
@@ -67,27 +67,28 @@ bool MeshObject::genBuffers()
     }
 
     // get uniform locations
-    auto ploc = shader.getLocation("projection");
-    if (!ploc.first)
     {
-        return false;
-    }
-    projection_location = ploc.second;
+        auto ploc = shader.getLocation("projection");
+        if (!ploc.first)
+        {
+            return false;
+        }
+        projection_location = ploc.second;
 
-    auto mloc = shader.getLocation("model");
-    if (!mloc.first)
-    {
-        return false;
-    }
-    model_location = mloc.second;
+        auto mloc = shader.getLocation("model");
+        if (!mloc.first)
+        {
+            return false;
+        }
+        model_location = mloc.second;
 
-    auto vloc = shader.getLocation("model");
-    if (!vloc.first)
-    {
-        return false;
+        auto vloc = shader.getLocation("view");
+        if (!vloc.first)
+        {
+            return false;
+        }
+        view_location = vloc.second;
     }
-    view_location = vloc.second;
-
 
     // generate mesh vertices
     for (int i = 0; i < patch_resolution - 1; i++)
@@ -114,26 +115,22 @@ bool MeshObject::genBuffers()
 
     // printDebug();
 
-    if (!checkGLError())
-    {
-        printDebug();
-        return false;
-    }
+    // push to z plane
+    model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-    return updateBuffers();
-}
-
-bool MeshObject::setTransform(GLfloat *transform)
-{
+    // initial transform update
     glUseProgram(shader.program_id);
-    glUniformMatrix4fv(projection_location, 1, GL_FALSE, transform);
+    glUniformMatrix4fv(view_location, 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(model_location, 1, GL_FALSE, &model[0][0]);
+
     if (!checkGLError())
     {
-        printf("ERROR: gl error in transform update\n");
         printDebug();
         return false;
     }
-    return true;
+
+    // inital buffer update
+    return updateBuffers();
 }
 
 bool MeshObject::updateBuffers()

@@ -66,15 +66,24 @@ bool Renderer::initialise(int screen_height, int screen_width)
         }
         printf("    glew initialised\n");
 
+        /*
+            GL parameters
+        */
         // set gl default color buffer values
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 
-        glEnable(GL_CULL_FACE); // Cull back facets
+        // culling parameters
+        glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
 
+        // blending parameters
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        // z buffer parameters
+        glEnable(GL_DEPTH_TEST);
+
         WINDOW_H = screen_height;
         WINDOW_W = screen_width;
         printf("    Supported OpenGL version: %s, glsl ver: %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
@@ -87,7 +96,12 @@ bool Renderer::initialise(int screen_height, int screen_width)
         printf("%d", err);
     }
 
-    // toggle init flag
+    // initialise camera
+    camera.initialise();
+
+    projection = glm::perspective(glm::radians(120.0f), (float)WINDOW_W / WINDOW_H, 0.1f, 100.0f);
+
+    //  toggle init flag
     initialised = true;
     return true;
 }
@@ -100,122 +114,40 @@ void Renderer::shutdown()
     }
 }
 
-void Renderer::updateTransform(){
+void Renderer::updateView()
+{
+    GLfloat *curr_view = camera.getView();
     for (int i = 0; i < texture_objects.size(); i++)
     {
-        texture_objects[i].setTransform(&transform[0][0]);
+        texture_objects[i].setTransform(curr_view, "view");
     }
     for (int i = 0; i < m_objects.size(); i++)
     {
-        m_objects[i].setTransform(&transform[0][0]);
+        m_objects[i].setTransform(curr_view, "view");
     }
 }
 
-void Renderer::setScale(int event_value)
+void Renderer::updateProjection()
 {
-    if (!initialised)
+    GLfloat *curr_view = camera.getView();
+    for (int i = 0; i < texture_objects.size(); i++)
     {
-        printf("ERROR: render manager not initialised\n");
-        return;
+        texture_objects[i].setTransform(&projection[0][0], "projection");
     }
-
-    float factor = 1.0f;
-    if (event_value < 0 && transform[0][0] > min_scale * adjustment_factor_H)
-    { // scroll wheel back: zoom out
-        factor = 0.9;
-    }
-    else if (transform[0][0] < max_scale * adjustment_factor_H)
-    { // scroll wheel forward: zoom in
-        factor = 1.1f;
-    }
-
-    transform[0][0] *= factor;
-    if (transform[0][0] < min_scale * adjustment_factor_H)
+    for (int i = 0; i < m_objects.size(); i++)
     {
-        transform[0][0] = min_scale * adjustment_factor_H;
+        m_objects[i].setTransform(&projection[0][0], "projection");
     }
-    if (transform[0][0] > max_scale * adjustment_factor_H)
-    {
-        transform[0][0] = max_scale * adjustment_factor_H;
-    }
-
-    transform[1][1] *= factor;
-    if (transform[1][1] < min_scale * adjustment_factor_W)
-    {
-        transform[1][1] = min_scale * adjustment_factor_W;
-    }
-    if (transform[1][1] > max_scale * adjustment_factor_W)
-    {
-        transform[1][1] = max_scale * adjustment_factor_W;
-    }
-
-    updateTransform();
 }
-
-void Renderer::setTranslation(char direction)
-{
-    if (!initialised)
-    {
-        printf("ERROR: render manager not initialised\n");
-        return;
-    }
-    float x = 0.0f;
-    float y = 0.0f;
-
-    // adjust move speed based on scaling level
-    float curr_move_speed = move_speed / transform[0][0];
-
-    switch (direction)
-    {
-    case 'w':
-        transform[3][1] -= curr_move_speed;
-        break;
-    case 'a':
-        transform[3][0] += curr_move_speed;
-        break;
-    case 's':
-        transform[3][1] += curr_move_speed;
-        break;
-    case 'd':
-        transform[3][0] -= curr_move_speed;
-        break;
-    case 'i':
-        transform[3][2] += curr_move_speed;
-        break;
-    case 'j':
-        transform[3][2] -= curr_move_speed;
-    default:
-        break;
-    }
-
-    std::cout << glm::to_string(transform) << "\n";
-    updateTransform();
-}
-
-void Renderer::setRotation(rAxis axis, rDirection direction){
-    if(axis == RD_Z && direction == RD_LEFT){
-        //transform[0][0] *= cos_t;
-        //transform[1][0] *= sin_t;
-        //transform[0][1] *= -sin_t;
-        //transform[1][1] *= cos_t;
-    }
-
-    std::cout << glm::to_string(transform) << "\n";
-
-    updateTransform();
-}
-
 
 void Renderer::setScreenSize(int width, int height)
 {
-    transform[0][0] = (transform[0][0] * WINDOW_H / height);
-    transform[1][1] = (transform[1][1] * WINDOW_W / width);
+    projection[0][0] = (projection[0][0] * WINDOW_H / height);
+    projection[1][1] = (projection[1][1] * WINDOW_W / width);
     adjustment_factor_H = (adjustment_factor_H * WINDOW_H / height);
     adjustment_factor_W = (adjustment_factor_W * WINDOW_W / width);
     WINDOW_W = width;
     WINDOW_H = height;
-
-    glViewport(0, 0, WINDOW_H, WINDOW_W);
 }
 
 TexturedObject *Renderer::addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h)
@@ -233,12 +165,12 @@ TexturedObject *Renderer::addTexturedObject(const char *texture_source, unsigned
         printf("Shape object initialisation failed\n");
         return nullptr;
     }
-
-    object.setTransform(&transform[0][0]);               // update the transform to current transform
     object.setTexture(texture_source, texture_w, texture_w); // load a texture
-
     // add it to active objects
     texture_objects.push_back(object);
+    updateProjection();
+    updateView();
+
     return &texture_objects.back();
 }
 
@@ -250,8 +182,8 @@ void Renderer::render()
         return;
     }
 
-    glClear(GL_COLOR_BUFFER_BIT);
-    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // Draw all active objects
     for (int i = 0; i < m_objects.size(); i++)
     {
@@ -263,4 +195,9 @@ void Renderer::render()
     }
 
     SDL_GL_SwapWindow(main_window);
+}
+
+void Renderer::updateCamera(SDL_KeyCode key){
+    camera.updateCamera(key);
+    updateView();
 }

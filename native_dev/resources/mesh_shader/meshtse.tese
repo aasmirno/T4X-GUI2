@@ -7,7 +7,7 @@
 //  ccw winding
 layout (quads, fractional_odd_spacing, ccw) in;
 
-unifrom mat4 model;      // variable model matrix
+uniform mat4 model;      // variable model matrix
 uniform mat4 view;       // variable view matrix
 uniform mat4 projection; // variable projection matrix
 

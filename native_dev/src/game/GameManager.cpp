@@ -66,7 +66,11 @@ void GameManager::handleEvent(SDL_Event e)
     }
     else if (e.type == SDL_MOUSEWHEEL)
     {
-        render_manager.setScale(e.wheel.y);
+        if(e.wheel.y < 0){
+            render_manager.updateCamera(SDLK_UP);
+        } else if (e.wheel.y > 0){
+            render_manager.updateCamera(SDLK_DOWN);
+        }
     }
     else if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_RESIZED)
     {
@@ -80,39 +84,39 @@ bool GameManager::loop()
     input_manager.pollEvent();
     bool *keys = input_manager.getKeys();
     if(!keys){
-        printf("Manager failed to return key array!\n");
+        printf("[ MANAGER ERROR ] input manager failed to return array\n");
         return false;
     }
 
     if (keys[SDLK_w])
     {
-        render_manager.setTranslation('w');
+        render_manager.updateCamera(SDLK_w);
     }
     if (keys[SDLK_a])
     {
-        render_manager.setTranslation('a');
+        render_manager.updateCamera(SDLK_a);
     }
     if (keys[SDLK_s])
     {
-        render_manager.setTranslation('s');
+        render_manager.updateCamera(SDLK_s);
     }
     if (keys[SDLK_d])
     {
-        render_manager.setTranslation('d');
+        render_manager.updateCamera(SDLK_d);
     }
     if (keys[SDLK_q])
     {
-        render_manager.setRotation(RD_Z, RD_LEFT);
+        render_manager.updateCamera(SDLK_q);
     }
     if (keys[SDLK_e])
     {
-        //render_manager.setTranslation('d');
+        render_manager.updateCamera(SDLK_e);
     }
     if(keys[SDLK_i]){
-        render_manager.setTranslation('i');
+        render_manager.updateCamera(SDLK_i);
     }
     if(keys[SDLK_j]){
-        render_manager.setTranslation('j');
+        render_manager.updateCamera(SDLK_j);
     }
 
     return true;

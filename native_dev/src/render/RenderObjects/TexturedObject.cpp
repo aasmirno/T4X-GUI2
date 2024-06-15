@@ -6,7 +6,6 @@ void TexturedObject::printDebug()
     printf("    shader_pid: %d\n", shader.program_id);
     printf("    vao_id: %d\n", vao_id);
     printf("    vbo_id: %d\n", vbo_id);
-    printf("    uniform locations: transform=%d\n", transform_loc);
     printf("    texture size: %d\n", texture.size());
 }
 
@@ -38,28 +37,30 @@ bool TexturedObject::genBuffers()
     }
 
     // get uniform locations
-    transform_loc = glGetUniformLocation(shader.program_id, "projection");
-    if (transform_loc == -1)
     {
-        printf("could not find uniform %s render_obj=%d\n", "projection", object_id);
-        printDebug();
-        return false;
-    }
+        projection_location = glGetUniformLocation(shader.program_id, "projection");
+        if (projection_location == -1)
+        {
+            printf("could not find uniform %s render_obj=%d\n", "projection", object_id);
+            printDebug();
+            return false;
+        }
 
-    height_loc = glGetUniformLocation(shader.program_id, "height");
-    if (height_loc == -1)
-    {
-        printf("could not find uniform %s render_obj=%d\n", "height", object_id);
-        printDebug();
-        return false;
-    }
+        height_loc = glGetUniformLocation(shader.program_id, "height");
+        if (height_loc == -1)
+        {
+            printf("could not find uniform %s render_obj=%d\n", "height", object_id);
+            printDebug();
+            return false;
+        }
 
-    width_loc = glGetUniformLocation(shader.program_id, "width");
-    if (height_loc == -1)
-    {
-        printf("could not find uniform %s render_obj=%d\n", "width", object_id);
-        printDebug();
-        return false;
+        width_loc = glGetUniformLocation(shader.program_id, "width");
+        if (height_loc == -1)
+        {
+            printf("could not find uniform %s render_obj=%d\n", "width", object_id);
+            printDebug();
+            return false;
+        }
     }
 
     // check gl errors
@@ -80,20 +81,7 @@ bool TexturedObject::updateBuffers()
     glBufferData(GL_ARRAY_BUFFER, 2 * sizeof(float), &origin[0], GL_STATIC_DRAW);
     if (!checkGLError())
     {
-        printf("ERROR: gl error in buffer update\n");
-        printDebug();
-        return false;
-    }
-    return true;
-}
-
-bool TexturedObject::setTransform(GLfloat *transform)
-{
-    glUseProgram(shader.program_id);
-    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, transform);
-    if (!checkGLError())
-    {
-        printf("ERROR: gl error in transform update\n");
+        printf("[ TEXTURED OBJECT ] gl error in buffer update\n");
         printDebug();
         return false;
     }
@@ -114,7 +102,7 @@ bool TexturedObject::setHeigth(GLfloat new_height)
     glUniform1f(height_loc, height);
     if (!checkGLError())
     {
-        printf("ERROR: gl error in transform update\n");
+        printf("[ TEXTURED OBJECT ] gl error in height update\n");
         printDebug();
         return false;
     }
@@ -128,7 +116,7 @@ bool TexturedObject::setWidth(GLfloat new_width)
     glUniform1f(width_loc, width);
     if (!checkGLError())
     {
-        printf("ERROR: gl error in transform update\n");
+        printf("[ TEXTURED OBJECT ] gl error in width update\n");
         printDebug();
         return false;
     }
@@ -143,7 +131,7 @@ bool TexturedObject::setTexture(const char *filename, unsigned w, unsigned h)
 void TexturedObject::draw()
 {
     glUseProgram(shader.program_id); // set shader program
-    glBindVertexArray(vao_id);            // bind vertex array
+    glBindVertexArray(vao_id);       // bind vertex array
 
     texture.setActive(); // load texture into sampler
 

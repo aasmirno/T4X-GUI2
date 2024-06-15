@@ -5,13 +5,13 @@
 */
 class TexturedObject : public RenderObject
 {
-    GLint transform_loc = -1; // transform matrix uniform location
     GLint height_loc = -1;    // height uniform location
     GLint width_loc = -1;     // width uniform location
 
-    GLfloat origin[2] = {0.0f, 0.0f}; // origin for this object
-    GLfloat height = 100.0f;
-    GLfloat width = 100.0f; // height and width for this object
+    // base rectangle parameters
+    GLfloat origin[2] = {0.0f, 0.0f};   // origin for this object
+    GLfloat height = 100.0f;            // rect height
+    GLfloat width = 100.0f;             // rect width
 
     GLTexture texture; // texture for this object
 private:
@@ -52,12 +52,6 @@ public:
     bool setTexture(const char *filename, unsigned w, unsigned h);
 
     /*
-        update transform for this object
-            GLfloat* transform: pointer to [0][0] of a 4x4 transform matrix
-    */
-    bool setTransform(GLfloat *transform);
-
-    /*
         update origin for this object
             GLfloat x,y: x and y floats for bottom right corner of the texture
     */
@@ -75,8 +69,8 @@ public:
     */
     bool cleanup()
     {
-        shader.deleteProgram(); // delete shaders
-        texture.deleteTexture();     // delete texture
+        shader.deleteProgram();  // delete shaders
+        texture.deleteTexture(); // delete texture
         return true;
     }
 };

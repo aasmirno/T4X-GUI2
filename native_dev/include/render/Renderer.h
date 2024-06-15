@@ -1,12 +1,18 @@
 #pragma once
+
+// T4X includes
 #include "RenderObjects/TexturedObject.h"
 #include "RenderObjects/MeshObject.h"
+#include "Camera.h"
 
+// cstd includes
 #include <stdio.h>
 #include <cmath>
 #include <iostream>
 #include <fstream>
 #include <vector>
+
+// lib includes
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 #include <glm/mat4x4.hpp>
@@ -15,17 +21,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/ext.hpp>
 #include <glm/gtx/string_cast.hpp>
-
-enum rDirection {
-    RD_LEFT,
-    RD_RIGHT
-};
-
-enum rAxis {
-    RD_X,
-    RD_Y,
-    RD_Z
-};
 
 class Renderer
 {
@@ -37,22 +32,15 @@ private:
     int WINDOW_W = 600;
     int WINDOW_H = 600;
 
-    // transform data
-    glm::mat4 transform = glm::mat4(
-        glm::vec4(1.0, 0.0, 0.0, 0.0),  // col1
-        glm::vec4(0.0, 1.0, 0.0, 0.0),  // col2
-        glm::vec4(0.0, 0.0, 1.0, 0.0),  // col3
-        glm::vec4(0.0, 0.0, 0.0, 1.0)); // col4: translation
+    // transform matrix parameters
+    glm::mat4 projection = glm::mat4(1.0f); // global projection matrix
+    Camera camera;
 
     const float min_scale = 0.01f;    // minimum tranform value - controls max zoom out level
-    const float max_scale = 100.5f;   // max transform value - controls max zoom in
+    const float max_scale = 1000.5f;  // max transform value - controls max zoom in
     float adjustment_factor_W = 1.0f; // width adjustment factor for max and min transform
     float adjustment_factor_H = 1.0f; // height ' '
     const float move_speed = 0.001f;  // base traversal speed
-    double rotation_angle = 1;
-    const double cos_t = glm::cos(rotation_angle);
-    const double sin_t = glm::sin(rotation_angle);
-
 
     glm::vec4 clear_color = glm::vec4(0.0f, 0.0f, 0.0f, 1.00f); // background color
 
@@ -74,9 +62,15 @@ private:
     std::vector<TexturedObject> texture_objects;
     std::vector<MeshObject> m_objects;
 
-    void updateTransform();
+    /*
+        transform matrix update methods
+    */
+    void updateView();
+    void updateProjection();
 
 public:
+    void updateCamera(SDL_KeyCode key);
+
     /*
         Initialise the rendering manager on startup
             Returns bool: false on initialisation error
@@ -104,23 +98,22 @@ public:
             printf("Shape object initialisation failed\n");
             return nullptr;
         }
-        object.setTransform(&transform[0][0]);
+
         // add it to active objects
         m_objects.push_back(object);
+        updateProjection();
+        updateView();
+
         return &m_objects.back();
     }
 
     /*
-        Global transform update methods
+        Update render screen size parameters
     */
-    void setScale(int event_value);              // zoom in or out
-    void setTranslation(char direction);         // adjust translation
-    void setRotation(rAxis axis, rDirection direction); // rotate
-
-    void setScreenSize(int width, int height); // set screen size values and adjust viewport
+    void setScreenSize(int width, int height);
 
     /*
-        Update the window if necessary and swap buffers
+        Draw active objects
     */
     void render();
 
