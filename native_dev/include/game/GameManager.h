@@ -1,5 +1,7 @@
+#pragma once
 #include "render/Renderer.h"
 #include "input/InputManager.h"
+#include "input/Event.h"
 #include "map/Map.h"
 
 /*
@@ -40,7 +42,12 @@ public:
     bool loop();
 
     /*
-         Handle event function
+        Handle event function
     */
-    void handleEvent(SDL_Event e);
+    void handleEvent(Event e);
+
+    /*
+        get key data and send to renderer
+    */
+    void sendKeys();
 };

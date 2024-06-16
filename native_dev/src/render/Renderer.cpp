@@ -1,5 +1,59 @@
 #include "render/Renderer.h"
 
+void Renderer::keyUpdate(RENDER_KEY_STATE state){
+    if(state.W){
+        camera.translate(glm::vec3(0.0, -1.0, 0.0));
+    }
+
+    if(state.A){
+        camera.translate(glm::vec3(1.0, 0.0, 0.0));
+    }
+
+    if(state.S){
+        camera.translate(glm::vec3(0.0, 1.0, 0.0));
+    }
+
+    if(state.D){
+        camera.translate(glm::vec3(-1.0, 0.0, 0.0));
+    }
+    updateView();
+}
+
+void Renderer::eventUpdate(Event e)
+{
+    if (e.type != E_TYPE::RENDER_EVENT)
+    {
+        printf("[ RENDER ERROR ] event supplied of improper type");
+        return;
+    }
+    
+    switch (e.render_data)
+    {
+    case MW_IN:
+        camera.translate(glm::vec3(0.0f, 0.0f, 1.0f));
+        break;
+    case MW_OUT:
+        camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
+        break;
+    case TRNS_LEFT:
+        camera.translate(glm::vec3(-1.0f, 0.0f, 0.0f));
+        break;
+    case TRNS_RIGHT:
+        camera.translate(glm::vec3(1.0f, 0.0f, 0.0f));
+        break;
+    case TRNS_UP:
+        camera.translate(glm::vec3(0.0f, 1.0f, 0.0f));
+        break;
+    case TRNS_DOWN:
+        camera.translate(glm::vec3(0.0f, -1.0f, 0.0f));
+        break;
+    default:
+        break;
+    }
+
+    updateView();
+}
+
 bool Renderer::initialise(int screen_height, int screen_width)
 {
     /*
@@ -195,9 +249,4 @@ void Renderer::render()
     }
 
     SDL_GL_SwapWindow(main_window);
-}
-
-void Renderer::updateCamera(SDL_KeyCode key){
-    camera.updateCamera(key);
-    updateView();
 }

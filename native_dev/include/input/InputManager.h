@@ -1,3 +1,6 @@
+#pragma once
+#include "input/Event.h"
+
 #include <SDL2/SDL.h>
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <SDL2/SDL_opengles2.h>
@@ -9,8 +12,11 @@
 class InputManager
 {
 private:
-    std::function<void(SDL_Event)> event_handler;
+    std::function<void(Event)> event_handler;
     bool KEYS[322]; //keyboard event state
+
+    RENDER_KEY_STATE render_key_state;
+
 public:
     InputManager() {}
     ~InputManager() {}
@@ -19,7 +25,16 @@ public:
         return &KEYS[0];
     }
 
-    void set_handler(std::function<void(SDL_Event)> event_handle)
+    RENDER_KEY_STATE getRenderKeys(){
+        RENDER_KEY_STATE k;
+        k.W = KEYS[SDLK_w];
+        k.A = KEYS[SDLK_a];
+        k.S = KEYS[SDLK_s];
+        k.D = KEYS[SDLK_d];
+        return k;
+    }
+
+    void set_handler(std::function<void(Event)> event_handle)
     {
         event_handler = event_handle;
     }

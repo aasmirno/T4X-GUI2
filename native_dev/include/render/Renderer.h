@@ -4,6 +4,7 @@
 #include "RenderObjects/TexturedObject.h"
 #include "RenderObjects/MeshObject.h"
 #include "Camera.h"
+#include "input/Event.h"
 
 // cstd includes
 #include <stdio.h>
@@ -69,7 +70,6 @@ private:
     void updateProjection();
 
 public:
-    void updateCamera(SDL_KeyCode key);
 
     /*
         Initialise the rendering manager on startup
@@ -121,6 +121,9 @@ public:
         Clean up memory and shutdown submodules
     */
     void shutdown();
+
+    void keyUpdate(RENDER_KEY_STATE state);
+    void eventUpdate(Event e);
 
     // C constructor
     Renderer() {}
