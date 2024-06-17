@@ -7,8 +7,8 @@
 #include <iostream>
 #include <vector>
 
-#include "render/Texture.h"
-#include "render/Shader.h"
+#include "T4X/render/Texture.h"
+#include "T4X/render/Shader.h"
 
 /*
     Base class for render objects

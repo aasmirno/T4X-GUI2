@@ -1,4 +1,4 @@
-#include "render/RenderObjects/TexturedObject.h"
+#include "T4X/render/RenderObjects/TexturedObject.h"
 
 void TexturedObject::printDebug()
 {

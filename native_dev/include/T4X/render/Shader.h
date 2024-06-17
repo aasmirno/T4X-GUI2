@@ -6,6 +6,8 @@
 #include <vector>
 #include <GL/glew.h>
 
+#include "T4X/tdefs.h"
+
 struct SourcePair
 {
     char source[1024]; // source file path

@@ -1,4 +1,4 @@
-#include <game/GameManager.h>
+#include <T4X/game/GameManager.h>
 
 bool GameManager::initialise()
 {

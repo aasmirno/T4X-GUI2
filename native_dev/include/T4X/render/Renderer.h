@@ -1,10 +1,10 @@
 #pragma once
 
 // T4X includes
-#include "RenderObjects/TexturedObject.h"
-#include "RenderObjects/MeshObject.h"
-#include "Camera.h"
-#include "input/Event.h"
+#include "T4X/render/RenderObjects/TexturedObject.h"
+#include "T4X/render/RenderObjects/MeshObject.h"
+#include "T4X/render/Camera.h"
+#include "T4X/input/Event.h"
 
 // cstd includes
 #include <stdio.h>

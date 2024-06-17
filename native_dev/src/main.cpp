@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 
-#include "game/GameManager.h"
+#include "T4X/game/GameManager.h"
 
 int main(int argc, char* argv[]) {
     GameManager game;

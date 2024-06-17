@@ -1,0 +1,14 @@
+# ninja log v5
+4	15	0	clean	8c45b54705a541e8
+5	1526	7403509867603589	CMakeFiles/T4X.dir/src/PNG/lodepng.cpp.obj	890dd653662d3371
+24	805	7403516881564259	CMakeFiles/T4X.dir/src/game/map/Map.cpp.obj	a6b73263d866795
+30	1170	7403516885794252	CMakeFiles/T4X.dir/src/input/InputManager.cpp.obj	d05342a7b002755d
+45	1681	7403516606750200	CMakeFiles/T4X.dir/src/render/RenderObjects/TexturedObject.cpp.obj	4f24610f48637ba7
+41	1788	7403516608220177	CMakeFiles/T4X.dir/src/render/RenderObjects/MeshObject.cpp.obj	ebaaadf2d80e9330
+34	1007	7403514923170210	CMakeFiles/T4X.dir/src/render/Camera.cpp.obj	4f526f0eaaa56029
+20	1970	7403516610040154	CMakeFiles/T4X.dir/src/game/GameManager.cpp.obj	b904917c0d48a46a
+34	1974	7403516610070169	CMakeFiles/T4X.dir/src/main.cpp.obj	99913df00ce8c282
+39	1176	7403516885904236	CMakeFiles/T4X.dir/src/render/Shader.cpp.obj	5bb513de70dcddcb
+58	1346	7403516887674238	CMakeFiles/T4X.dir/src/render/Texture.cpp.obj	81a3ef71a0f391b7
+34	1732	7403516891514227	CMakeFiles/T4X.dir/src/render/Renderer.cpp.obj	667569942541bb6c
+20	755	7403519553523537	D:/Software and Tools/C++/T4X-GUI2/native_dev/build/T4X.exe	b110c0f471aaefe6

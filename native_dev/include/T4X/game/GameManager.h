@@ -1,8 +1,8 @@
 #pragma once
-#include "render/Renderer.h"
-#include "input/InputManager.h"
-#include "input/Event.h"
-#include "map/Map.h"
+#include "T4X/render/Renderer.h"
+#include "T4X/input/InputManager.h"
+#include "T4X/input/Event.h"
+#include "T4X/game/map/Map.h"
 
 /*
     Overarching game managment class

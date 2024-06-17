@@ -1,4 +1,5 @@
-#include "render/Shader.h"
+#include "T4X/render/Shader.h"
+#include "T4X/tdefs.h"
 
 GLuint Shader::loadShader(std::string path, GLenum type)
 {

@@ -1,4 +1,4 @@
-#include "input/InputManager.h"
+#include "T4X/input/InputManager.h"
 
 bool InputManager::pollEvent()
 {

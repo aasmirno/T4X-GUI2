@@ -1,5 +1,6 @@
 #pragma once
-#include "render/RenderObjects/RenderObject.h"
+#include "T4X/render/RenderObjects/RenderObject.h"
+#include "T4X/tdefs.h"
 
 /*
     Implementation of Render Object buffer generation function
