@@ -25,9 +25,10 @@ endif()
 # add sources
 cmake_path(SET SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
 file(GLOB_RECURSE CPPS "${SOURCE_PATH}/*.cpp")
-add_executable(${TARGET}
+add_executable(${TARGET} 
     ${CPPS}
- "include/T4X/tdefs.h")
+    "include/T4X/tdefs.h"
+)
 
 target_compile_options(${TARGET} PRIVATE -g)
 
@@ -35,8 +36,11 @@ target_include_directories(${TARGET} PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-
 find_package(OpenGL REQUIRED)
+
+cmake_path(SET RESOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources")
+file(GLOB_RECURSE SHADERS "${RESOURCE_PATH}/*")
+
 
 if(WIN32)
     target_link_libraries(${TARGET}
@@ -47,6 +51,7 @@ if(WIN32)
         "${LIB_PATH}/SDL2/x64/SDL2.lib"
         "${OPENGL_gl_LIBRARY}"
     )
+
 else()
     target_link_libraries(${TARGET}
         "${LIB_PATH}/FastNoise2/libFastNoise.so"

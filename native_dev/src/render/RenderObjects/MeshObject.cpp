@@ -54,10 +54,10 @@ bool MeshObject::genBuffers()
         Initialise Shaders and get uniforms
     */
     SourcePair texture_program[4] = {
-        SourcePair{"resources/mesh_shader/meshvert.glvs", GL_VERTEX_SHADER},
-        SourcePair{"resources/mesh_shader/meshtsc.tesc", GL_TESS_CONTROL_SHADER},
-        SourcePair{"resources/mesh_shader/meshtse.tese", GL_TESS_EVALUATION_SHADER},
-        SourcePair{"resources/mesh_shader/meshfrag.glfs", GL_FRAGMENT_SHADER}};
+        SourcePair{"meshvert.glvs", GL_VERTEX_SHADER},
+        SourcePair{"meshtsc.tesc", GL_TESS_CONTROL_SHADER},
+        SourcePair{"meshtse.tese", GL_TESS_EVALUATION_SHADER},
+        SourcePair{"meshfrag.glfs", GL_FRAGMENT_SHADER}};
     bool shader_success = shader.createProgram(&texture_program[0], 4);
     if (!shader_success)
     {
