@@ -1,19 +1,20 @@
 cmake_minimum_required(VERSION 3.20)
 project(T4X)
-
-macro(get_win_hex outvar)
-  string(REGEX MATCH "^([0-9]+)\\.([0-9]+)" ${outvar} ${CMAKE_SYSTEM_VERSION})
-  math(EXPR ${outvar} "(${CMAKE_MATCH_1} << 8) + ${CMAKE_MATCH_2}" OUTPUT_FORMAT HEXADECIMAL)
-endmacro()
-
-if(WIN32)
-  get_win_hex(winver)
-  add_compile_definitions(_WIN32_WINNT=${winver})
-endif()
-
 set( TARGET ${PROJECT_NAME} )
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build )
 
+# copy files function
+function(CopyFiles Files)
+  add_custom_command(
+      TARGET T4X POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+      ${Files}
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+endfunction()
+
+# set output path
+cmake_path(SET CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
+
+#set library path
 if(WIN32)   # windows target
     cmake_path(SET LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib/WIN")
     cmake_path(SET SDL2_PATH "${LIB_PATH}/")
@@ -22,7 +23,7 @@ else()      # linux target
     cmake_path(SET SDL2_PATH "/usr/lib/x86_64-linux-gnu/libSDL2.so")
 endif()
 
-# add sources
+# add cpp sources
 cmake_path(SET SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
 file(GLOB_RECURSE CPPS "${SOURCE_PATH}/*.cpp")
 add_executable(${TARGET} 
@@ -30,19 +31,22 @@ add_executable(${TARGET}
     "include/T4X/tdefs.h"
 )
 
+# set compile options
 target_compile_options(${TARGET} PRIVATE -g)
 
+# set include path
 target_include_directories(${TARGET} PUBLIC 
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-find_package(OpenGL REQUIRED)
-
+# copy resources
 cmake_path(SET RESOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources")
-file(GLOB_RECURSE SHADERS "${RESOURCE_PATH}/*")
+file(GLOB_RECURSE RESOURCES "${RESOURCE_PATH}/*")
+message(STATUS "${RESOURCES}")
 
-
-if(WIN32)
+# link libraries
+find_package(OpenGL REQUIRED)
+if(WIN32)   # windows target
     target_link_libraries(${TARGET}
         "${LIB_PATH}/FastNoise2/FastNoise.lib"
         "${LIB_PATH}/FastNoise2/FastNoiseD.lib"
@@ -51,8 +55,7 @@ if(WIN32)
         "${LIB_PATH}/SDL2/x64/SDL2.lib"
         "${OPENGL_gl_LIBRARY}"
     )
-
-else()
+else()      # linux target
     target_link_libraries(${TARGET}
         "${LIB_PATH}/FastNoise2/libFastNoise.so"
         "${LIB_PATH}/FastNoise2/libFastNoiseD.so"
@@ -62,5 +65,9 @@ else()
         ${SDL2_PATH}
         "-lGLU"
         "-lGL"
-)
+       )
 endif()
+
+foreach(File ${RESOURCES})
+    CopyFiles(${File})
+endforeach()
