@@ -35,18 +35,6 @@ void Renderer::eventUpdate(Event e)
     case MW_OUT:
         camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
         break;
-    case TRNS_LEFT:
-        camera.translate(glm::vec3(-1.0f, 0.0f, 0.0f));
-        break;
-    case TRNS_RIGHT:
-        camera.translate(glm::vec3(1.0f, 0.0f, 0.0f));
-        break;
-    case TRNS_UP:
-        camera.translate(glm::vec3(0.0f, 1.0f, 0.0f));
-        break;
-    case TRNS_DOWN:
-        camera.translate(glm::vec3(0.0f, -1.0f, 0.0f));
-        break;
     default:
         break;
     }

@@ -39,15 +39,10 @@ void MeshObject::draw()
 bool MeshObject::genBuffers()
 {
     glBindVertexArray(vao_id);             // focus va buffer
-    glEnableVertexAttribArray(0);          // enable attrib array at 0
     glBindBuffer(GL_ARRAY_BUFFER, vbo_id); // focus vb
 
-    /*
-        Format for vertex buffer (what a vertex should look like):
-            location: 0
-            size: 3
-            type: GL_FLOAT
-    */
+    // xyz pos data
+    glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
     /*
@@ -89,34 +84,35 @@ bool MeshObject::genBuffers()
         }
         view_location = vloc.second;
     }
-
+    
     // generate mesh vertices
     for (int i = 0; i < patch_resolution - 1; i++)
     {
         for (int j = 0; j < patch_resolution - 1; j++)
         {
+
             vertices.push_back(-width / 2.0f + width * i / (float)patch_resolution);   // x
             vertices.push_back(-heigth / 2.0f + heigth * j / (float)patch_resolution); // y
-            vertices.push_back(i / (float)(patch_resolution - 1));                     // z heightmap
+            vertices.push_back(rand() / (float)RAND_MAX);                     // z heightmap
 
             vertices.push_back(-width / 2.0f + width * (i + 1) / (float)patch_resolution); // x
             vertices.push_back(-heigth / 2.0f + heigth * j / (float)patch_resolution);     // y
-            vertices.push_back(i / (float)(patch_resolution - 1));                         // z heightmap
+            vertices.push_back(rand() / (float)RAND_MAX);                         // z heightmap
 
             vertices.push_back(-width / 2.0f + width * i / (float)patch_resolution);         // x
             vertices.push_back(-heigth / 2.0f + heigth * (j + 1) / (float)patch_resolution); // y
-            vertices.push_back(i / (float)(patch_resolution - 1));                           // z heightmap
+            vertices.push_back(rand() / (float)RAND_MAX);                           // z heightmap
 
             vertices.push_back(-width / 2.0f + width * (i + 1) / (float)patch_resolution);   // x
             vertices.push_back(-heigth / 2.0f + heigth * (j + 1) / (float)patch_resolution); // y
-            vertices.push_back(i / (float)(patch_resolution - 1));                           // z heightmap
+            vertices.push_back(rand() / (float)RAND_MAX);                           // z heightmap
         }
     }
 
     // printDebug();
 
     // push to z plane
-    model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    // model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
     // initial transform update
     glUseProgram(shader.program_id);
@@ -130,6 +126,7 @@ bool MeshObject::genBuffers()
     }
 
     // inital buffer update
+    //dprintDebug();
     return updateBuffers();
 }
 

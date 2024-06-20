@@ -11,7 +11,6 @@ uniform mat4 model;      // variable model matrix
 uniform mat4 view;       // variable view matrix
 uniform mat4 projection; // variable projection matrix
 
-
 out float Height; // send to Fragment Shader for coloring
 
 void main()
@@ -32,14 +31,13 @@ void main()
     vec4 vVec = p10 - p00;
     vec4 normal = normalize( vec4(cross(vVec.xyz, uVec.xyz), 0) );
 
-    Height = p00.z;
-
     // bilinearly interpolate position coordinate across patch
     // generate position coordinate based on relative tesselated point coordinate
-    vec4 p0 = (p01 - p00) * u + p00;    // ud diff * fractional x pos + patch origin
-    vec4 p1 = (p11 - p10) * u + p10;    // 
+    vec4 p0 = (p01 - p00) * u + p00;    
+    vec4 p1 = (p11 - p10) * u + p10; 
     vec4 p = (p1 - p0) * v + p0;
 
+    float Height = p00.x;
     // displace point along normal
     p += normal * Height;
 
