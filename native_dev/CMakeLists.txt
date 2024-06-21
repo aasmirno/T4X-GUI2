@@ -39,11 +39,6 @@ target_include_directories(${TARGET} PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-# copy resources
-cmake_path(SET RESOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources")
-file(GLOB_RECURSE RESOURCES "${RESOURCE_PATH}/*")
-message(STATUS "${RESOURCES}")
-
 # link libraries
 find_package(OpenGL REQUIRED)
 if(WIN32)   # windows target
@@ -67,7 +62,3 @@ else()      # linux target
         "-lGL"
        )
 endif()
-
-foreach(File ${RESOURCES})
-    CopyFiles(${File})
-endforeach()

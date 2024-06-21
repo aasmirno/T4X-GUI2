@@ -49,6 +49,7 @@ bool MeshObject::genBuffers()
         Initialise Shaders and get uniforms
     */
     SourcePair texture_program[4] = {
+        
         SourcePair{"meshvert.glvs", GL_VERTEX_SHADER},
         SourcePair{"meshtsc.tesc", GL_TESS_CONTROL_SHADER},
         SourcePair{"meshtse.tese", GL_TESS_EVALUATION_SHADER},
@@ -90,7 +91,6 @@ bool MeshObject::genBuffers()
     {
         for (int j = 0; j < patch_resolution - 1; j++)
         {
-
             vertices.push_back(-width / 2.0f + width * i / (float)patch_resolution);   // x
             vertices.push_back(-heigth / 2.0f + heigth * j / (float)patch_resolution); // y
             vertices.push_back(rand() / (float)RAND_MAX);                     // z heightmap
