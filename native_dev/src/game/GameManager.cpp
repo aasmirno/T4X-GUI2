@@ -9,7 +9,6 @@ bool GameManager::initialise()
         printf("ERROR: SDL failed to initialise %s\n", SDL_GetError());
         return false;
     }
-    printf("    SDL initialised\n");
 
     // try and initialise the rendering manager
     if (render_manager.initialise(600, 600) == false)
@@ -17,20 +16,17 @@ bool GameManager::initialise()
         printf("ERROR: render manager failed to initialise\n");
         return false;
     }
-    printf("    render manager initialised\n");
 
     // initialise the game map
-    game_map.initialise(map_x, map_y);
-    printf("    gamemap initialised\n");
+    game_map.initialise(16, 16);
 
     // set callback for event handler
     input_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
-    printf("    input manager initialised\n");
 
     /*
         TESTING
     */
-    //TexturedObject *logo_graphic = render_manager.addTexturedObject("resources/textures/Logo256.png", 255, 54);
+    //TexturedObject *logo_graphic = render_manager.addTexturedObject("Logo256.png", 255, 54);
     //if (logo_graphic == nullptr)
     //{
     //    printf("engine startup failed");
@@ -38,6 +34,8 @@ bool GameManager::initialise()
     //}
 
     MeshObject *test = render_manager.aMO();
+    test->setMeshData(game_map.getHeightMap(20), 20);
+    
     // start the game
     running = true;
     run();

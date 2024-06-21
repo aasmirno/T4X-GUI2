@@ -44,7 +44,7 @@ protected:
     /*
         Update data in buffer
     */
-    virtual bool updateBuffers() = 0;
+    virtual bool updateBuffers(int size, float* data) = 0;
 
     /*
         Check GL error

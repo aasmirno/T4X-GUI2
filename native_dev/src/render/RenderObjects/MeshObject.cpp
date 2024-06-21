@@ -9,20 +9,6 @@ void MeshObject::printDebug()
     printf("    vao_id: %d\n", vao_id);
     printf("    vbo_id: %d\n", vbo_id);
 
-    for (size_t i = 0; i < vertices.size(); i += 12)
-    {
-        std::cout << "(";
-        for (size_t j = 0; j < 12; j++)
-        {
-            std::cout << vertices[i + j] << ",";
-            if ((j + 1) % 3 == 0 && j != 11)
-            {
-                std::cout << ") | (";
-            }
-        }
-        std::cout << ")\n";
-    }
-
     shader.printDebug();
 }
 
@@ -85,34 +71,6 @@ bool MeshObject::genBuffers()
         }
         view_location = vloc.second;
     }
-    
-    // generate mesh vertices
-    for (int i = 0; i < patch_resolution - 1; i++)
-    {
-        for (int j = 0; j < patch_resolution - 1; j++)
-        {
-            vertices.push_back(-width / 2.0f + width * i / (float)patch_resolution);   // x
-            vertices.push_back(-heigth / 2.0f + heigth * j / (float)patch_resolution); // y
-            vertices.push_back(rand() / (float)RAND_MAX);                     // z heightmap
-
-            vertices.push_back(-width / 2.0f + width * (i + 1) / (float)patch_resolution); // x
-            vertices.push_back(-heigth / 2.0f + heigth * j / (float)patch_resolution);     // y
-            vertices.push_back(rand() / (float)RAND_MAX);                         // z heightmap
-
-            vertices.push_back(-width / 2.0f + width * i / (float)patch_resolution);         // x
-            vertices.push_back(-heigth / 2.0f + heigth * (j + 1) / (float)patch_resolution); // y
-            vertices.push_back(rand() / (float)RAND_MAX);                           // z heightmap
-
-            vertices.push_back(-width / 2.0f + width * (i + 1) / (float)patch_resolution);   // x
-            vertices.push_back(-heigth / 2.0f + heigth * (j + 1) / (float)patch_resolution); // y
-            vertices.push_back(rand() / (float)RAND_MAX);                           // z heightmap
-        }
-    }
-
-    // printDebug();
-
-    // push to z plane
-    // model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
     // initial transform update
     glUseProgram(shader.program_id);
@@ -125,15 +83,18 @@ bool MeshObject::genBuffers()
         return false;
     }
 
-    // inital buffer update
-    //dprintDebug();
-    return updateBuffers();
+    return true;
 }
 
-bool MeshObject::updateBuffers()
+bool MeshObject::setMeshData(std::vector<float> data, unsigned patches){
+    patch_resolution = patches;
+    return updateBuffers(data.size() * 3, &data[0]);
+}
+
+bool MeshObject::updateBuffers(int size, float* data)
 {
     glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW); // insert data from vertex_data
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
     if (!checkGLError())
     {
         printf("ERROR: gl error in buffer update\n");

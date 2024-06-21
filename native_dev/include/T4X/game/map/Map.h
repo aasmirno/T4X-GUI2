@@ -2,6 +2,7 @@
 #include <vector>
 #include <cstdint>
 #include <stdio.h>
+#include <iostream>
 
 #include "FastNoise/FastNoise.h"
 
@@ -12,15 +13,12 @@ const unsigned MAX_MAP_DIM = 10000;
 */
 class Map{
 private:
-    std::vector<uint16_t> tile_data;
-    std::vector<float> elevation;
+    std::vector<float> height_map;
 
     unsigned height = 0;
     unsigned width = 0;
-
-    
-
+    void generate();
 public:
     bool initialise(unsigned map_x, unsigned map_y);
-    uint16_t* getData();
+    std::vector<float> getHeightMap(uint16_t resolution);
 };

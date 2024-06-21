@@ -15,7 +15,7 @@ private:
     // camera view matrix
     glm::mat4 view_matrix = glm::mat4(1.0f);
 
-    glm::vec3 speed_factors = glm::vec3(0.01f, 0.01f, 0.1f);
+    glm::vec3 speed_factors = glm::vec3(0.1f, 0.1f, 0.1f);
 
 public:
     GLfloat* getView(){
@@ -40,6 +40,10 @@ public:
     }
 
     void translate(glm::vec3 unit_vec);
+
+    void rotate(float angle, glm::vec3 unit_vec){
+        view_matrix = glm::rotate(view_matrix, angle, unit_vec);
+    }
 
     void initialise();
 

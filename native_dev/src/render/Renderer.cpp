@@ -2,19 +2,19 @@
 
 void Renderer::keyUpdate(RENDER_KEY_STATE state){
     if(state.W){
-        camera.translate(glm::vec3(0.0, -1.0, 0.0));
+        camera.rotate(0.01, glm::vec3(1.0, 0.0, 0.0));
     }
 
     if(state.A){
-        camera.translate(glm::vec3(1.0, 0.0, 0.0));
+        camera.rotate(-0.01, glm::vec3(0.0, 1.0, 0.0));
     }
 
     if(state.S){
-        camera.translate(glm::vec3(0.0, 1.0, 0.0));
+        camera.rotate(-0.01, glm::vec3(1.0, 0.0, 0.0));
     }
 
     if(state.D){
-        camera.translate(glm::vec3(-1.0, 0.0, 0.0));
+        camera.rotate(0.01, glm::vec3(0.0, 1.0, 0.0));
     }
     updateView();
 }
@@ -27,6 +27,7 @@ void Renderer::eventUpdate(Event e)
         return;
     }
     
+    std::cout << "test\n";
     switch (e.render_data)
     {
     case MW_IN:
@@ -194,26 +195,6 @@ void Renderer::setScreenSize(int width, int height)
 
 TexturedObject *Renderer::addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h)
 {
-    if (!initialised)
-    {
-        printf("ERROR: render manager not initialised\n");
-        return nullptr;
-    }
-
-    TexturedObject object;
-    int id = texture_objects.size() + 1;
-    if (!object.initialise(id))
-    {
-        printf("Shape object initialisation failed\n");
-        return nullptr;
-    }
-    object.setTexture(texture_source, texture_w, texture_w); // load a texture
-    // add it to active objects
-    texture_objects.push_back(object);
-    updateProjection();
-    updateView();
-
-    return &texture_objects.back();
 }
 
 void Renderer::render()

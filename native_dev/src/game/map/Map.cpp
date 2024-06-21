@@ -1,22 +1,8 @@
 #include "T4X/game/map/Map.h"
 
-bool Map::initialise(unsigned map_x, unsigned map_y){
-    //check and set dimensions
-    if(map_x > MAX_MAP_DIM){
-        map_x = MAX_MAP_DIM;
-    }
-    if(map_y > MAX_MAP_DIM){
-        map_y = MAX_MAP_DIM;
-    }
-    height = map_x;
-    width = map_y;
-
-    //fill tile data vector
-    tile_data.resize(height * width);
-    elevation.resize(height * width);
-
-
-    //generate random noise
+void Map::generate()
+{
+    // generate random noise
     auto fnPerlin = FastNoise::New<FastNoise::Perlin>();
     auto fnFractal = FastNoise::New<FastNoise::FractalFBm>();
 
@@ -25,29 +11,78 @@ bool Map::initialise(unsigned map_x, unsigned map_y){
     fnFractal->SetGain(-0.680);
     fnFractal->SetWeightedStrength(2.220);
     fnFractal->SetLacunarity(2.600);
+    fnFractal->GenUniformGrid2D(height_map.data(), 0, 0, height, width, 0.1f, 1337);
+}
 
-    fnFractal->GenUniformGrid2D(elevation.data(), 0, 0, height, width, 0.1f, 1337);
+bool Map::initialise(unsigned map_x, unsigned map_y)
+{
+    if (map_x == 0 || map_y == 0)
+    {
+        printf("[ MAP ERROR ] improper input dimensions: x=%d, y=%d", map_x, map_y);
+        return false;
+    }
+
+    // check and set dimensions
+    if (map_x > MAX_MAP_DIM)
+    {
+        map_x = MAX_MAP_DIM;
+    }
+    if (map_y > MAX_MAP_DIM)
+    {
+        map_y = MAX_MAP_DIM;
+    }
+    height = map_x;
+    width = map_y;
+
+    // resize vector
+    height_map.resize(height * width, 0.0f);
+    generate();
     return true;
 }
 
-uint16_t* Map::getData(){
-    for(int i = 0; i < height * width; i++){
-        if (elevation[i] < 0.125){
-            tile_data[i] = 0;
-        } else if(elevation[i] < 0.25){
-            tile_data[i] = 1;
-        } else if(elevation[i] < 0.375){
-            tile_data[i] = 2;
-        } else if(elevation[i] < 0.5){
-            tile_data[i] = 3;
-        } else if(elevation[i] < 0.625){
-            tile_data[i] = 4;
-        }  else if(elevation[i] < 0.75){
-            tile_data[i] = 5;
-        } else {
-            tile_data[i] = 6;
+std::vector<float> Map::getHeightMap(uint16_t resolution)
+{
+    // create mesh array
+    std::vector<float> mesh_map;
+    mesh_map.reserve(width * height * 3);
+
+    // transform map parameters to math friendly values
+    float mesh_width = (float)width;
+    float mesh_height = (float)height;
+
+    for (int i = 0; i <= resolution - 1; i++)
+    {
+        for (int j = 0; j <= resolution - 1; j++)
+        {
+            // bottom left patch values
+            mesh_map.push_back(mesh_width * (i / (float)resolution));  // x
+            mesh_map.push_back(mesh_height * (j / (float)resolution)); // y
+            int x_coord = (width - 1) * (i / (float)resolution);       // map x
+            int y_coord = (height - 1) * (j / (float)resolution);      // map y
+            mesh_map.push_back(height_map[x_coord * width + y_coord]); // map elevation at the patch coordinate
+
+            // bottom right patch coordinates
+            mesh_map.push_back(mesh_width * ((i + 1) / (float)resolution)); // x
+            mesh_map.push_back(mesh_height * (j / (float)resolution));      // y
+             x_coord = (width - 1) * ((i + 1) / (float)resolution);      // map x
+             y_coord = (height - 1) * (j / (float)resolution);           // map y
+            mesh_map.push_back(height_map[x_coord * width + y_coord]);      // map elevation at the patch coordinate
+
+            // top right patch coordinates
+            mesh_map.push_back(mesh_width * (i / (float)resolution));        // x
+            mesh_map.push_back(mesh_height * ((j + 1) / (float)resolution)); // y
+             x_coord = (width - 1) * (i / (float)resolution);             // map x
+             y_coord = (height - 1) * ((j + 1) / (float)resolution);      // map y
+            mesh_map.push_back(height_map[x_coord * width + y_coord]);       // map elevation at the patch coordinate
+
+            // top right patch coordinates
+            mesh_map.push_back(mesh_width * ((i + 1) / (float)resolution));  // x
+            mesh_map.push_back(mesh_height * ((j + 1) / (float)resolution)); // y
+             x_coord = (width - 1) * ((i + 1) / (float)resolution);       // map x
+             y_coord = (height - 1) * ((j + 1) / (float)resolution);      // map y
+            mesh_map.push_back(height_map[x_coord * width + y_coord]);       // map elevation at the patch coordinate
         }
     }
 
-    return &tile_data[0];
+    return mesh_map;
 }
