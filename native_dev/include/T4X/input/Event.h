@@ -29,6 +29,10 @@ struct RENDER_KEY_STATE
     bool A = false;
     bool S = false;
     bool D = false;
+    bool Q = false;
+    bool E = false;
+    bool R = false;
+    bool F = false;
 };
 
 /*

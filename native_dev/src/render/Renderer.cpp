@@ -1,21 +1,21 @@
 #include "T4X/render/Renderer.h"
 
 void Renderer::keyUpdate(RENDER_KEY_STATE state){
-    if(state.W){
-        camera.rotate(0.01, glm::vec3(1.0, 0.0, 0.0));
-    }
 
-    if(state.A){
-        camera.rotate(-0.01, glm::vec3(0.0, 1.0, 0.0));
-    }
+    // move controls
+    if (state.A) camera.left();
+    if (state.D) camera.right();
+    if (state.W) camera.top();
+    if (state.S) camera.bottom();
 
-    if(state.S){
-        camera.rotate(-0.01, glm::vec3(1.0, 0.0, 0.0));
-    }
+    // yaw controls
+    if (state.Q) camera.moveYaw(0.1f);
+    if (state.E) camera.moveYaw(-0.1f);
 
-    if(state.D){
-        camera.rotate(0.01, glm::vec3(0.0, 1.0, 0.0));
-    }
+    // pitch controls
+    if (state.R) camera.movePitch(0.1f);
+    if (state.F) camera.movePitch(-0.1f);
+
     updateView();
 }
 
@@ -26,21 +26,20 @@ void Renderer::eventUpdate(Event e)
         printf("[ RENDER ERROR ] event supplied of improper type");
         return;
     }
-    
-    std::cout << "test\n";
     switch (e.render_data)
     {
     case MW_IN:
-        camera.translate(glm::vec3(0.0f, 0.0f, 1.0f));
+        camera.in();
+        updateView();
         break;
     case MW_OUT:
-        camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
+        camera.out();
+        updateView();
         break;
     default:
         break;
     }
-
-    updateView();
+    //updateProjection();
 }
 
 bool Renderer::initialise(int screen_height, int screen_width)
@@ -119,6 +118,7 @@ bool Renderer::initialise(int screen_height, int screen_width)
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
+        //glCullFace(GL_FRONT_AND_BACK);
 
         // blending parameters
         glEnable(GL_BLEND);
@@ -142,8 +142,8 @@ bool Renderer::initialise(int screen_height, int screen_width)
     // initialise camera
     camera.initialise();
 
-    projection = glm::perspective(glm::radians(120.0f), (float)WINDOW_W / WINDOW_H, 0.1f, 100.0f);
-
+    projection = glm::perspective(glm::radians(90.0f), (float)WINDOW_W / WINDOW_H, 0.1f, 100.0f);
+    //projection = glm::ortho(0.0f, (float)WINDOW_W, 0.0f, (float)WINDOW_H, -100.0f, 100.0f);
     //  toggle init flag
     initialised = true;
     return true;
@@ -160,26 +160,15 @@ void Renderer::shutdown()
 void Renderer::updateView()
 {
     GLfloat *curr_view = camera.getView();
-    for (int i = 0; i < texture_objects.size(); i++)
-    {
-        texture_objects[i].setTransform(curr_view, "view");
-    }
-    for (int i = 0; i < m_objects.size(); i++)
-    {
-        m_objects[i].setTransform(curr_view, "view");
+    for (int i = 0; i < objects.size(); i++) {
+        objects[i]->setTransform(curr_view, "view");
     }
 }
 
 void Renderer::updateProjection()
 {
-    GLfloat *curr_view = camera.getView();
-    for (int i = 0; i < texture_objects.size(); i++)
-    {
-        texture_objects[i].setTransform(&projection[0][0], "projection");
-    }
-    for (int i = 0; i < m_objects.size(); i++)
-    {
-        m_objects[i].setTransform(&projection[0][0], "projection");
+    for (int i = 0; i < objects.size(); i++) {
+        objects[i]->setTransform(&projection[0][0], "projection");
     }
 }
 
@@ -195,6 +184,38 @@ void Renderer::setScreenSize(int width, int height)
 
 TexturedObject *Renderer::addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h)
 {
+    return nullptr;
+}
+
+RenderObject* Renderer::addMeshObject(uint id)
+{
+    MeshObject obj;
+    if (!obj.initialise(id)) return nullptr;
+
+    meshes.push_back(obj);
+    objects.push_back(&meshes.back());
+    updateView(); updateProjection();
+    return &meshes.back();
+}
+
+bool Renderer::setMeshData(uint id, std::vector<float> data, unsigned patches) {
+    for (int i = 0; i < meshes.size(); i++) {
+        if(meshes[i].object_id == id) meshes[i].setMeshData(data, patches);
+    }
+    return true;
+}
+
+
+RenderObject* Renderer::addTestObject()
+{
+    TestObject obj;
+    if (!obj.initialise(1)) return nullptr;
+    t_obj.push_back(obj);
+    objects.push_back(&t_obj.back());
+
+    updateView(); updateProjection();
+
+    return &t_obj.back();
 }
 
 void Renderer::render()
@@ -208,13 +229,8 @@ void Renderer::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw all active objects
-    for (int i = 0; i < m_objects.size(); i++)
-    {
-        m_objects[i].draw();
-    }
-    for (int i = 0; i < texture_objects.size(); i++)
-    {
-        texture_objects[i].draw();
+    for (int i = 0; i < objects.size(); i++) {
+        objects[i]->draw();
     }
 
     SDL_GL_SwapWindow(main_window);

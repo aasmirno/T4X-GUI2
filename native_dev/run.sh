@@ -24,6 +24,7 @@ while read line; do
 done < required_shaders_list.txt
 
 echo "Done"
+
 # run executable
 cd build/
 ./T4X

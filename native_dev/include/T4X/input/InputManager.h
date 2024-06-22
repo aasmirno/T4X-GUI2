@@ -31,6 +31,10 @@ public:
         k.A = KEYS[SDLK_a];
         k.S = KEYS[SDLK_s];
         k.D = KEYS[SDLK_d];
+        k.Q = KEYS[SDLK_q];
+        k.E = KEYS[SDLK_e];
+        k.R = KEYS[SDLK_r];
+        k.F = KEYS[SDLK_f];
         return k;
     }
 

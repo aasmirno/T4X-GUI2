@@ -1,9 +1,11 @@
 #version 420 core
 
-uniform vec4 transform;
-in vec3 vert_pos;
+uniform mat4 projection;
+uniform mat4 view;
+
+layout (location = 0) in vec3 vert_pos;
 
 void main()
 {
-    gl_Position = vec4(vert_pos, 1.0);
+    gl_Position = projection * view * vec4(vert_pos, 1.0);
 }

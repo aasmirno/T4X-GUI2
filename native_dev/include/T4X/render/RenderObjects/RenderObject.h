@@ -12,146 +12,162 @@
 #include "T4X/tdefs.h"
 
 /*
-    Base class for render objects
-        object_id: id used by render manager for organisation
-        shader_pid: id provided at initialisation, specifies handle of shader program to be used for drawing
-        vao_id: vertex array object handle
-        vbo_id: vertex_buffer object handle
+	Base class for render objects
+		object_id: id used by render manager for organisation
+		shader_pid: id provided at initialisation, specifies handle of shader program to be used for drawing
+		vao_id: vertex array object handle
+		vbo_id: vertex_buffer object handle
 */
 class RenderObject
 {
 protected:
-    int object_id = -1; // render object id
+	/*
+		GL attributes
+	*/
+	GLuint vao_id = -1; // vertex array object handle
+	GLuint vbo_id = -1; // vertex buffer object handle
+	Shader shader;      // shader program for this object
 
-    /*
-        GL attributes
-    */
-    GLuint vao_id = -1; // vertex array object handle
-    GLuint vbo_id = -1; // vertex buffer object handle
-    Shader shader;      // shader program for this object
+	/*
+		General uniforms
+	*/
+	GLint projection_location = -1; // projection matrix
+	GLint view_location = -1;       // view matrix
 
-    /*
-        General uniforms
-    */
-    GLint projection_location = -1; // projection matrix
-    GLint view_location = -1;       // view matrix
+	/*
+		Update data in buffer
+	*/
+	virtual bool updateBuffers(int size, float* data) = 0;
 
-    /*
-        Generate the appropriate buffers for this object, implemented by sub class
-    */
-    virtual bool genBuffers() = 0;
+	/*
+		Generate shaders
+	*/
+	virtual bool loadShaders() = 0;
 
-    /*
-        Update data in buffer
-    */
-    virtual bool updateBuffers(int size, float* data) = 0;
+	/*
+		Set gk attributes and attribute locations
+	*/
+	virtual bool setAttribs() = 0;
 
-    /*
-        Check GL error
-    */
-    bool checkGLError()
-    {
-        GLenum err;
-        if ((err = glGetError()) != GL_NO_ERROR)
-        {
-            printf("[ RENDER OBJECT ERROR ] gl error: %d\n", err);
-            return false;
-        }
-        return true;
-    }
+	/*
+		Load required uniforms
+	*/
+	virtual bool loadUniforms() = 0;
+
+	/*
+		Check GL error
+	*/
+	bool checkGLError()
+	{
+		GLenum err;
+		if ((err = glGetError()) != GL_NO_ERROR)
+		{
+			printf("[ RENDER OBJECT ERROR ] gl error: %d\n", err);
+			return false;
+		}
+		return true;
+	}
 
 public:
-    /*
-        Initialise the render object
-            obj_id: render object id
-    */
-    bool initialise(int obj_id)
-    {
-        object_id = obj_id;
-        /*
-            Generate buffers and set buffer parameters
-        */
-        glGenBuffers(1, &vbo_id);      // generate a vertex buffer object
-        glGenVertexArrays(1, &vao_id); // gen a vertex array object
-        if (vbo_id == -1 || vao_id == -1)
-        {
-            printf("buffer generation error: vbo_id=%d vao_id=%d, obj_id=%d\n", vbo_id, vao_id, obj_id);
-            return false;
-        }
+	int object_id = -1; // render object id
 
-        // call subclass specific methods
-        return genBuffers();
-    }
+	/*
+		Initialise the render object
+			obj_id: render object id
+	*/
+	bool initialise(int obj_id)
+	{
+		object_id = obj_id;
+		/*
+			Generate buffers and set buffer parameters
+		*/
+		glGenBuffers(1, &vbo_id);      // generate a vertex buffer object
+		glGenVertexArrays(1, &vao_id); // gen a vertex array object
+		if (vbo_id == -1 || vao_id == -1)
+		{
+			printf("buffer generation error: vbo_id=%d vao_id=%d, obj_id=%d\n", vbo_id, vao_id, obj_id);
+			return false;
+		}
 
-    /*
-        Dump debug information to the console
-    */
-    virtual void printDebug() = 0;
+		// call subclass initialisation pipeline
+		if (!loadShaders()) return false;
+		if (!setAttribs()) return false;
+		if (!loadUniforms()) return false;
 
-    /*
-        Draw method for a render object, implemented by sub class
-    */
-    virtual void draw() = 0;
+		return true;
+	}
 
-    /*
-        Set view matrix
-            GLfloat *matrix: pointer to mat4 transform matrix
-            std::string type (view/projection): specified uniform to update
-    */
-    bool setTransform(GLfloat *matrix, std::string type)
-    {
-        // check shader init
-        if (shader.program_id == 0)
-        {
-            printf("[ RENDER OBJECT ERROR ] uninitialised shader\n");
-            return false;
-        }
+	/*
+		Dump debug information to the console
+	*/
+	virtual void printDebug() = 0;
 
-        // check proper type string
-        if (type != "projection" && type != "view")
-        {
-            printf("[ RENDER OBJECT ERROR ] improper type: %s, need view or projection\n", type);
-            return false;
-        }
+	/*
+		Draw method for a render object, implemented by sub class
+	*/
+	virtual void draw() = 0;
 
-        // check locations defined and set locations
-        GLint location = -1;
-        if (type == "view" && view_location == -1)
-        {
-            printf("[ RENDER OBJECT ERROR ] no view location defined\n");
-            return false;
-        }
-        else
-        {
-            location = view_location;
-        }
+	/*
+		Set transform matrix
+			GLfloat *matrix: pointer to mat4 transform matrix
+			std::string type (view/projection): specified uniform to update
+	*/
+	bool setTransform(GLfloat* matrix, std::string type)
+	{
+		// check shader init
+		if (shader.program_id == 0)
+		{
+			printf("[ RENDER OBJECT ERROR ] uninitialised shader\n");
+			return false;
+		}
 
-        if (type == "projection" && projection_location == -1)
-        {
-            printf("[ RENDER OBJECT ERROR ] no projection location defined\n");
-            return false;
-        }
-        else
-        {
-            location = projection_location;
-        }
+		// check proper type string
+		if (type != "projection" && type != "view")
+		{
+			printf("[ RENDER OBJECT ERROR ] improper type: %s, need view or projection\n", type);
+			return false;
+		}
 
-        // redundant check
-        if (location == -1)
-        {
-            printf("[ RENDER OBJECT ERROR ] unknown setTransform error, location = -1\n");
-            return false;
-        }
+		// check locations defined and set locations
+		GLint location = -1;
+		if (type == "view")
+		{
+			if (view_location == -1) {
+				printf("[ RENDER OBJECT ERROR ] no view location defined\n");
+				return false;
+			}
+			else {
+				location = view_location;
+			}
+		}
 
-        // update transforms
-        glUseProgram(shader.program_id);
-        glUniformMatrix4fv(location, 1, GL_FALSE, matrix);
-        if (!checkGLError())
-        {
-            printf("[ RENDER OBJECT ERROR ] error in %s update\n", type);
-            printDebug();
-            return false;
-        }
-        return true;
-    }
+		if (type == "projection")
+		{
+			if (projection_location == -1) {
+				printf("[ RENDER OBJECT ERROR ] no projection location defined\n");
+				return false;
+			}
+			else {
+				location = projection_location;
+			}
+		}
+
+		// redundant check
+		if (location == -1)
+		{
+			printf("[ RENDER OBJECT ERROR ] unknown setTransform error, location = -1\n");
+			return false;
+		}
+
+		// update transforms
+		glUseProgram(shader.program_id);
+		glUniformMatrix4fv(location, 1, GL_FALSE, matrix);
+		if (!checkGLError())
+		{
+			printf("[ RENDER OBJECT ERROR ] error in %s update\n", type);
+			printDebug();
+			return false;
+		}
+		return true;
+	}
 };

@@ -8,16 +8,23 @@
 class MeshObject : public RenderObject
 {
 private:
-    virtual bool genBuffers();
-    bool updateBuffers(int size, float* data);
-
-    // shader uniform locations
-    GLint model_location = -1;      // model matrix
+    /*
+        Object parameters
+    */
     const uint NUM_SHADERS = 4;     // number of shaders
-    unsigned patch_resolution = 0;
-
     glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view = glm::mat4(1.0f);
+
+    /*
+        Parent class init pipeline methods
+    */
+    virtual bool loadShaders();
+    virtual bool setAttribs();
+    virtual bool loadUniforms();
+
+    virtual bool updateBuffers(int size, float* data);
+
+    // class specific parameters
+    unsigned patch_resolution = 0;
 public:
     /*
         Print debug info for this object

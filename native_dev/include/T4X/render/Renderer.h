@@ -3,6 +3,7 @@
 // T4X includes
 #include "T4X/render/RenderObjects/TexturedObject.h"
 #include "T4X/render/RenderObjects/MeshObject.h"
+#include "T4X/render/RenderObjects/TestObject.h"
 #include "T4X/render/Camera.h"
 #include "T4X/input/Event.h"
 
@@ -36,6 +37,8 @@ private:
     // transform matrix parameters
     glm::mat4 projection = glm::mat4(1.0f); // global projection matrix
     Camera camera;
+    float fov = 45.0f;
+
 
     const float min_scale = 0.01f;    // minimum tranform value - controls max zoom out level
     const float max_scale = 1000.5f;  // max transform value - controls max zoom in
@@ -61,7 +64,10 @@ private:
         Render Objects
     */
     std::vector<TexturedObject> texture_objects;
-    std::vector<MeshObject> m_objects;
+    std::vector<MeshObject> meshes;
+    std::vector<TestObject> t_obj;
+
+    std::vector<RenderObject*> objects;
 
     /*
         transform matrix update methods
@@ -84,28 +90,18 @@ public:
             texture_h: texture file height
     */
     TexturedObject *addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h);
-    MeshObject *aMO()
-    {
-        if (!initialised)
-        {
-            printf("ERROR: render manager not initialised\n");
-            return nullptr;
-        }
+    
 
-        MeshObject object;
-        if (!object.initialise(1))
-        {
-            printf("Shape object initialisation failed\n");
-            return nullptr;
-        }
+    /*
+        Create a mesh
+    */
+    RenderObject* addMeshObject(uint id);
+    bool setMeshData(uint id, std::vector<float> data, unsigned patches);
 
-        // add it to active objects
-        m_objects.push_back(object);
-        updateProjection();
-        updateView();
-
-        return &m_objects.back();
-    }
+    /*
+        Create test triangle
+    */
+    RenderObject* addTestObject();
 
     /*
         Update render screen size parameters

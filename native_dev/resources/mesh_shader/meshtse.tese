@@ -7,7 +7,6 @@
 //  ccw winding
 layout (quads, fractional_odd_spacing, ccw) in;
 
-uniform mat4 model;      // variable model matrix
 uniform mat4 view;       // variable view matrix
 uniform mat4 projection; // variable projection matrix
 
@@ -43,5 +42,5 @@ void main()
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space
-    gl_Position = projection * view * model * p;
+    gl_Position = projection * view * p;
 }

@@ -1,27 +1,20 @@
-#vscode and wsl development files
-#CMakeLists.txt
-CMakeFiles/
+# cmake and build files
+native_dev/CMakeFiles/
 native_dev/build/
-.vscode
-
 native_dev/CMakeCache.txt
+native_dev/cmake_install.cmake
 
 #visual studio development files
 .vs
+.vscode
 vs_dev/Debug
 vs_dev/UnitTesting/
 vs_dev/x64/
 vs_dev/natural_earth_vector.zip
-
 *.sln
 *.vcxproj
 *.vcxproj.*
 
-native_dev/CMakeCache.txt
-native_dev/CMakeLists.txt
 
 ignored/
-/T4X-GUI2 - Shortcut.lnk
-/docs/
-/build/
-/out/
+docs/

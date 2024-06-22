@@ -18,7 +18,7 @@ bool GameManager::initialise()
     }
 
     // initialise the game map
-    game_map.initialise(16, 16);
+    game_map.initialise(400, 400);
 
     // set callback for event handler
     input_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
@@ -26,16 +26,11 @@ bool GameManager::initialise()
     /*
         TESTING
     */
-    //TexturedObject *logo_graphic = render_manager.addTexturedObject("Logo256.png", 255, 54);
-    //if (logo_graphic == nullptr)
-    //{
-    //    printf("engine startup failed");
-    //    return false;
-    //}
-
-    MeshObject *test = render_manager.aMO();
-    test->setMeshData(game_map.getHeightMap(20), 20);
+    render_manager.addMeshObject(0);
+    render_manager.setMeshData(0, game_map.getHeightMap(200), 200);
     
+    if (render_manager.addTestObject() == nullptr) return false;
+
     // start the game
     running = true;
     run();

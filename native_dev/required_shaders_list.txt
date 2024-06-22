@@ -1,2 +1,3 @@
 mesh_shader
 textured_shader
+basic_shader

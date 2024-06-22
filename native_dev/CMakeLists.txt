@@ -2,15 +2,6 @@ cmake_minimum_required(VERSION 3.20)
 project(T4X)
 set( TARGET ${PROJECT_NAME} )
 
-# copy files function
-function(CopyFiles Files)
-  add_custom_command(
-      TARGET T4X POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy
-      ${Files}
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-endfunction()
-
 # set output path
 cmake_path(SET CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
@@ -61,4 +52,12 @@ else()      # linux target
         "-lGLU"
         "-lGL"
        )
+endif()
+
+if(WIN32)
+    add_custom_command(TARGET T4X
+        POST_BUILD
+        COMMAND powershell ./copy_rsc.ps1
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
 endif()
