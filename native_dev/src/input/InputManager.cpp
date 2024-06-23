@@ -16,11 +16,10 @@ bool InputManager::pollEvent()
         case SDL_MOUSEWHEEL:
             engine_event.type = E_TYPE::RENDER_EVENT;
             if(event.wheel.y > 0){
-                engine_event.render_data = engine_event.render_data = RD_DATA::MW_IN;
+                engine_event.render_data = RD_DATA::MW_IN;
             } else {
-                engine_event.render_data = engine_event.render_data = RD_DATA::MW_OUT;
+                engine_event.render_data = RD_DATA::MW_OUT;
             }
-            event_handler(engine_event);
             break;
 
         case SDL_KEYDOWN:
@@ -31,12 +30,18 @@ bool InputManager::pollEvent()
             break;
 
         case SDL_WINDOWEVENT:
+            if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                engine_event.type = E_TYPE::SCREEN_SIZE_UPDATE;
+                engine_event.w = event.window.data1;
+                engine_event.h = event.window.data1;
+            }
             break;
 
         default:
             //printf("%d ", event.type);
             break;
         }
+
         event_handler(engine_event);
     }
     return false;

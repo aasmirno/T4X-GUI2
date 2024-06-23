@@ -38,7 +38,7 @@ void main()
 
     Height = p.z;
     // displace point along normal
-    p += normal;
+    //p += normal;
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space

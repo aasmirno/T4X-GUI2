@@ -7,6 +7,7 @@ enum E_TYPE
     NONE,
     SDL_EVENT,
     RENDER_EVENT,
+    SCREEN_SIZE_UPDATE,
     GAME_EVENT
 };
 
@@ -14,10 +15,6 @@ enum RD_DATA
 {
     MW_IN,
     MW_OUT,
-    TRNS_LEFT,
-    TRNS_RIGHT,
-    TRNS_UP,
-    TRNS_DOWN
 };
 
 /*
@@ -47,4 +44,7 @@ struct Event
 
     // raw sdl data
     SDL_EventType raw_event;
+
+    int w = 0;
+    int h = 0;
 };

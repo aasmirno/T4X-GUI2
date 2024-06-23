@@ -17,7 +17,7 @@ enum AXIS{
 class Camera{
 private:
     // camera vectors
-    glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.5f);       // camera postion in world space
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 4.0f);       // camera postion in world space
     glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);   // 
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);             // world space up
 
@@ -26,7 +26,7 @@ private:
     //glm::mat4 view_matrix = glm::lookAt(position, position + cameraFront, up);
     glm::mat4 view_matrix = glm::mat4(1.0f);
 
-    glm::vec3 speed_factors = glm::vec3(0.01f, 0.01f, 0.01f);
+    glm::vec3 speed_factors = glm::vec3(0.1f, 0.1f, 0.1f);
 
 public:
     GLfloat* getView(){

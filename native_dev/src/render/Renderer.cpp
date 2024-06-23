@@ -9,12 +9,12 @@ void Renderer::keyUpdate(RENDER_KEY_STATE state){
     if (state.S) camera.bottom();
 
     // yaw controls
-    if (state.Q) camera.moveYaw(0.1f);
-    if (state.E) camera.moveYaw(-0.1f);
+    if (state.Q) camera.moveYaw(0.5f);
+    if (state.E) camera.moveYaw(-0.5f);
 
     // pitch controls
-    if (state.R) camera.movePitch(0.1f);
-    if (state.F) camera.movePitch(-0.1f);
+    if (state.R) camera.movePitch(0.5f);
+    if (state.F) camera.movePitch(-0.5f);
 
     updateView();
 }
@@ -36,10 +36,10 @@ void Renderer::eventUpdate(Event e)
         camera.out();
         updateView();
         break;
+        
     default:
         break;
     }
-    //updateProjection();
 }
 
 bool Renderer::initialise(int screen_height, int screen_width)
@@ -143,7 +143,7 @@ bool Renderer::initialise(int screen_height, int screen_width)
     camera.initialise();
 
     projection = glm::perspective(glm::radians(90.0f), (float)WINDOW_W / WINDOW_H, 0.1f, 100.0f);
-    //projection = glm::ortho(0.0f, (float)WINDOW_W, 0.0f, (float)WINDOW_H, -100.0f, 100.0f);
+    //projection = glm::ortho(0.0f, (float)WINDOW_W, 0.0f, (float)WINDOW_H, 0.1f, 10.0f);
     //  toggle init flag
     initialised = true;
     return true;
@@ -174,12 +174,9 @@ void Renderer::updateProjection()
 
 void Renderer::setScreenSize(int width, int height)
 {
-    projection[0][0] = (projection[0][0] * WINDOW_H / height);
-    projection[1][1] = (projection[1][1] * WINDOW_W / width);
-    adjustment_factor_H = (adjustment_factor_H * WINDOW_H / height);
-    adjustment_factor_W = (adjustment_factor_W * WINDOW_W / width);
     WINDOW_W = width;
     WINDOW_H = height;
+    glViewport(0, 0, WINDOW_W, WINDOW_H);
 }
 
 TexturedObject *Renderer::addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h)
