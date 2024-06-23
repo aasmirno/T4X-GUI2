@@ -67,6 +67,7 @@ bool MeshObject::loadUniforms() {
 		return false;
 	}
 	view_location = vloc.second;
+	return true;
 }
 
 bool MeshObject::updateBuffers(int size, float* data)
