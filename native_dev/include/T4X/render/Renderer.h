@@ -31,8 +31,8 @@ private:
         Window Data and transform data
     */
     // initial window values
-    int WINDOW_W = 600;
-    int WINDOW_H = 600;
+    int WINDOW_W = 1000;
+    int WINDOW_H = 1000;
 
     // transform matrix parameters
     glm::mat4 projection = glm::mat4(1.0f); // global projection matrix
@@ -84,16 +84,7 @@ public:
     bool initialise(int screen_height, int screen_width);
 
     /*
-        Create tiled texture object:
-            texture_source: path to texture file
-            texture_w: texture file width
-            texture_h: texture file height
-    */
-    TexturedObject *addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h);
-    
-
-    /*
-        Create a mesh
+        Mesh calls
     */
     RenderObject* addMeshObject(uint id);
     bool setMeshData(uint id, std::vector<float> data, unsigned patches);
@@ -102,6 +93,12 @@ public:
         Create test triangle
     */
     RenderObject* addTestObject();
+
+    /*
+        Textured object calls
+    */
+    RenderObject* addTexturedObject(uint id);
+    bool setTexture(uint id, const char* filename);
 
     /*
         Update render screen size parameters

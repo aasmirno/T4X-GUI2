@@ -179,9 +179,22 @@ void Renderer::setScreenSize(int width, int height)
     glViewport(0, 0, WINDOW_W, WINDOW_H);
 }
 
-TexturedObject *Renderer::addTexturedObject(const char *texture_source, unsigned texture_w, unsigned texture_h)
+RenderObject* Renderer::addTexturedObject(uint id)
 {
-    return nullptr;
+    TexturedObject obj;
+    if (!obj.initialise(id)) return nullptr;
+
+    texture_objects.push_back(obj);
+    objects.push_back(&texture_objects.back());
+    updateView(); updateProjection();
+    return &texture_objects.back();
+}
+
+bool Renderer::setTexture(uint id, const char* filename) {
+    for (int i = 0; i < texture_objects.size(); i++) {
+        if (texture_objects[i].object_id == id) texture_objects[i].loadTexture(filename);
+    }
+    return true;
 }
 
 RenderObject* Renderer::addMeshObject(uint id)

@@ -1,65 +1,58 @@
 #include "T4X/render/Texture.h"
 
-bool GLTexture::createTexture(const char *filename, unsigned w, unsigned h)
+bool RenderTexture::setTexture(const char* filename)
 {
-    // reset texture data
-    handle = 0;
-    width = 0;
-    height = 0;
-    data.clear();
+	// reset texture data
+	handle = 0;
+	width = 0;
+	height = 0;
 
-    if (w == 0 || h == 0)
-    {
-        printf("ERROR: improper dimensions w=%d, h=%d\n", w, h);
-        return false;
-    }
+	// load image data
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &channels, 0);
+	if (data == nullptr) {
+		printf("[ TEXTURE ERROR ]: stbi error: %s\n", stbi_failure_reason());
+		return false;
+	}
 
-    // create a new texture struct and load in png data
-    width = w;
-    height = h;
-    unsigned error = lodepng::decode(data, w, h, filename);
-    if (error)
-    {
-        printf("ERROR: lodepng error=%s\n", lodepng_error_text(error));
-        return false;
-    }
+	// generate opengl texture and set handle
+	glGenTextures(1, &handle);
+	if (handle == 0)
+	{
+		printf("[ TEXTURE ERROR ]: gl texture gen error\n");
+		return false;
+	}
 
-    // generate opengl texture and set handle
-    GLuint texture_handle = 0;
-    glGenTextures(1, &texture_handle);
-    if (texture_handle == 0)
-    {
-        printf("ERROR: gl texture gen error\n");
-        return false;
-    }
-    handle = texture_handle;
-    return true;
+	// send data to opengl
+	glBindTexture(GL_TEXTURE_2D, handle);
+	switch (channels) {
+	case 4: // RGBA source
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);
+		break;
+	case 3: // RGB source
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, &data[0]);
+		break;
+	default:
+		break;
+	}
+
+	// auto generate mipmap
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	// Set parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);					// repeat s dim
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);					// reapeat t dim
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // min filter mipmap sampling
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);				// mag filter linear sampling
+
+	// free image data
+	stbi_image_free(data);
+	return true;
 }
 
-bool GLTexture::deleteTexture()
+bool RenderTexture::deleteTexture()
 {
-    data.clear();
-    glDeleteTextures(1, &handle);
-    handle = 0;
-    return true;
-}
-
-bool GLTexture::setActive()
-{
-    // error checking
-    if (handle == -1)
-    {
-        printf("ERROR: tried to load unitialised texture\n");
-        return false;
-    }
-
-    // load the texture into the opengl sampler and format
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    return true;
+	glDeleteTextures(1, &handle);
+	handle = 0;
+	return true;
 }

@@ -1,76 +1,58 @@
 #include "T4X/render/RenderObjects/RenderObject.h"
 
 /*
-    Renderable object representing a textured rectangle
+	Renderable object representing a textured rectangle
 */
 class TexturedObject : public RenderObject
 {
-    GLint height_loc = -1;    // height uniform location
-    GLint width_loc = -1;     // width uniform location
 
-    // base rectangle parameters
-    GLfloat origin[2] = {0.0f, 0.0f};   // origin for this object
-    GLfloat height = 100.0f;            // rect height
-    GLfloat width = 100.0f;             // rect width
+	GLint dimension_location = -1;
 
-    GLTexture texture; // texture for this object
+	// base rectangle parameters
+	GLfloat origin[2] = { 0.0f, 0.0f };				// origin for this object
+	GLfloat dimensions[2] = { 100.0f, 100.0f };		//width, height
+
+	RenderTexture texture; // texture for this object
 private:
-    /*
-        Implementation of Render Object buffer generation function
-    */
-    virtual bool genBuffers();
+	/*
+		Object parameters
+	*/
+	const uint NUM_SHADERS = 3;             // number of shaders
+	glm::mat4 model = glm::mat4(1.0f);
 
-    /*
-        udateBuffers:
-        Push current object attributes to gl buffer
-    */
-    virtual bool updateBuffers();
+
+	/*
+		Parent class init pipeline methods
+	*/
+	virtual bool setAttribs();
+	virtual bool loadShaders();
+	virtual bool loadUniforms();
+
+	virtual bool updateBuffers(int size, float* data);
 
 public:
-    /*
-        Getters
-    */
-    GLfloat *getOrigin() { return &origin[0]; }
-    GLfloat getHeight() { return height; }
-    GLfloat getWidth() { return width; }
+	/*
+		Set a texture for this object
+	*/
+	bool loadTexture(const char* filename);
 
-    /*
-        Print debug info for this object
-    */
-    virtual void printDebug();
+	/*
+		Print debug info for this object
+	*/
+	virtual void printDebug();
 
-    /*
-        Draw this object
-    */
-    virtual void draw();
+	/*
+		Draw this object
+	*/
+	virtual void draw();
 
-    /*
-        Set texture for this object
-            const char *filename: relative filepath for texture source
-            unsigned w, h: texture dimensions
-    */
-    bool setTexture(const char *filename, unsigned w, unsigned h);
-
-    /*
-        update origin for this object
-            GLfloat x,y: x and y floats for bottom right corner of the texture
-    */
-    bool setOrigin(GLfloat x, GLfloat y);
-
-    /*
-        Update height or width
-            GLfloat new_height/width: new heigth/width value
-    */
-    bool setHeigth(GLfloat new_height);
-    bool setWidth(GLfloat new_width);
-
-    /*
-        Destroy any memory using object belonging to this instance
-    */
-    bool cleanup()
-    {
-        shader.deleteProgram();  // delete shaders
-        texture.deleteTexture(); // delete texture
-        return true;
-    }
+	/*
+		Destroy any memory using object belonging to this instance
+	*/
+	virtual bool cleanup()
+	{
+		shader.deleteProgram();  // delete shaders
+		texture.deleteTexture(); // delete texture
+		return true;
+	}
 };

@@ -4,43 +4,44 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
-#include <PNG/lodepng.h>
+#include <stbi/stb_image.h>
 
-#include <vector>
-#include <algorithm>
+#include <iostream>
 
-class GLTexture
+class RenderTexture
 {
 private:
-    GLuint handle = 0;               // texture handle
-    int width = -1;                  // texture width
-    int height = -1;                 // texture height
-    std::vector<unsigned char> data; // Image data RGBA format
-
 public:
-    /*
-        Get size of image data array
-    */
-    size_t size(){
-        return data.size();
-    }
+	/*
+	   Texture Parameters
+	 */
+	int width = 0;                  // texture width
+	int height = 0;                 // texture height
+	int channels = 0;               // number of channels
 
-    /*
-        Check for initialisation
-    */
-    bool active(){
-        return (handle != 0 && width != 0 && height != 0 && data.size() != 0);
-    }
+	GLuint handle = 0;               // texture handle
 
-    /*
-        load a texture from a png file
-    */
-    bool createTexture(const char *filename, unsigned w, unsigned h);
+	/*
+		Print texture info
+	*/
+	void printInfo() {
+		std::cout << "[ TEXTURE INFO ]\n  width=" << width << "\n  height=" << height << "\n  num_channels=" << channels << "\n";
+	}
 
-    bool deleteTexture();
+	/*
+		Check for initialisation
+	*/
+	bool loaded() {
+		return (handle != 0 && width != 0 && height != 0);
+	}
 
-    /*
-        load a texture into the sampler
-    */
-    bool setActive();
+	/*
+		load a texture from a png file
+	*/
+	bool setTexture(const char* filename);
+
+	/*
+		Free glTexture from graphics memory
+	*/
+	bool deleteTexture();
 };

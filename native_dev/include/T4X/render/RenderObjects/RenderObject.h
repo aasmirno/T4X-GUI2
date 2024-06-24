@@ -143,6 +143,7 @@ public:
 
 		if (type == "projection")
 		{
+			location = projection_location;
 			if (projection_location == -1) {
 				printf("[ RENDER OBJECT ERROR ] no projection location defined\n");
 				return false;
