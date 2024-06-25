@@ -1,3 +1,4 @@
+#pragma once
 #include "T4X/render/RenderObjects/RenderObject.h"
 
 class WorldObject : public RenderObject {
