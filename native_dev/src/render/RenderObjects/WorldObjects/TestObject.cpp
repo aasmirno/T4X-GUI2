@@ -1,4 +1,4 @@
-#include "T4X/render/RenderObjects/TestObject.h"
+#include "T4X/render/RenderObjects/WorldObjects/TestObject.h"
 
 void TestObject::printDebug() {
 	printf("null\n");

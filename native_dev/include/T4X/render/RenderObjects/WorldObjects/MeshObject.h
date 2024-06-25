@@ -1,19 +1,17 @@
 #pragma once
-#include "T4X/render/Texture.h"
-#include "T4X/render/RenderObjects/RenderObject.h"
-#include "T4X/tdefs.h"
+#include "T4X/render/RenderObjects/WorldObjects/WorldObject.h"
 
 /*
     Implementation of Render Object buffer generation function
 */
-class MeshObject : public RenderObject
+class MeshObject : public WorldObject
 {
 private:
     /*
         Object parameters
     */
-    const uint NUM_SHADERS = 4;     // number of shaders
-    glm::mat4 model = glm::mat4(1.0f);
+    const uint NUM_SHADERS = 4;         // number of shaders
+    glm::mat4 model = glm::mat4(1.0f);  // model matrix
     RenderTexture t;
 
     /*

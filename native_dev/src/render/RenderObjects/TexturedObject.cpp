@@ -43,22 +43,6 @@ bool TexturedObject::loadShaders() {
 }
 
 bool TexturedObject::loadUniforms() {
-    projection_location = glGetUniformLocation(shader.program_id, "projection");
-    if (projection_location == -1)
-    {
-        printf("could not find uniform %s render_obj=%d\n", "projection", object_id);
-        printDebug();
-        return false;
-    }
-
-    view_location = glGetUniformLocation(shader.program_id, "view");
-    if (view_location == -1)
-    {
-        printf("could not find uniform %s render_obj=%d\n", "projection", object_id);
-        printDebug();
-        return false;
-    }
-
     dimension_location = glGetUniformLocation(shader.program_id, "dimensions");
     if (dimension_location == -1)
     {

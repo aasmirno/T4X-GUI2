@@ -1,9 +1,10 @@
 #pragma once
 
 // T4X includes
+#include "T4X/render/RenderObjects/WorldObjects/MeshObject.h"
+#include "T4X/render/RenderObjects/WorldObjects/TestObject.h"
 #include "T4X/render/RenderObjects/TexturedObject.h"
-#include "T4X/render/RenderObjects/MeshObject.h"
-#include "T4X/render/RenderObjects/TestObject.h"
+
 #include "T4X/render/Camera.h"
 #include "T4X/input/Event.h"
 
@@ -67,7 +68,8 @@ private:
     std::vector<MeshObject> meshes;
     std::vector<TestObject> t_obj;
 
-    std::vector<RenderObject*> objects;
+    std::vector<WorldObject*> world_objects;
+    std::vector<RenderObject*> flat_objects;
 
     /*
         transform matrix update methods
@@ -86,13 +88,13 @@ public:
     /*
         Mesh calls
     */
-    RenderObject* addMeshObject(uint id);
+    WorldObject* addMeshObject(uint id);
     bool setMeshData(uint id, std::vector<float> data, unsigned patches);
 
     /*
         Create test triangle
     */
-    RenderObject* addTestObject();
+    WorldObject* addTestObject();
 
     /*
         Textured object calls

@@ -1,11 +1,10 @@
 #pragma once
-
-#include "T4X/render/RenderObjects/RenderObject.h"
+#include "T4X/render/RenderObjects/WorldObjects/WorldObject.h"
 
 /*
 	Testing renderable
 */
-class TestObject : public RenderObject {
+class TestObject : public WorldObject {
 private:
     /*
         Object parameters

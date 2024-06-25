@@ -1,4 +1,4 @@
-#include "T4X/render/RenderObjects/MeshObject.h"
+#include "T4X/render/RenderObjects/WorldObjects/MeshObject.h"
 
 void MeshObject::printDebug()
 {

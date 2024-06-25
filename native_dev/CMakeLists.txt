@@ -14,12 +14,12 @@ else()      # linux target
     cmake_path(SET SDL2_PATH "/usr/lib/x86_64-linux-gnu/libSDL2.so")
 endif()
 
+
 # add cpp sources
 cmake_path(SET SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
 file(GLOB_RECURSE CPPS "${SOURCE_PATH}/*.cpp")
 add_executable(${TARGET} 
     ${CPPS}
-    "include/T4X/tdefs.h"
 )
 
 # set compile options

@@ -160,15 +160,15 @@ void Renderer::shutdown()
 void Renderer::updateView()
 {
     GLfloat *curr_view = camera.getView();
-    for (int i = 0; i < objects.size(); i++) {
-        objects[i]->setTransform(curr_view, "view");
+    for (int i = 0; i < world_objects.size(); i++) {
+        world_objects[i]->setTransform(curr_view, "view");
     }
 }
 
 void Renderer::updateProjection()
 {
-    for (int i = 0; i < objects.size(); i++) {
-        objects[i]->setTransform(&projection[0][0], "projection");
+    for (int i = 0; i < world_objects.size(); i++) {
+        world_objects[i]->setTransform(&projection[0][0], "projection");
     }
 }
 
@@ -181,12 +181,13 @@ void Renderer::setScreenSize(int width, int height)
 
 RenderObject* Renderer::addTexturedObject(uint id)
 {
+    // initialise a textured object
     TexturedObject obj;
     if (!obj.initialise(id)) return nullptr;
 
+    // add to ds and return
     texture_objects.push_back(obj);
-    objects.push_back(&texture_objects.back());
-    updateView(); updateProjection();
+    flat_objects.push_back(&texture_objects.back());
     return &texture_objects.back();
 }
 
@@ -197,31 +198,34 @@ bool Renderer::setTexture(uint id, const char* filename) {
     return true;
 }
 
-RenderObject* Renderer::addMeshObject(uint id)
+WorldObject* Renderer::addMeshObject(uint id)
 {
+    //initialise a mesh object
     MeshObject obj;
     if (!obj.initialise(id)) return nullptr;
 
+    // add to ds and return
     meshes.push_back(obj);
-    objects.push_back(&meshes.back());
+    world_objects.push_back(&meshes.back());
     updateView(); updateProjection();
     return &meshes.back();
 }
 
 bool Renderer::setMeshData(uint id, std::vector<float> data, unsigned patches) {
     for (int i = 0; i < meshes.size(); i++) {
-        if(meshes[i].object_id == id) meshes[i].setMeshData(data, patches);
+        if((meshes[i]).object_id == id) meshes[i].setMeshData(data, patches);
     }
     return true;
 }
 
 
-RenderObject* Renderer::addTestObject()
+WorldObject* Renderer::addTestObject()
 {
     TestObject obj;
     if (!obj.initialise(1)) return nullptr;
+
     t_obj.push_back(obj);
-    objects.push_back(&t_obj.back());
+    world_objects.push_back(&t_obj.back());
 
     updateView(); updateProjection();
 
@@ -239,8 +243,12 @@ void Renderer::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw all active objects
-    for (int i = 0; i < objects.size(); i++) {
-        objects[i]->draw();
+    for (int i = 0; i < world_objects.size(); i++) {
+        world_objects[i]->draw();
+    }
+
+    for (int i = 0; i < world_objects.size(); i++) {
+        flat_objects[i]->draw();
     }
 
     SDL_GL_SwapWindow(main_window);
