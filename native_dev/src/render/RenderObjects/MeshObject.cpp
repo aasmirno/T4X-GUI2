@@ -14,10 +14,10 @@ void MeshObject::printDebug()
 
 void MeshObject::draw()
 {
-	glPatchParameteri(GL_PATCH_VERTICES, 4); // set patch parameter for tesselation shader
-
-	glUseProgram(shader.program_id);        // set shader program
-	glBindVertexArray(vao_id);              // bind vertex array
+	glPatchParameteri(GL_PATCH_VERTICES, 4);	// set patch parameter for tesselation shader
+	glBindTexture(GL_TEXTURE_2D, t.handle);		// bind mesh texture
+	glUseProgram(shader.program_id);			// set shader program
+	glBindVertexArray(vao_id);					// bind vertex array
 
 	glDrawArrays(GL_PATCHES, 0, 4 * patch_resolution * patch_resolution);
 }
@@ -34,6 +34,8 @@ bool MeshObject::setAttribs() {
 		printDebug();
 		return false;
 	}
+
+	t.setTexture("MeshTex.png");
 	return true;
 }
 

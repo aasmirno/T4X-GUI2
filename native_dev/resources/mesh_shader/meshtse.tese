@@ -10,6 +10,7 @@ layout (quads, fractional_odd_spacing, ccw) in;
 uniform mat4 view;       // variable view matrix
 uniform mat4 projection; // variable projection matrix
 
+out vec2 TexCoord;
 out float Height;        // send to Fragment Shader for coloring
 
 void main()
@@ -36,9 +37,16 @@ void main()
     vec4 p1 = (p11 - p10) * u + p10; 
     vec4 p = (p1 - p0) * v + p0;
 
-    Height = p.z;
-    // displace point along normal
-    //p += normal;
+
+    TexCoord = vec2(u * 0.5, v * 0.5);
+
+    if(p.z < 5){
+        TexCoord += vec2(0.0, 0.5);
+    } else if(p.z < 7.5){
+        TexCoord += vec2(0.5, 0.5);
+    } else if(p.z > 9){
+        TexCoord += vec2(0.5, 0.0);
+    }
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space

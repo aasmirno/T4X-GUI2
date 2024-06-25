@@ -1,4 +1,5 @@
 #pragma once
+#include "T4X/render/Texture.h"
 #include "T4X/render/RenderObjects/RenderObject.h"
 #include "T4X/tdefs.h"
 
@@ -13,6 +14,7 @@ private:
     */
     const uint NUM_SHADERS = 4;     // number of shaders
     glm::mat4 model = glm::mat4(1.0f);
+    RenderTexture t;
 
     /*
         Parent class init pipeline methods
