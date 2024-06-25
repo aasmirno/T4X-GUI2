@@ -1,6 +1,4 @@
 #version 420 core
-uniform mat4 projection;            // projection matrix
-uniform mat4 view;                  // view matrix
 uniform vec2 dimensions;            // dimension matrix
 
 out vec2 texCoord;
@@ -10,19 +8,19 @@ layout (triangle_strip, max_vertices = 4) out;  //define output as 4 vertices in
 
 void main() {
     //set positions and texture coordinates
-    gl_Position = projection * view * gl_in[0].gl_Position;
+    gl_Position = gl_in[0].gl_Position;
     texCoord = vec2(0.0, 0.0);
     EmitVertex();
 
-    gl_Position = projection * view * (gl_in[0].gl_Position + vec4(dimensions.x, 0.0, 0.0, 0.0));   //bottom right
+    gl_Position = (gl_in[0].gl_Position + vec4(dimensions.x, 0.0, 0.0, 0.0));   //bottom right
     texCoord = vec2(1.0, 0.0);
     EmitVertex();
 
-    gl_Position = projection * view * (gl_in[0].gl_Position + vec4(0.0, dimensions.y, 0.0, 0.0));   //top left
+    gl_Position = (gl_in[0].gl_Position + vec4(0.0, dimensions.y, 0.0, 0.0));   //top left
     texCoord = vec2(0.0,1.0);
     EmitVertex();
 
-    gl_Position = projection * view * (gl_in[0].gl_Position + vec4(dimensions.x, dimensions.y, 0.0, 0.0));   //top right
+    gl_Position = (gl_in[0].gl_Position + vec4(dimensions.x, dimensions.y, 0.0, 0.0));   //top right
     texCoord = vec2(1.0,1.0);
     EmitVertex();
 
