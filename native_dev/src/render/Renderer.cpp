@@ -247,7 +247,7 @@ void Renderer::render()
         world_objects[i]->draw();
     }
 
-    for (int i = 0; i < world_objects.size(); i++) {
+    for (int i = 0; i < flat_objects.size(); i++) {
         flat_objects[i]->draw();
     }
 
