@@ -5,12 +5,13 @@ void TestObject::printDebug() {
 }
 
 bool TestObject::loadShaders() {
-	SourcePair mesh_program[NUM_SHADERS] = {
+	// use test shaders
+	SourcePair program[NUM_SHADERS] = {
 		SourcePair{"basevert.glvs", GL_VERTEX_SHADER},
 		SourcePair{"basefrag.glfs", GL_FRAGMENT_SHADER}
 	};
 
-	bool shader_success = shader.createProgram(&mesh_program[0], NUM_SHADERS);
+	bool shader_success = shader.createProgram(&program[0], NUM_SHADERS);
 	if (!shader_success)
 	{
 		printDebug();
@@ -32,6 +33,7 @@ bool TestObject::setAttribs() {
 }
 
 bool TestObject::loadUniforms() {
+	// get projection uniform
 	auto ploc = shader.getLocation("projection");
 	if (!ploc.first)
 	{
@@ -39,12 +41,21 @@ bool TestObject::loadUniforms() {
 	}
 	projection_location = ploc.second;
 
-	auto vloc = shader.getLocation("view");
-	if (!vloc.first)
+	// get view uniform
+	ploc = shader.getLocation("view");
+	if (!ploc.first)
 	{
 		return false;
 	}
-	view_location = vloc.second;
+	view_location = ploc.second;
+
+	// get ambient level uniform
+	ploc = shader.getLocation("ambient_level");
+	if (!ploc.first)
+	{
+		return false;
+	}
+	ambient_level_location = ploc.second;
 	return true;
 }
 

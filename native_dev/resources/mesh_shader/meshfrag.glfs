@@ -2,25 +2,23 @@
 #version 420 core
 
 uniform sampler2D texture0;
+uniform float ambient_level = 0.1;
+
 in vec2 TexCoord;
-in vec3 PatchNormal;
-in vec4 FragPos;  
+in vec4 Normal;
+in vec3 FragPos;
+in vec3 LightPos;
 
 out vec4 frag_color;
 
 void main()
 {
-    vec3 lightColor = vec3(1.0, 1.0, 1.0);
-    vec3 lightPos = vec3(0.0, 0.0, 15.0);
+    vec3 ambient = ambient_level * vec3(1.0, 1.0, 1.0);
 
-    float ambientStrength = 0.1;
+    vec3 lightDir = normalize(LightPos - FragPos);  
+    float diff = max(dot(Normal.xyz, lightDir), 0.0);
+    vec3 diffuse = diff * vec3(1.0, 1.0, 1.0);
 
-    vec3 ambient = ambientStrength * lightColor;
-
-    vec3 lightDir = normalize(lightPos - FragPos.xyz); 
-    float diff = max(dot(PatchNormal, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
-
-
-    frag_color = vec4((ambient + diffuse), 1.0) * texture(texture0, TexCoord);
+    vec4 lighting = vec4( (ambient + diffuse) , 1.0);
+    frag_color = lighting * texture(texture0, TexCoord);
 }

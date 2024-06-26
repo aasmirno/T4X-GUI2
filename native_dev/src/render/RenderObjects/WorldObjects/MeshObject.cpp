@@ -63,12 +63,20 @@ bool MeshObject::loadUniforms() {
 	}
 	projection_location = ploc.second;
 
-	auto vloc = shader.getLocation("view");
-	if (!vloc.first)
+	ploc = shader.getLocation("view");
+	if (!ploc.first)
 	{
 		return false;
 	}
-	view_location = vloc.second;
+	view_location = ploc.second;
+
+	ploc = shader.getLocation("ambient_level");
+	if (!ploc.first)
+	{
+		return false;
+	}
+	ambient_level_location = ploc.second;
+
 	return true;
 }
 

@@ -8,7 +8,19 @@ protected:
 	*/
 	GLint projection_location = -1; // projection matrix
 	GLint view_location = -1;       // view matrix
+
+	/*
+		Lighting parameters
+	*/
+	GLint ambient_level_location = -1;
+
 public:
+
+	void setAmbient(float level) {
+		if (ambient_level_location != -1) {
+			glUniform1f(ambient_level_location, level);
+		}
+	}
 
 	/*
 		Set transform matrix

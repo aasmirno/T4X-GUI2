@@ -55,7 +55,7 @@ std::pair<bool, GLint> Shader::getLocation(std::string uniform){
 	GLint location = glGetUniformLocation(program_id, uniform.c_str());
 	if (location == -1)
     {
-        printf("[ SHADER ERROR ] Could not find uniform %s\n", uniform);
+        printf("[ SHADER ERROR ] Could not find uniform %s\n", uniform.c_str());
         printDebug();
         return std::pair<bool, GLint>(false, 0);
     }

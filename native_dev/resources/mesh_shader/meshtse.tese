@@ -9,13 +9,16 @@ layout (quads, fractional_odd_spacing, ccw) in;
 
 uniform mat4 view;       // variable view matrix
 uniform mat4 projection; // variable projection matrix
+in vec4 PatchNormal[];
 
 out vec2 TexCoord;
-out vec3 PatchNormal;
-out vec4 FragPos;
+out vec4 Normal;
+out vec3 FragPos;
+out vec3 LightPos;
 
 void main()
 {
+    Normal = PatchNormal[0];
     // get patch coordinate: generated in primitive generation stage
     float u = gl_TessCoord.x;   // fractional x coord
     float v = gl_TessCoord.y;   // fractional y coord
@@ -27,12 +30,6 @@ void main()
     vec4 p10 = gl_in[2].gl_Position;    // bottom right
     vec4 p11 = gl_in[3].gl_Position;    // top right
 
-    // compute initial patch face normal vector
-    vec4 uVec = p01 - p00;
-    vec4 vVec = p10 - p00;
-    PatchNormal = normalize(cross(vVec.xyz, uVec.xyz));
-
-
     // bilinearly interpolate position coordinate across patch
     // generate position coordinate based on relative tesselated point coordinate
     vec4 p0 = (p01 - p00) * u + p00;    
@@ -40,7 +37,6 @@ void main()
     vec4 p = (p1 - p0) * v + p0;
 
     TexCoord = vec2(u * 0.5, v * 0.5);
-
     if(p.z < 5){
         TexCoord += vec2(0.0, 0.5);
     } else if(p.z < 7.5){
@@ -49,8 +45,13 @@ void main()
         TexCoord += vec2(0.5, 0.0);
     }
 
+    // transform light position
+    vec4 lp = projection * view * vec4(1.0, 1.0, 50.0, 1.0);
+    LightPos = lp.xyz;
+
     // ----------------------------------------------------------------------
     // output patch point position in clip space
-    FragPos = projection * view * p;
-    gl_Position = FragPos;
+    vec4 pos = projection * view * p;
+    FragPos = pos.xyz;
+    gl_Position = pos;
 }
