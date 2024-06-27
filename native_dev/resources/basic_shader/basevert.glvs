@@ -1,11 +1,13 @@
+//testing fragment shader
 #version 420 core
 
-uniform mat4 projection;
-uniform mat4 view;
+uniform float ambient_level = 0.1;
 
-layout (location = 0) in vec3 vert_pos;
+out vec4 frag_color;
+
 
 void main()
 {
-    gl_Position = projection * view * vec4(vert_pos, 1.0);
+    vec4 ambient = ambient_level * vec4(1.0, 1.0, 1.0, 1.0 / ambient_level);
+    frag_color = ambient * vec4(1.0, 0.5, 0.3, 1.0);
 }

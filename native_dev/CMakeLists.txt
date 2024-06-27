@@ -5,7 +5,7 @@ set( TARGET ${PROJECT_NAME} )
 # set output path
 cmake_path(SET CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
-#set library path
+#set library paths
 if(WIN32)   # windows target
     cmake_path(SET LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib/WIN")
     cmake_path(SET SDL2_PATH "${LIB_PATH}/")
@@ -13,7 +13,6 @@ else()      # linux target
     cmake_path(SET LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib/LINUX")
     cmake_path(SET SDL2_PATH "/usr/lib/x86_64-linux-gnu/libSDL2.so")
 endif()
-
 
 # add cpp sources
 cmake_path(SET SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -54,10 +53,9 @@ else()      # linux target
        )
 endif()
 
-if(WIN32)
-    add_custom_command(TARGET T4X
-        POST_BUILD
-        COMMAND powershell ./copy_rsc.ps1
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        )
-endif()
+# link and copy resources
+cmake_path(SET RESOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources")
+file(GLOB_RECURSE RESOURCES "${RESOURCE_PATH}/*")
+foreach(file ${RESOURCES})
+    configure_file(${file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
+endforeach()

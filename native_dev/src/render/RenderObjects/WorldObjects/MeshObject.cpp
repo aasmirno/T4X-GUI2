@@ -69,14 +69,6 @@ bool MeshObject::loadUniforms() {
 		return false;
 	}
 	view_location = ploc.second;
-
-	ploc = shader.getLocation("ambient_level");
-	if (!ploc.first)
-	{
-		return false;
-	}
-	ambient_level_location = ploc.second;
-
 	return true;
 }
 

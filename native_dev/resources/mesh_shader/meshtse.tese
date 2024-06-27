@@ -9,16 +9,11 @@ layout (quads, fractional_odd_spacing, ccw) in;
 
 uniform mat4 view;       // variable view matrix
 uniform mat4 projection; // variable projection matrix
-in vec4 PatchNormal[];
 
-out vec2 TexCoord;
-out vec4 Normal;
-out vec3 FragPos;
-out vec3 LightPos;
+out float H;
 
 void main()
 {
-    Normal = PatchNormal[0];
     // get patch coordinate: generated in primitive generation stage
     float u = gl_TessCoord.x;   // fractional x coord
     float v = gl_TessCoord.y;   // fractional y coord
@@ -36,22 +31,8 @@ void main()
     vec4 p1 = (p11 - p10) * u + p10; 
     vec4 p = (p1 - p0) * v + p0;
 
-    TexCoord = vec2(u * 0.5, v * 0.5);
-    if(p.z < 5){
-        TexCoord += vec2(0.0, 0.5);
-    } else if(p.z < 7.5){
-        TexCoord += vec2(0.5, 0.5);
-    } else if(p.z > 9){
-        TexCoord += vec2(0.5, 0.0);
-    }
-
-    // transform light position
-    vec4 lp = projection * view * vec4(1.0, 1.0, 50.0, 1.0);
-    LightPos = lp.xyz;
-
+    H = p.z;
     // ----------------------------------------------------------------------
     // output patch point position in clip space
-    vec4 pos = projection * view * p;
-    FragPos = pos.xyz;
-    gl_Position = pos;
+    gl_Position = projection * view * p;
 }
