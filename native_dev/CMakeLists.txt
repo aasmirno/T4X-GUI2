@@ -22,7 +22,12 @@ add_executable(${TARGET}
 )
 
 # set compile options
-target_compile_options(${TARGET} PRIVATE -g)
+if(WIN32)   # windows target
+
+else()      # linux target
+    target_compile_options(${TARGET} PRIVATE -g -Wall)
+endif()
+
 
 # set include path
 target_include_directories(${TARGET} PUBLIC 

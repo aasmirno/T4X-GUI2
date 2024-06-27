@@ -6,7 +6,7 @@
 #include <vector>
 #include <GL/glew.h>
 
-#include "T4X/tdefs.h"
+#include "T4X/Utils.h"
 
 struct SourcePair
 {

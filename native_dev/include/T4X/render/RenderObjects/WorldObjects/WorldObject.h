@@ -39,7 +39,7 @@ public:
 		// check proper type string
 		if (type != "projection" && type != "view")
 		{
-			printf("[ RENDER OBJECT ERROR ] improper type: %s, need view or projection\n", type);
+			printf("[ RENDER OBJECT ERROR ] improper type: %s, need view or projection\n", type.c_str());
 			return false;
 		}
 
@@ -80,7 +80,7 @@ public:
 		glUniformMatrix4fv(location, 1, GL_FALSE, matrix);
 		if (!checkGLError())
 		{
-			printf("[ RENDER OBJECT ERROR ] error in %s update\n", type);
+			printf("[ RENDER OBJECT ERROR ] error in %s update\n", type.c_str());
 			printDebug();
 			return false;
 		}
