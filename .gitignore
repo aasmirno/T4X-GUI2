@@ -2,7 +2,8 @@
 native_dev/CMakeFiles/
 native_dev/build/
 native_dev/CMakeCache.txt
-native_dev/cmake_install.cmake
+cmake_install.cmake
+Makefile
 
 #visual studio development files
 .vs

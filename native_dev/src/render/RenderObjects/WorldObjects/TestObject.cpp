@@ -37,6 +37,7 @@ bool TestObject::loadUniforms() {
 	auto ploc = shader.getLocation("projection");
 	if (!ploc.first)
 	{
+		printf("[ TOBJ ERROR ]: uniform error\n");
 		return false;
 	}
 	projection_location = ploc.second;
@@ -45,17 +46,11 @@ bool TestObject::loadUniforms() {
 	ploc = shader.getLocation("view");
 	if (!ploc.first)
 	{
+		printf("[ TOBJ ERROR ]: uniform error\n");
 		return false;
 	}
 	view_location = ploc.second;
 
-	// get ambient level uniform
-	ploc = shader.getLocation("ambient_level");
-	if (!ploc.first)
-	{
-		return false;
-	}
-	ambient_level_location = ploc.second;
 	return true;
 }
 

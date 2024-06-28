@@ -59,6 +59,7 @@ bool MeshObject::loadUniforms() {
 	auto ploc = shader.getLocation("projection");
 	if (!ploc.first)
 	{
+		printf("[ MESH ERROR ]\n");
 		return false;
 	}
 	projection_location = ploc.second;
@@ -66,6 +67,7 @@ bool MeshObject::loadUniforms() {
 	ploc = shader.getLocation("view");
 	if (!ploc.first)
 	{
+		printf("[ MESH ERROR ]\n");
 		return false;
 	}
 	view_location = ploc.second;
@@ -78,7 +80,7 @@ bool MeshObject::updateBuffers(int size, float* data)
 	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 	if (!checkGLError())
 	{
-		printf("ERROR: gl error in buffer update\n");
+		printf("[ MESH ERROR ]: gl error in buffer update\n");
 		printDebug();
 		return false;
 	}
