@@ -11,7 +11,7 @@ if(WIN32)   # windows target
     cmake_path(SET SDL2_PATH "${LIB_PATH}/")
 else()      # linux target
     cmake_path(SET LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib/LINUX")
-    cmake_path(SET SDL2_PATH "/usr/lib/x86_64-linux-gnu/libSDL2.so")
+    find_package(SDL2 REQUIRED)
 endif()
 
 # add cpp sources
@@ -52,11 +52,13 @@ else()      # linux target
         "${LIB_PATH}/glew/lib64/libGLEW.so"
         "${LIB_PATH}/glew/lib64/libGLEW.so.2.2"
         "${LIB_PATH}/glew/lib64/libGLEW.so.2.2.0"
-        ${SDL2_PATH}
+        "-lSDL2"
         "-lGLU"
         "-lGL"
        )
 endif()
+
+message(${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 # link and copy resources
 cmake_path(SET RESOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources")
