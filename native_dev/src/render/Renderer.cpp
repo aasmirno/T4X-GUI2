@@ -132,7 +132,7 @@ bool Renderer::initialise(int screen_height, int screen_width)
         printf("    Supported OpenGL version: %s, glsl ver: %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
     }
 
-    printf("    checking gl errors");
+    printf("    Finishing Initialisation\n");
     // check for GL errors
     GLenum err;
     if ((err = glGetError()) != GL_NO_ERROR)
@@ -147,6 +147,7 @@ bool Renderer::initialise(int screen_height, int screen_width)
     //projection = glm::ortho(0.0f, (float)WINDOW_W, 0.0f, (float)WINDOW_H, 0.1f, 10.0f);
     //  toggle init flag
     initialised = true;
+    printf("Done\n");
     return true;
 }
 
@@ -155,21 +156,6 @@ void Renderer::shutdown()
     for (int i = 0; i < texture_objects.size(); i++)
     {
         texture_objects[i].cleanup();
-    }
-}
-
-void Renderer::updateView()
-{
-    GLfloat *curr_view = camera.getView();
-    for (int i = 0; i < world_objects.size(); i++) {
-        world_objects[i]->setTransform(curr_view, "view");
-    }
-}
-
-void Renderer::updateProjection()
-{
-    for (int i = 0; i < world_objects.size(); i++) {
-        world_objects[i]->setTransform(&projection[0][0], "projection");
     }
 }
 
@@ -182,13 +168,18 @@ void Renderer::setScreenSize(int width, int height)
 
 RenderObject* Renderer::addTexturedObject(uint id)
 {
+    if (world_objects.find(id) != world_objects.end()) {
+        printf("[RENDERER ERROR] object with id %d already exists\n", id);
+        return nullptr;
+    }
+
     // initialise a textured object
     TexturedObject obj;
     if (!obj.initialise(id)) return nullptr;
 
     // add to ds and return
     texture_objects.push_back(obj);
-    flat_objects.push_back(&texture_objects.back());
+    flat_objects[id] = &texture_objects.back();
     return &texture_objects.back();
 }
 
@@ -201,33 +192,63 @@ bool Renderer::setTexture(uint id, const char* filename) {
 
 WorldObject* Renderer::addMeshObject(uint id)
 {
+    if (world_objects.find(id) != world_objects.end()) {
+        printf("[R_MNGR ERROR] object with id %d already exists\n", id);
+        return nullptr;
+    }
     //initialise a mesh object
     MeshObject obj;
     if (!obj.initialise(id)) return nullptr;
 
     // add to ds and return
     meshes.push_back(obj);
-    world_objects.push_back(&meshes.back());
+    world_objects[id] = &meshes.back();
     updateView(); updateProjection();
     return &meshes.back();
 }
 
-bool Renderer::setMeshData(uint id, float* data, unsigned patches) {
-    return true;
+bool Renderer::setMeshData(uint id, float* data, unsigned size) {
+    if (world_objects.find(id) == world_objects.end()) {
+        printf("[R_MNGR ERROR] mesh object with id %d not found\n", id);
+        return false;
+    }
+    
+    //try to cast object at [id] to a mesh object
+    auto object = dynamic_cast<MeshObject*>(world_objects[id]);
+    if (!object) {
+        printf("[R_MNGR ERROR] object with id %d is not a mesh object\n", id);
+        return false;
+    }
+
+    return object->setMeshData(data, size);
 }
 
 
 WorldObject* Renderer::addTestObject()
 {
     TestObject obj;
-    if (!obj.initialise(1)) return nullptr;
+    if (!obj.initialise(0)) return nullptr;
 
     t_obj.push_back(obj);
-    world_objects.push_back(&t_obj.back());
-
+    world_objects[0] = &t_obj.back();
     updateView(); updateProjection();
 
     return &t_obj.back();
+}
+
+void Renderer::updateView()
+{
+    GLfloat* curr_view = camera.getView();
+    for (auto& iterator : world_objects) {
+        iterator.second->setTransform(curr_view, "view");
+    }
+}
+
+void Renderer::updateProjection()
+{
+    for (auto& iterator : world_objects) {
+        iterator.second->setTransform(&projection[0][0], "projection");
+    }
 }
 
 void Renderer::render()
@@ -241,12 +262,12 @@ void Renderer::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw all active objects
-    for (int i = 0; i < world_objects.size(); i++) {
-        world_objects[i]->draw();
+    for (auto& iterator : world_objects) {
+        iterator.second->draw();
     }
 
-    for (int i = 0; i < flat_objects.size(); i++) {
-        flat_objects[i]->draw();
+    for (auto& iterator : flat_objects) {
+        iterator.second->draw();
     }
 
     SDL_GL_SwapWindow(main_window);

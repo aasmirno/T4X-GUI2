@@ -70,8 +70,8 @@ private:
     std::vector<TestObject> t_obj;
 
     //TODO: switch to map
-    std::vector<WorldObject*> world_objects;
-    std::vector<RenderObject*> flat_objects;
+    std::unordered_map<int, WorldObject*> world_objects;
+    std::unordered_map<int, RenderObject*> flat_objects;
 
     /*
         transform matrix update methods

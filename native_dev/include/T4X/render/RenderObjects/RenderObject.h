@@ -67,16 +67,17 @@ public:
 	virtual void draw() = 0;
 
 	/*
+		Free used memory
+	*/
+	virtual void cleanup() = 0;
+
+	/*
 		Initialise the render object
 			obj_id: render object id
 	*/
 	bool initialise(uint id)
 	{
 		// set object id
-		if(id == 0){
-			printf("[ R_OBJECT ERROR] object cannot be created with id 0");
-			return false;
-		}
 		object_id = id;
 
 		/*

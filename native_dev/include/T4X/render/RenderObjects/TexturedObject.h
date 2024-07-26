@@ -49,10 +49,9 @@ public:
 	/*
 		Destroy any memory using object belonging to this instance
 	*/
-	virtual bool cleanup()
+	virtual void cleanup()
 	{
 		shader.deleteProgram();  // delete shaders
 		texture.deleteTexture(); // delete texture
-		return true;
 	}
 };

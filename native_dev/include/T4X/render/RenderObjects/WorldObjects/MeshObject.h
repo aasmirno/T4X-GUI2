@@ -14,7 +14,7 @@ private:
     glm::mat4 model = glm::mat4(1.0f);  // model matrix
     RenderTexture t;                    // object textures
 
-    int height, width = 50;
+    int height = 50; int width = 50;
     int resolution = 10;
 
     /**************************************
@@ -38,6 +38,11 @@ public:
         Draw this object
     */
     virtual void draw();
+
+    /*
+        Cleanup textures
+    */
+    virtual void cleanup();
 
     /*
         Set mesh data

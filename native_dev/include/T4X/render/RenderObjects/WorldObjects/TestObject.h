@@ -41,4 +41,9 @@ public:
     */
     virtual void draw();
 
+    /*
+        Cleanup shaders
+    */
+    virtual void cleanup();
+
 };

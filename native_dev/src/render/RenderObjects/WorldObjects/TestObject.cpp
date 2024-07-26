@@ -27,7 +27,7 @@ bool TestObject::loadShaders() {
 		auto ploc = shader.getLocation("projection");
 		if (!ploc.first)
 		{
-			printf("[ TOBJ ERROR ]: uniform error\n");
+			printf("[ T_OBJ ERROR ]: uniform error\n");
 			return false;
 		}
 		projection_location = ploc.second;
@@ -72,4 +72,8 @@ void TestObject::draw() {
 	glBindVertexArray(vao_id);              // bind vertex array
 
 	glDrawArrays(GL_TRIANGLES, 0, VERTICES / 3);
+}
+
+void TestObject::cleanup() {
+	shader.deleteProgram();
 }

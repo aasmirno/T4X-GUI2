@@ -90,6 +90,10 @@ bool MeshObject::updateBuffers(int size, float* data)
 	return true;
 }
 
+void MeshObject::cleanup() {
+	shader.deleteProgram();
+}
+
 bool MeshObject::setMeshData(float* data, unsigned size) {
 	// create mesh array
 	std::vector<float> mesh_map;
@@ -99,6 +103,7 @@ bool MeshObject::setMeshData(float* data, unsigned size) {
 	float mesh_width = (float)width;
 	float mesh_height = (float)height;
 
+	//generate patch map
 	for (int i = 0; i <= resolution - 1; i++)
 	{
 		for (int j = 0; j <= resolution - 1; j++)
