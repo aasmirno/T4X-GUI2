@@ -28,7 +28,7 @@ bool GameManager::initialise()
 	*/
 	// add a test object with id 0
 	if (!render_manager.addTestObject()) return false;
-	assert(render_manager.addMeshObject(0) == false);
+	assert(render_manager.addMeshObject(0) == nullptr);
 	assert(render_manager.setMeshData(0, game_map.getHeightData(), 4) == false);
 
 	if (!render_manager.addMeshObject(4)) return false;
@@ -83,7 +83,7 @@ bool GameManager::loop()
 {
 	//get events and send key updates to renderer
 	input_manager.pollEvent();
-	render_manager.keyUpdate(input_manager.getRenderKeys());
+	//render_manager.keyUpdate(input_manager.getRenderKeys());
 
 	//render current graphics state
 	render_manager.render();
