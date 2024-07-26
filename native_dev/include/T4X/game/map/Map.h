@@ -20,5 +20,5 @@ private:
     void generate();
 public:
     bool initialise(unsigned map_x, unsigned map_y);
-    std::vector<float> getHeightMap(uint16_t resolution);
+    float* getHeightData();
 };

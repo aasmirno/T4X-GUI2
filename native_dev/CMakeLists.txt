@@ -25,7 +25,7 @@ add_executable(${TARGET}
 if(WIN32)   # windows target
 
 else()      # linux target
-    target_compile_options(${TARGET} PRIVATE -g -Wall)
+    target_compile_options(${TARGET} PRIVATE -g )
 endif()
 
 

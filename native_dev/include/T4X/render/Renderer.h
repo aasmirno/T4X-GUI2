@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 
 // T4X includes
 #include "T4X/render/RenderObjects/WorldObjects/MeshObject.h"
@@ -14,6 +14,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <unordered_map>
 
 // lib includes
 #include <SDL2/SDL.h>
@@ -32,8 +33,8 @@ private:
         Window Data and transform data
     */
     // initial window values
-    int WINDOW_W = 1000;
-    int WINDOW_H = 1000;
+    int WINDOW_W = 700;
+    int WINDOW_H = 700;
 
     // transform matrix parameters
     glm::mat4 projection = glm::mat4(1.0f); // global projection matrix
@@ -68,6 +69,7 @@ private:
     std::vector<MeshObject> meshes;
     std::vector<TestObject> t_obj;
 
+    //TODO: switch to map
     std::vector<WorldObject*> world_objects;
     std::vector<RenderObject*> flat_objects;
 
@@ -89,7 +91,7 @@ public:
         Mesh calls
     */
     WorldObject* addMeshObject(uint id);
-    bool setMeshData(uint id, std::vector<float> data, unsigned patches);
+    bool setMeshData(uint id, float* data, unsigned patches);
 
     /*
         Create test triangle

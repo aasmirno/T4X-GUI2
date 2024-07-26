@@ -132,6 +132,7 @@ bool Renderer::initialise(int screen_height, int screen_width)
         printf("    Supported OpenGL version: %s, glsl ver: %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
     }
 
+    printf("    checking gl errors");
     // check for GL errors
     GLenum err;
     if ((err = glGetError()) != GL_NO_ERROR)
@@ -211,10 +212,7 @@ WorldObject* Renderer::addMeshObject(uint id)
     return &meshes.back();
 }
 
-bool Renderer::setMeshData(uint id, std::vector<float> data, unsigned patches) {
-    for (int i = 0; i < meshes.size(); i++) {
-        if((meshes[i]).object_id == id) meshes[i].setMeshData(data, patches);
-    }
+bool Renderer::setMeshData(uint id, float* data, unsigned patches) {
     return true;
 }
 

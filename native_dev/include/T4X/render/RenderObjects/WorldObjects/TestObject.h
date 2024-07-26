@@ -17,7 +17,6 @@ private:
     */
     virtual bool loadShaders();
     virtual bool setAttribs();
-    virtual bool loadUniforms();
 
     virtual bool updateBuffers(int size, float* data);
 

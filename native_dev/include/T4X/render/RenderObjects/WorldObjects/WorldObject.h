@@ -1,10 +1,13 @@
 #pragma once
 #include "T4X/render/RenderObjects/RenderObject.h"
 
+/*
+	Renderable objects affected by lighting and camera
+*/
 class WorldObject : public RenderObject {
 protected:
 	/*
-		General uniforms
+		Camera uniforms
 	*/
 	GLint projection_location = -1; // projection matrix
 	GLint view_location = -1;       // view matrix
@@ -16,6 +19,9 @@ protected:
 
 public:
 
+	/*
+		Set ambient light level for lighting shaders
+	*/
 	void setAmbient(float level) {
 		if (ambient_level_location != -1) {
 			glUniform1f(ambient_level_location, level);

@@ -26,12 +26,12 @@ bool GameManager::initialise()
 	/*
 		TESTING
 	*/
-	if (!render_manager.addMeshObject(0)) return false;
-	render_manager.setMeshData(0, game_map.getHeightMap(100), 100);
+	if (!render_manager.addMeshObject(4)) return false;
+	render_manager.setMeshData(4, game_map.getHeightData(), 100);
 
 	if (!render_manager.addTestObject()) return false;
-	if (!render_manager.addTexturedObject(0)) return false;
-	render_manager.setTexture(0, "Logo.png");
+	//if (!render_manager.addTexturedObject(4)) return false;
+	//render_manager.setTexture(4, "Logo.png");
 
 	// start the game
 	running = true;
@@ -80,7 +80,7 @@ bool GameManager::loop()
 {
 	//get events and send key updates to renderer
 	input_manager.pollEvent();
-	render_manager.keyUpdate(input_manager.getRenderKeys());
+	//render_manager.keyUpdate(input_manager.getRenderKeys());
 
 	//render current graphics state
 	render_manager.render();

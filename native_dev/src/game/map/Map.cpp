@@ -54,53 +54,7 @@ bool Map::initialise(unsigned map_x, unsigned map_y)
 	return true;
 }
 
-std::vector<float> Map::getHeightMap(uint16_t resolution)
+float* Map::getHeightData()
 {
-	// create mesh array
-	std::vector<float> mesh_map;
-	mesh_map.reserve(width * height * 3);
-
-	// transform map parameters to math friendly values
-	float mesh_width = (float)width;
-	float mesh_height = (float)height;
-
-	for (int i = 0; i <= resolution - 1; i++)
-	{
-		for (int j = 0; j <= resolution - 1; j++)
-		{
-			// bottom left patch values
-			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * (i / (float)resolution));  // x
-			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * (j / (float)resolution)); // y
-			int x_coord = (width - 1) * (i / (float)resolution);       // map x
-			int y_coord = (height - 1) * (j / (float)resolution);      // map y
-			mesh_map.push_back(height_map[x_coord * width + y_coord]); // map elevation at the patch coordinate
-			//mesh_map.push_back(0.5f);
-
-			// bottom right patch coordinates
-			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * ((i + 1) / (float)resolution)); // x
-			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * (j / (float)resolution));      // y
-			x_coord = (width - 1) * ((i + 1) / (float)resolution);      // map x
-			y_coord = (height - 1) * (j / (float)resolution);           // map y
-			mesh_map.push_back(height_map[x_coord * width + y_coord]);      // map elevation at the patch coordinate
-			//mesh_map.push_back(0.5f);
-
-			// top right patch coordinates
-			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * (i / (float)resolution));        // x
-			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * ((j + 1) / (float)resolution)); // y
-			x_coord = (width - 1) * (i / (float)resolution);             // map x
-			y_coord = (height - 1) * ((j + 1) / (float)resolution);      // map y
-			mesh_map.push_back(height_map[x_coord * width + y_coord]);       // map elevation at the patch coordinate
-			//mesh_map.push_back(0.5f);
-
-			// top right patch coordinates
-			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * ((i + 1) / (float)resolution));  // x
-			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * ((j + 1) / (float)resolution)); // y
-			x_coord = (width - 1) * ((i + 1) / (float)resolution);       // map x
-			y_coord = (height - 1) * ((j + 1) / (float)resolution);      // map y
-			mesh_map.push_back(height_map[x_coord * width + y_coord]);       // map elevation at the patch coordinate
-			//mesh_map.push_back(0.5f);
-		}
-	}
-
-	return mesh_map;
+	return &height_map[0];
 }

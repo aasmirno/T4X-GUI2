@@ -19,7 +19,7 @@ void MeshObject::draw()
 	glUseProgram(shader.program_id);			// set shader program
 	glBindVertexArray(vao_id);					// bind vertex array
 
-	glDrawArrays(GL_PATCHES, 0, 4 * patch_resolution * patch_resolution);
+	glDrawArrays(GL_PATCHES, 0, 4 * resolution * resolution);
 }
 
 bool MeshObject::setAttribs() {
@@ -40,37 +40,40 @@ bool MeshObject::setAttribs() {
 }
 
 bool MeshObject::loadShaders() {
-	SourcePair mesh_program[4] = {
-		SourcePair{"meshvert.glvs", GL_VERTEX_SHADER},
-		SourcePair{"meshtsc.tesc", GL_TESS_CONTROL_SHADER},
-		SourcePair{"meshtse.tese", GL_TESS_EVALUATION_SHADER},
-		SourcePair{"meshfrag.glfs", GL_FRAGMENT_SHADER} };
-	bool shader_success = shader.createProgram(&mesh_program[0], 4);
-	if (!shader_success)
+	// load shader
 	{
-		printDebug();
-		printf("Shader Failure\n");
-		return false;
+		SourcePair mesh_program[4] = {
+			SourcePair{"meshvert.glvs", GL_VERTEX_SHADER},
+			SourcePair{"meshtsc.tesc", GL_TESS_CONTROL_SHADER},
+			SourcePair{"meshtse.tese", GL_TESS_EVALUATION_SHADER},
+			SourcePair{"meshfrag.glfs", GL_FRAGMENT_SHADER} };
+		bool shader_success = shader.createProgram(&mesh_program[0], 4);
+		if (!shader_success)
+		{
+			printDebug();
+			printf("Shader Failure\n");
+			return false;
+		}
 	}
-	return true;
-}
+	// load uniforms
+	{
+		auto ploc = shader.getLocation("projection");
+		if (!ploc.first)
+		{
+			printf("[ MESH ERROR ]\n");
+			return false;
+		}
+		projection_location = ploc.second;
 
-bool MeshObject::loadUniforms() {
-	auto ploc = shader.getLocation("projection");
-	if (!ploc.first)
-	{
-		printf("[ MESH ERROR ]\n");
-		return false;
+		ploc = shader.getLocation("view");
+		if (!ploc.first)
+		{
+			printf("[ MESH ERROR ]\n");
+			return false;
+		}
+		view_location = ploc.second;
 	}
-	projection_location = ploc.second;
 
-	ploc = shader.getLocation("view");
-	if (!ploc.first)
-	{
-		printf("[ MESH ERROR ]\n");
-		return false;
-	}
-	view_location = ploc.second;
 	return true;
 }
 
@@ -87,7 +90,52 @@ bool MeshObject::updateBuffers(int size, float* data)
 	return true;
 }
 
-bool MeshObject::setMeshData(std::vector<float> data, unsigned patches) {
-	patch_resolution = patches;
-	return updateBuffers(data.size() * sizeof(float), &data[0]);
+bool MeshObject::setMeshData(float* data, unsigned size) {
+	// create mesh array
+	std::vector<float> mesh_map;
+	mesh_map.reserve(width * height * 3);
+
+	// transform map parameters to math friendly values
+	float mesh_width = (float)width;
+	float mesh_height = (float)height;
+
+	for (int i = 0; i <= resolution - 1; i++)
+	{
+		for (int j = 0; j <= resolution - 1; j++)
+		{
+			// bottom left patch values
+			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * (i / (float)resolution));  // x
+			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * (j / (float)resolution)); // y
+			int x_coord = (width - 1) * (i / (float)resolution);       // map x
+			int y_coord = (height - 1) * (j / (float)resolution);      // map y
+			mesh_map.push_back(data[x_coord * width + y_coord]); // map elevation at the patch coordinate
+			//mesh_map.push_back(0.5f);
+
+			// bottom right patch coordinates
+			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * ((i + 1) / (float)resolution)); // x
+			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * (j / (float)resolution));      // y
+			x_coord = (width - 1) * ((i + 1) / (float)resolution);      // map x
+			y_coord = (height - 1) * (j / (float)resolution);           // map y
+			mesh_map.push_back(data[x_coord * width + y_coord]);      // map elevation at the patch coordinate
+			//mesh_map.push_back(0.5f);
+
+			// top right patch coordinates
+			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * (i / (float)resolution));        // x
+			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * ((j + 1) / (float)resolution)); // y
+			x_coord = (width - 1) * (i / (float)resolution);             // map x
+			y_coord = (height - 1) * ((j + 1) / (float)resolution);      // map y
+			mesh_map.push_back(data[x_coord * width + y_coord]);       // map elevation at the patch coordinate
+			//mesh_map.push_back(0.5f);
+
+			// top right patch coordinates
+			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * ((i + 1) / (float)resolution));  // x
+			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * ((j + 1) / (float)resolution)); // y
+			x_coord = (width - 1) * ((i + 1) / (float)resolution);       // map x
+			y_coord = (height - 1) * ((j + 1) / (float)resolution);      // map y
+			mesh_map.push_back(data[x_coord * width + y_coord]);       // map elevation at the patch coordinate
+			//mesh_map.push_back(0.5f);
+		}
+	}
+
+	return updateBuffers(size * sizeof(float), &mesh_map[0]);
 }
