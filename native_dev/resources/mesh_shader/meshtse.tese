@@ -10,6 +10,7 @@ layout (quads, fractional_odd_spacing, ccw) in;
 uniform mat4 view;       // variable view matrix
 uniform mat4 projection; // variable projection matrix
 
+out vec2 TexCoord;
 out float H;
 
 void main()
@@ -17,6 +18,7 @@ void main()
     // get patch coordinate: generated in primitive generation stage
     float u = gl_TessCoord.x;   // fractional x coord
     float v = gl_TessCoord.y;   // fractional y coord
+    TexCoord = vec2(u,v);
 
     // ----------------------------------------------------------------------
     // retrieve initial patch vertex positions

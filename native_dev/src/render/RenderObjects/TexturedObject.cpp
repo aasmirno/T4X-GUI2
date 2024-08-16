@@ -78,7 +78,7 @@ void TexturedObject::draw()
 }
 
 bool TexturedObject::loadTexture(const char* filename) {
-    if (!texture.setTexture(filename)) {
+    if (!texture.setTexture(filename, GL_TEXTURE0)) {
         return false;
     }
     

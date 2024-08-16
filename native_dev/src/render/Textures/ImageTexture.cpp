@@ -1,11 +1,14 @@
-#include "T4X/render/Texture.h"
+#include "T4X/render/Textures/ImageTexture.h"
 
-bool RenderTexture::setTexture(const char* filename)
+bool ImageTexture::setTexture(const char* filename, GLenum texture_unit)
 {
 	// reset texture data
 	handle = 0;
 	width = 0;
 	height = 0;
+
+	// texture unit
+	tex_unit = texture_unit;
 
 	// load image data
 	stbi_set_flip_vertically_on_load(true);
@@ -50,7 +53,12 @@ bool RenderTexture::setTexture(const char* filename)
 	return true;
 }
 
-bool RenderTexture::deleteTexture()
+void ImageTexture::activate(){
+	glActiveTexture(tex_unit);
+	glBindTexture(GL_TEXTURE_2D, handle);
+}
+
+bool ImageTexture::deleteTexture()
 {
 	glDeleteTextures(1, &handle);
 	handle = 0;

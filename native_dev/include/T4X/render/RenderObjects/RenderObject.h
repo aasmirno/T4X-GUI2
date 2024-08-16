@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 
-#include "T4X/render/Texture.h"
+#include "T4X/render/Textures/ImageTexture.h"
 #include "T4X/render/Shader.h"
 #include "T4X/Utils.h"
 

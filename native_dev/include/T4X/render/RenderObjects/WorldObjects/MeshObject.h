@@ -12,10 +12,8 @@ private:
     */
     const uint NUM_SHADERS = 4;         // number of shaders
     glm::mat4 model = glm::mat4(1.0f);  // model matrix
-    RenderTexture t;                    // object textures
-
-    int height = 50; int width = 50;
-    int resolution = 10;
+    ImageTexture texture;
+    ImageTexture t2;
 
     /**************************************
         Parent class init pipeline methods

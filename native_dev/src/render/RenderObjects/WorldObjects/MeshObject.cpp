@@ -15,8 +15,11 @@ void MeshObject::printDebug()
 void MeshObject::draw()
 {
 	glPatchParameteri(GL_PATCH_VERTICES, 4);	// set patch parameter for tesselation shader
-	glBindTexture(GL_TEXTURE_2D, t.handle);		// bind mesh texture
 	glUseProgram(shader.program_id);			// set shader program
+	
+	//texture.activate();							// activate texture
+	t2.activate();
+	
 	glBindVertexArray(vao_id);					// bind vertex array
 
 	glDrawArrays(GL_PATCHES, 0, 4 * resolution * resolution);
@@ -35,44 +38,67 @@ bool MeshObject::setAttribs() {
 		return false;
 	}
 
-	t.setTexture("MeshTex.png");
 	return true;
 }
 
 bool MeshObject::loadShaders() {
-	// load shader
-	{
-		SourcePair mesh_program[4] = {
-			SourcePair{"meshvert.glvs", GL_VERTEX_SHADER},
-			SourcePair{"meshtsc.tesc", GL_TESS_CONTROL_SHADER},
-			SourcePair{"meshtse.tese", GL_TESS_EVALUATION_SHADER},
-			SourcePair{"meshfrag.glfs", GL_FRAGMENT_SHADER} };
-		bool shader_success = shader.createProgram(&mesh_program[0], 4);
-		if (!shader_success)
-		{
-			printDebug();
-			printf("Shader Failure\n");
-			return false;
-		}
-	}
-	// load uniforms
-	{
-		auto ploc = shader.getLocation("projection");
-		if (!ploc.first)
-		{
-			printf("[ MESH ERROR ]\n");
-			return false;
-		}
-		projection_location = ploc.second;
+	SourcePair mesh_program[4] = {
+		SourcePair{"meshvert.glvs", GL_VERTEX_SHADER},
+		SourcePair{"meshtsc.tesc", GL_TESS_CONTROL_SHADER},
+		SourcePair{"meshtse.tese", GL_TESS_EVALUATION_SHADER},
+		SourcePair{"meshfrag.glfs", GL_FRAGMENT_SHADER} };
 
-		ploc = shader.getLocation("view");
-		if (!ploc.first)
-		{
-			printf("[ MESH ERROR ]\n");
-			return false;
-		}
-		view_location = ploc.second;
+	bool shader_success = shader.createProgram(&mesh_program[0], 4);
+	if (!shader_success)
+	{
+		printDebug();
+		printf("Shader Failure\n");
+		return false;
 	}
+
+	// set textures
+	texture.setTexture("MeshTex.png", GL_TEXTURE0);
+	t2.setTexture("MeshTex.png", GL_TEXTURE1);
+
+	//texture.printInfo();
+	//t2.printInfo();
+
+	// assign texture units
+	auto ploc = shader.getLocation("image_texture");
+	if (!ploc.first)
+	{
+		printf("[ MESH ERROR ] image texture uniform not found\n");
+		return false;
+	}
+	glUniform1i(ploc.second, 0);
+
+	ploc = shader.getLocation("data_texture");
+	if (!ploc.first)
+	{
+		printf("[ MESH ERROR ] data texture uniform not found\n");
+		return false;
+	}
+	glUniform1i(ploc.second, 1);
+
+	return true;
+}
+
+bool MeshObject::loadUniforms() {
+	auto ploc = shader.getLocation("projection");
+	if (!ploc.first)
+	{
+		printf("[ MESH ERROR ]\n");
+		return false;
+	}
+	projection_location = ploc.second;
+
+	ploc = shader.getLocation("view");
+	if (!ploc.first)
+	{
+		printf("[ MESH ERROR ]\n");
+		return false;
+	}
+	view_location = ploc.second;
 
 	return true;
 }

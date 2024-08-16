@@ -38,14 +38,14 @@ public:
 		// check shader init
 		if (shader.program_id == 0)
 		{
-			printf("[ RENDER OBJECT ERROR ] uninitialised shader\n");
+			printf("[ WORLD OBJECT ERROR ] uninitialised shader\n");
 			return false;
 		}
 
 		// check proper type string
 		if (type != "projection" && type != "view")
 		{
-			printf("[ RENDER OBJECT ERROR ] improper type: %s, need view or projection\n", type.c_str());
+			printf("[ WORLD OBJECT ERROR ] improper type: %s, need view or projection\n", type.c_str());
 			return false;
 		}
 
@@ -54,7 +54,7 @@ public:
 		if (type == "view")
 		{
 			if (view_location == -1) {
-				printf("[ RENDER OBJECT ERROR ] no view location defined\n");
+				printf("[ WORLD OBJECT ERROR ] no view location defined\n");
 				return false;
 			}
 			else {
@@ -66,7 +66,7 @@ public:
 		{
 			location = projection_location;
 			if (projection_location == -1) {
-				printf("[ RENDER OBJECT ERROR ] no projection location defined\n");
+				printf("[ WORLD OBJECT ERROR ] no projection location defined\n");
 				return false;
 			}
 			else {
@@ -77,7 +77,7 @@ public:
 		// redundant check
 		if (location == -1)
 		{
-			printf("[ RENDER OBJECT ERROR ] unknown setTransform error, location = -1\n");
+			printf("[ WORLD OBJECT ERROR ] unknown setTransform error, location = -1\n");
 			return false;
 		}
 
@@ -86,7 +86,7 @@ public:
 		glUniformMatrix4fv(location, 1, GL_FALSE, matrix);
 		if (!checkGLError())
 		{
-			printf("[ RENDER OBJECT ERROR ] error in %s update\n", type.c_str());
+			printf("[ WORLD OBJECT ERROR ] error in %s update\n", type.c_str());
 			printDebug();
 			return false;
 		}

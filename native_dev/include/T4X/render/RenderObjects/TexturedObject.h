@@ -12,7 +12,7 @@ class TexturedObject : public RenderObject
 	GLfloat origin[2] = { 0.0f, 0.0f };				// origin for this object
 	GLfloat dimensions[2] = { 100.0f, 100.0f };		//width, height
 
-	RenderTexture texture; // texture for this object
+	ImageTexture texture; // texture for this object
 private:
 	/*
 		Object parameters
