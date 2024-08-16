@@ -62,6 +62,9 @@ bool MeshObject::loadShaders() {
 
 	//texture.printInfo();
 	//t2.printInfo();
+	
+	// activate program
+	glUseProgram(shader.program_id);
 
 	// assign texture units
 	auto ploc = shader.getLocation("image_texture");
@@ -71,6 +74,12 @@ bool MeshObject::loadShaders() {
 		return false;
 	}
 	glUniform1i(ploc.second, 0);
+	if (!checkGLError())
+	{
+		printf("[ MESH ERROR ]: gl error in buffer update\n");
+		printDebug();
+		return false;
+	}
 
 	ploc = shader.getLocation("data_texture");
 	if (!ploc.first)
@@ -79,7 +88,14 @@ bool MeshObject::loadShaders() {
 		return false;
 	}
 	glUniform1i(ploc.second, 1);
+	if (!checkGLError())
+	{
+		printf("[ MESH ERROR ]: gl error in buffer update\n");
+		printDebug();
+		return false;
+	}
 
+	// get shader locations
 	{
 		auto ploc = shader.getLocation("projection");
 		if (!ploc.first)
@@ -96,6 +112,12 @@ bool MeshObject::loadShaders() {
 			return false;
 		}
 		view_location = ploc.second;
+	}
+	if (!checkGLError())
+	{
+		printf("[ MESH ERROR ]: gl error in buffer update\n");
+		printDebug();
+		return false;
 	}
 
 	return true;

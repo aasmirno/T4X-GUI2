@@ -47,7 +47,7 @@ protected:
 		GLenum err;
 		if ((err = glGetError()) != GL_NO_ERROR)
 		{
-			printf("[ RENDER OBJECT ERROR ] gl error: %d\n", err);
+			printf("[ RENDER OBJECT ERROR ] gl error: %s, %d\n", glewGetErrorString(err), err);
 			return false;
 		}
 		return true;
