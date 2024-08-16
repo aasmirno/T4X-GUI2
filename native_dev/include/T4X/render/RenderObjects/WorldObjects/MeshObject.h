@@ -15,10 +15,12 @@ private:
     ImageTexture texture;
     ImageTexture t2;
 
+    int height = 50; int width = 50;
+    int resolution = 10;
+
     /**************************************
         Parent class init pipeline methods
     ***************************************/
-
     /*
         Load Mesh shader program and load uniforms
     */

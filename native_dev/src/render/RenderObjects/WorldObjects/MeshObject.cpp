@@ -17,7 +17,7 @@ void MeshObject::draw()
 	glPatchParameteri(GL_PATCH_VERTICES, 4);	// set patch parameter for tesselation shader
 	glUseProgram(shader.program_id);			// set shader program
 	
-	//texture.activate();							// activate texture
+	texture.activate();							// activate texture
 	t2.activate();
 	
 	glBindVertexArray(vao_id);					// bind vertex array
@@ -80,25 +80,23 @@ bool MeshObject::loadShaders() {
 	}
 	glUniform1i(ploc.second, 1);
 
-	return true;
-}
-
-bool MeshObject::loadUniforms() {
-	auto ploc = shader.getLocation("projection");
-	if (!ploc.first)
 	{
-		printf("[ MESH ERROR ]\n");
-		return false;
-	}
-	projection_location = ploc.second;
+		auto ploc = shader.getLocation("projection");
+		if (!ploc.first)
+		{
+			printf("[ MESH ERROR ]\n");
+			return false;
+		}
+		projection_location = ploc.second;
 
-	ploc = shader.getLocation("view");
-	if (!ploc.first)
-	{
-		printf("[ MESH ERROR ]\n");
-		return false;
+		ploc = shader.getLocation("view");
+		if (!ploc.first)
+		{
+			printf("[ MESH ERROR ]\n");
+			return false;
+		}
+		view_location = ploc.second;
 	}
-	view_location = ploc.second;
 
 	return true;
 }
