@@ -58,7 +58,7 @@ bool MeshObject::loadShaders() {
 
 	// set textures
 	texture.setTexture("MeshTex.png", GL_TEXTURE0);
-	t2.setTexture("MeshTex.png", GL_TEXTURE1);
+	t2.setTexture("Logo.png", GL_TEXTURE1);
 
 	//texture.printInfo();
 	//t2.printInfo();
