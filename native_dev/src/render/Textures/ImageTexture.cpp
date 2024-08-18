@@ -14,7 +14,7 @@ bool ImageTexture::setTexture(const char* filename, GLenum texture_unit)
 	stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load(filename, &width, &height, &channels, 0);
 	if (data == nullptr) {
-		printf("[ TEXTURE ERROR ]: stbi error: %s\n", stbi_failure_reason());
+		printf("[ IMAGE TEXTURE ERROR ]: stbi error: %s\n", stbi_failure_reason());
 		return false;
 	}
 
@@ -22,11 +22,12 @@ bool ImageTexture::setTexture(const char* filename, GLenum texture_unit)
 	glGenTextures(1, &handle);
 	if (handle == 0)
 	{
-		printf("[ TEXTURE ERROR ]: gl texture gen error\n");
+		printf("[ IMAGE TEXTURE ERROR ]: gl texture gen error\n");
 		return false;
 	}
 
 	// send data to opengl
+	glActiveTexture(tex_unit);
 	glBindTexture(GL_TEXTURE_2D, handle);
 	switch (channels) {
 	case 4: // RGBA source

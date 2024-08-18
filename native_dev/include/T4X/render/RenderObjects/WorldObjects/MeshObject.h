@@ -1,4 +1,6 @@
 #pragma once
+#include "T4X/render/Textures/ImageTexture.h"
+#include "T4X/render/Textures/DataTexture.h"
 #include "T4X/render/RenderObjects/WorldObjects/WorldObject.h"
 
 /*
@@ -13,7 +15,7 @@ private:
     const uint NUM_SHADERS = 4;         // number of shaders
     glm::mat4 model = glm::mat4(1.0f);  // model matrix
     ImageTexture texture;
-    ImageTexture t2;
+    DataTexture mesh_texture;
 
     int height = 50; int width = 50;
     int resolution = 10;

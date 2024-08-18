@@ -18,7 +18,7 @@ void MeshObject::draw()
 	glUseProgram(shader.program_id);			// set shader program
 	
 	texture.activate();							// activate texture
-	t2.activate();
+	mesh_texture.activate();
 	
 	glBindVertexArray(vao_id);					// bind vertex array
 
@@ -58,7 +58,6 @@ bool MeshObject::loadShaders() {
 
 	// set textures
 	texture.setTexture("MeshTex.png", GL_TEXTURE0);
-	t2.setTexture("Logo.png", GL_TEXTURE1);
 
 	//texture.printInfo();
 	//t2.printInfo();
@@ -138,6 +137,8 @@ bool MeshObject::updateBuffers(int size, float* data)
 
 void MeshObject::cleanup() {
 	shader.deleteProgram();
+	mesh_texture.deleteTexture();
+	texture.deleteTexture();
 }
 
 bool MeshObject::setMeshData(float* data, unsigned size) {
@@ -157,34 +158,22 @@ bool MeshObject::setMeshData(float* data, unsigned size) {
 			// bottom left patch values
 			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * (i / (float)resolution));  // x
 			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * (j / (float)resolution)); // y
-			int x_coord = (width - 1) * (i / (float)resolution);       // map x
-			int y_coord = (height - 1) * (j / (float)resolution);      // map y
-			mesh_map.push_back(data[x_coord * width + y_coord]); // map elevation at the patch coordinate
-			//mesh_map.push_back(0.5f);
+			mesh_map.push_back(0.0f);
 
 			// bottom right patch coordinates
 			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * ((i + 1) / (float)resolution)); // x
 			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * (j / (float)resolution));      // y
-			x_coord = (width - 1) * ((i + 1) / (float)resolution);      // map x
-			y_coord = (height - 1) * (j / (float)resolution);           // map y
-			mesh_map.push_back(data[x_coord * width + y_coord]);      // map elevation at the patch coordinate
-			//mesh_map.push_back(0.5f);
+			mesh_map.push_back(0.5f);
 
 			// top right patch coordinates
 			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * (i / (float)resolution));        // x
 			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * ((j + 1) / (float)resolution)); // y
-			x_coord = (width - 1) * (i / (float)resolution);             // map x
-			y_coord = (height - 1) * ((j + 1) / (float)resolution);      // map y
-			mesh_map.push_back(data[x_coord * width + y_coord]);       // map elevation at the patch coordinate
-			//mesh_map.push_back(0.5f);
+			mesh_map.push_back(0.5f);
 
 			// top right patch coordinates
 			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * ((i + 1) / (float)resolution));  // x
 			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * ((j + 1) / (float)resolution)); // y
-			x_coord = (width - 1) * ((i + 1) / (float)resolution);       // map x
-			y_coord = (height - 1) * ((j + 1) / (float)resolution);      // map y
-			mesh_map.push_back(data[x_coord * width + y_coord]);       // map elevation at the patch coordinate
-			//mesh_map.push_back(0.5f);
+			mesh_map.push_back(0.5f);
 		}
 	}
 
