@@ -91,7 +91,7 @@ public:
         Mesh calls
     */
     WorldObject* addMeshObject(uint id);
-    bool setMeshData(uint id, float* data, unsigned patches);
+    bool setMeshData(uint id, float* data, int width, int height);
 
     /*
         Create test triangle

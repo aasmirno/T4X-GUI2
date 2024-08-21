@@ -1,9 +1,15 @@
 // mesh vector shader
 #version 420 core
 
+// vertex position
 layout (location = 0) in vec3 vert_pos;
+// texture coordinate
+layout (location = 1) in vec2 aTex;
+
+out vec2 TexCoord;
 
 void main()
 {
-    gl_Position = vec4(vert_pos, 1.0); //set position
+    gl_Position = vec4(vert_pos, 1.0);
+    TexCoord = aTex;
 }

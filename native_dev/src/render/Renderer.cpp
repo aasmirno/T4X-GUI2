@@ -207,7 +207,7 @@ WorldObject* Renderer::addMeshObject(uint id)
     return &meshes.back();
 }
 
-bool Renderer::setMeshData(uint id, float* data, unsigned size) {
+bool Renderer::setMeshData(uint id, float* data, int width, int height) {
     if (world_objects.find(id) == world_objects.end()) {
         printf("[R_MNGR ERROR] mesh object with id %d not found\n", id);
         return false;
@@ -220,7 +220,7 @@ bool Renderer::setMeshData(uint id, float* data, unsigned size) {
         return false;
     }
 
-    return object->setMeshData(data, size);
+    return object->setMeshData(data, width, height);
 }
 
 

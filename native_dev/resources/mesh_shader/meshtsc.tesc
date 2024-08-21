@@ -4,12 +4,17 @@
 // vertices per patch, same as defined in call
 layout (vertices=4) out;
 
+// varying input from vertex shader
+in vec2 TexCoord[];
+// varying output to evaluation shader
+out vec2 TextureCoord[];
+
 void main()
 {
     // ----------------------------------------------------------------------
     // send initial patch vertices to eval stage
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
-    //TextureCoord[gl_InvocationID] = TexCoord[gl_InvocationID];
+    TextureCoord[gl_InvocationID] = TexCoord[gl_InvocationID];
 
 
     // retrieve initial patch vertex positions

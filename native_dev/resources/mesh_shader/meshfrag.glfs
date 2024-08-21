@@ -2,16 +2,12 @@
 #version 420 core
 
 uniform sampler2D image_texture;
-uniform sampler2D data_texture;
 
-in float H;
-in vec2 TexCoord;
-
+in vec2 color_coord;
+in float height;
 out vec4 frag_color;
 
 void main()
 {
-    float h = H /10;
-    frag_color = texture(data_texture, TexCoord) * texture(image_texture, TexCoord);
-    //frag_color = vec4(h, h, h, 1.0);
+    frag_color = texture(image_texture, color_coord);
 }

@@ -18,7 +18,7 @@ bool GameManager::initialise()
 	}
 
 	// initialise the game map
-	game_map.initialise(100, 100);
+	game_map.initialise(200, 200);
 
 	// set callback for event handler
 	input_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
@@ -29,10 +29,10 @@ bool GameManager::initialise()
 	// add a test object with id 0
 	if (!render_manager.addTestObject()) return false;
 	assert(render_manager.addMeshObject(0) == nullptr);
-	assert(render_manager.setMeshData(0, game_map.getHeightData(), 4) == false);
+	assert(render_manager.setMeshData(0, game_map.getHeightData(), game_map.getWidth(), game_map.getHeight()) == false);
 
 	if (!render_manager.addMeshObject(4)) return false;
-	if (!render_manager.setMeshData(4, game_map.getHeightData(), game_map.getSize())) return false;
+	if (!render_manager.setMeshData(4, game_map.getHeightData(), game_map.getWidth(), game_map.getHeight())) return false;
 	//if (!render_manager.addTexturedObject(4)) return false;
 	//render_manager.setTexture(4, "Logo.png");
 
@@ -83,7 +83,7 @@ bool GameManager::loop()
 {
 	//get events and send key updates to renderer
 	input_manager.pollEvent();
-	//render_manager.keyUpdate(input_manager.getRenderKeys());
+	render_manager.keyUpdate(input_manager.getRenderKeys());
 
 	//render current graphics state
 	render_manager.render();

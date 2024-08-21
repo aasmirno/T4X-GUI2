@@ -6,8 +6,6 @@ void Map::generate()
 	auto fnPerlin = FastNoise::New<FastNoise::Perlin>();
 	auto fnFractal = FastNoise::New<FastNoise::FractalFBm>();
 
-
-	auto add = FastNoise::New<FastNoise::Add>();
 	auto multiply = FastNoise::New<FastNoise::Multiply>();
 
 	auto simplex = FastNoise::New<FastNoise::Simplex>();
@@ -19,13 +17,17 @@ void Map::generate()
 	fnFractal->SetLacunarity(0.120);
 
 	//add 1
+	auto add = FastNoise::New<FastNoise::Add>();
 	add->SetRHS(1.0f);
 	add->SetLHS(fnFractal);
 
-	multiply->SetLHS(add);
-	multiply->SetRHS(5.0f);
-	//multiply->GenUniformGrid2D(height_map.data(), 0, 0, height, width, 0.1f, 1337);
-	multiply->GenUniformGrid2D(height_map.data(), 0, 0, height, width, 0.1f, 1337);
+
+	// divide 2
+	auto divide = FastNoise::New<FastNoise::Divide>();
+	divide->SetRHS(2.0f);
+	divide->SetLHS(add);
+
+	divide->GenUniformGrid2D(height_map.data(), 0, 0, height, width, 0.1f, 1337);
 }
 
 bool Map::initialise(unsigned map_x, unsigned map_y)

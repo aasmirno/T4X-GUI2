@@ -21,5 +21,6 @@ private:
 public:
     bool initialise(unsigned map_x, unsigned map_y);
     float* getHeightData();
-    int getSize() { return height_map.size(); };
+    int getHeight() { return height_map.size(); };
+    int getWidth() { return height_map.size(); };
 };

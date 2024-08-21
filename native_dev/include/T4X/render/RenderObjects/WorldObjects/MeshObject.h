@@ -14,11 +14,13 @@ private:
     */
     const uint NUM_SHADERS = 4;         // number of shaders
     glm::mat4 model = glm::mat4(1.0f);  // model matrix
-    ImageTexture texture;
-    DataTexture mesh_texture;
+    ImageTexture color_texture;
+    ImageTexture mesh_texture;
 
-    int height = 50; int width = 50;
-    int resolution = 10;
+    int height = 200; int width = 200;
+    GLint height_location;
+    GLint width_location;
+    int resolution = 100;
 
     /**************************************
         Parent class init pipeline methods
@@ -55,5 +57,5 @@ public:
         - float* data: pointer to height data
         - unsigned size: size of data
     */
-    bool setMeshData(float* data, unsigned size);
+    bool setMeshData(float* data, int data_width, int data_height);
 };

@@ -82,10 +82,8 @@ bool TexturedObject::loadTexture(const char* filename) {
         return false;
     }
     
-    dimensions[0] = texture.width;
-    dimensions[1] = texture.height;
     glUseProgram(shader.program_id); // set shader program
-    glUniform2f(dimension_location, dimensions[0], dimensions[1]);
+    glUniform2f(dimension_location, 100, 100);
 
     return checkGLError();
 }

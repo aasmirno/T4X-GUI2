@@ -15,13 +15,14 @@ void MeshObject::printDebug()
 void MeshObject::draw()
 {
 	glPatchParameteri(GL_PATCH_VERTICES, 4);	// set patch parameter for tesselation shader
-	glUseProgram(shader.program_id);			// set shader program
+	glUseProgram(shader.program_id);			// activate shader program
 	
-	texture.activate();							// activate texture
-	mesh_texture.activate();
+	// activate textures
+	color_texture.activate();
+	mesh_texture.activate();					
 	
-	glBindVertexArray(vao_id);					// bind vertex array
-
+	// bind and draw vertices
+	glBindVertexArray(vao_id);
 	glDrawArrays(GL_PATCHES, 0, 4 * resolution * resolution);
 }
 
@@ -29,9 +30,13 @@ bool MeshObject::setAttribs() {
 	glBindVertexArray(vao_id);             // focus va buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id); // focus vb
 
-	// xyz pos data
+	// xyz position data
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+
+	// texture position data
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 
 	if (!checkGLError()) {
 		printDebug();
@@ -57,41 +62,35 @@ bool MeshObject::loadShaders() {
 	}
 
 	// set textures
-	texture.setTexture("MeshTex.png", GL_TEXTURE0);
-
-	//texture.printInfo();
-	//t2.printInfo();
+	color_texture.setTexture("MeshTex.png", GL_TEXTURE0);
 	
 	// activate program
 	glUseProgram(shader.program_id);
 
 	// assign texture units
-	auto ploc = shader.getLocation("image_texture");
-	if (!ploc.first)
 	{
-		printf("[ MESH ERROR ] image texture uniform not found\n");
-		return false;
-	}
-	glUniform1i(ploc.second, 0);
-	if (!checkGLError())
-	{
-		printf("[ MESH ERROR ]: gl error in buffer update\n");
-		printDebug();
-		return false;
-	}
+		auto ploc = shader.getLocation("image_texture");
+		if (!ploc.first)
+		{
+			printf("[ MESH ERROR ] image texture uniform not found\n");
+			return false;
+		}
+		glUniform1i(ploc.second, 0);
 
-	ploc = shader.getLocation("data_texture");
-	if (!ploc.first)
-	{
-		printf("[ MESH ERROR ] data texture uniform not found\n");
-		return false;
-	}
-	glUniform1i(ploc.second, 1);
-	if (!checkGLError())
-	{
-		printf("[ MESH ERROR ]: gl error in buffer update\n");
-		printDebug();
-		return false;
+		ploc = shader.getLocation("data_texture");
+		if (!ploc.first)
+		{
+			printf("[ MESH ERROR ] data texture uniform not found\n");
+			return false;
+		}
+		glUniform1i(ploc.second, 1);
+
+		if (!checkGLError())
+		{
+			printf("[ MESH ERROR ]: texture assignment error\n");
+			printDebug();
+			return false;
+		}
 	}
 
 	// get shader locations
@@ -99,7 +98,7 @@ bool MeshObject::loadShaders() {
 		auto ploc = shader.getLocation("projection");
 		if (!ploc.first)
 		{
-			printf("[ MESH ERROR ]\n");
+			printf("[ MESH ERROR ] uniform\n");
 			return false;
 		}
 		projection_location = ploc.second;
@@ -107,16 +106,17 @@ bool MeshObject::loadShaders() {
 		ploc = shader.getLocation("view");
 		if (!ploc.first)
 		{
-			printf("[ MESH ERROR ]\n");
+			printf("[ MESH ERROR ] uniform\n");
 			return false;
 		}
 		view_location = ploc.second;
-	}
-	if (!checkGLError())
-	{
-		printf("[ MESH ERROR ]: gl error in buffer update\n");
-		printDebug();
-		return false;
+
+		if (!checkGLError())
+		{
+			printf("[ MESH ERROR ]: uniform assignment error\n");
+			printDebug();
+			return false;
+		}
 	}
 
 	return true;
@@ -138,10 +138,10 @@ bool MeshObject::updateBuffers(int size, float* data)
 void MeshObject::cleanup() {
 	shader.deleteProgram();
 	mesh_texture.deleteTexture();
-	texture.deleteTexture();
+	color_texture.deleteTexture();
 }
 
-bool MeshObject::setMeshData(float* data, unsigned size) {
+bool MeshObject::setMeshData(float* data, int data_width, int data_height) {
 	// create mesh array
 	std::vector<float> mesh_map;
 	mesh_map.reserve(width * height * 3);
@@ -159,23 +159,43 @@ bool MeshObject::setMeshData(float* data, unsigned size) {
 			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * (i / (float)resolution));  // x
 			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * (j / (float)resolution)); // y
 			mesh_map.push_back(0.0f);
+			mesh_map.push_back(i / (float)resolution); // u
+			mesh_map.push_back(j / (float)resolution); // v
 
 			// bottom right patch coordinates
 			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * ((i + 1) / (float)resolution)); // x
 			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * (j / (float)resolution));      // y
-			mesh_map.push_back(0.5f);
+			mesh_map.push_back(0.0f);
+			mesh_map.push_back((i + 1) / (float)resolution); // u
+			mesh_map.push_back(j / (float)resolution); // v
 
 			// top right patch coordinates
 			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * (i / (float)resolution));        // x
 			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * ((j + 1) / (float)resolution)); // y
-			mesh_map.push_back(0.5f);
+			mesh_map.push_back(0.0f);
+			mesh_map.push_back(i / (float)resolution); // u
+			mesh_map.push_back((j + 1) / (float)resolution); // v
 
 			// top right patch coordinates
 			mesh_map.push_back(-(mesh_width / 2.0f) + mesh_width * ((i + 1) / (float)resolution));  // x
 			mesh_map.push_back(-(mesh_height / 2.0f) + mesh_height * ((j + 1) / (float)resolution)); // y
-			mesh_map.push_back(0.5f);
+			mesh_map.push_back(0.0f);
+			mesh_map.push_back((i + 1) / (float)resolution); // u
+			mesh_map.push_back((j + 1) / (float)resolution); // v
 		}
 	}
 
-	return updateBuffers(size * sizeof(float), &mesh_map[0]);
+	// update vertex data
+	if (!updateBuffers(mesh_map.size() * sizeof(float), &mesh_map[0])) { return false; }
+	// update texture data
+	mesh_texture.setTexture(data, GL_TEXTURE1, width, height); //GL rectangle texture
+
+	if (!checkGLError())
+	{
+		printf("[ MESH ERROR ]: mesh data creation error\n");
+		printDebug();
+		return false;
+	}
+
+	return true;
 }

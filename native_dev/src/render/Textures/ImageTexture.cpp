@@ -1,11 +1,40 @@
 #include "T4X/render/Textures/ImageTexture.h"
 
+bool ImageTexture::setTexture(float* data, GLenum texture_unit, int width, int height)
+{
+	// reset texture data
+	glDeleteTextures(1, &handle);
+
+	// texture unit
+	tex_unit = texture_unit;
+	// generate opengl texture and set handle
+	glGenTextures(1, &handle);
+	if (handle == 0)
+	{
+		printf("[ IMAGE TEXTURE ERROR ]: gl texture gen error\n");
+		return false;
+	}
+
+	// send data to opengl
+	glActiveTexture(tex_unit);
+	glBindTexture(GL_TEXTURE_2D, handle);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, data);
+	// Set parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);					// repeat s dim
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);					// repeat t dim
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);				// min filter mipmap sampling
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);				// mag filter linear sampling
+	
+	return true;
+}
+
 bool ImageTexture::setTexture(const char* filename, GLenum texture_unit)
 {
 	// reset texture data
-	handle = 0;
-	width = 0;
-	height = 0;
+	glDeleteTextures(1, &handle);
+	int width = 0;
+	int height = 0;
+	int channels = 0;
 
 	// texture unit
 	tex_unit = texture_unit;
@@ -45,7 +74,7 @@ bool ImageTexture::setTexture(const char* filename, GLenum texture_unit)
 
 	// Set parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);					// repeat s dim
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);					// reapeat t dim
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);					// repeat t dim
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);				// min filter mipmap sampling
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);				// mag filter linear sampling
 
