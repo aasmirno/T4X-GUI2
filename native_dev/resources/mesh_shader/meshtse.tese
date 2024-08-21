@@ -35,7 +35,7 @@ void main()
     vec2 texCoord = (t1 - t0) * v + t0;
 
     // lookup texel at patch coordinate for height and scale + shift as desired
-    height = texture(data_texture, texCoord).r *10;
+    height = texture(data_texture, texCoord).r;
 
     // ----------------------------------------------------------------------
     // retrieve initial patch vertex positions
@@ -56,10 +56,10 @@ void main()
     vec4 p = (p1 - p0) * v + p0;
 
     // displace point along normal
-    p += normal * height;
+    p += normal * (height * 10);
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space
-    color_coord = vec2(u, v);
+    color_coord = texCoord;
     gl_Position = projection * view * p;
 }

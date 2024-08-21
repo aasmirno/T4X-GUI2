@@ -9,6 +9,11 @@
 #endif
 #include <functional>
 
+// imgui includes
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl2.h>
+#include <imgui/imgui_impl_opengl3.h>
+
 class InputManager
 {
 private:

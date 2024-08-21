@@ -132,6 +132,23 @@ bool Renderer::initialise(int screen_height, int screen_width)
         printf("    Supported OpenGL version: %s, glsl ver: %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
     }
 
+    /*
+        imgui setup
+    */
+    {
+        // Setup Dear ImGui context
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+        
+        // Setup Platform/Renderer backends
+        ImGui_ImplSDL2_InitForOpenGL(main_window, gl_context);
+        ImGui_ImplOpenGL3_Init();
+    }
+
+
     printf("    Finishing Initialisation\n");
     // check for GL errors
     GLenum err;
@@ -157,6 +174,10 @@ void Renderer::shutdown()
     {
         texture_objects[i].cleanup();
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
 }
 
 void Renderer::setScreenSize(int width, int height)
@@ -253,6 +274,13 @@ void Renderer::updateProjection()
 
 void Renderer::render()
 {
+
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+    ImGui::ShowDemoWindow(); // Show demo window! :)
+
     if (!initialised)
     {
         printf("ERROR: render manager not initialised\n");
@@ -269,6 +297,10 @@ void Renderer::render()
     for (auto& iterator : flat_objects) {
         iterator.second->draw();
     }
+
+    // draw imgui objects
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     SDL_GL_SwapWindow(main_window);
 }

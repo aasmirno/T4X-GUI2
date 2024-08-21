@@ -42,6 +42,8 @@ bool InputManager::pollEvent()
             break;
         }
 
+        // forward event
+        ImGui_ImplSDL2_ProcessEvent(&event);
         event_handler(engine_event);
     }
     return false;

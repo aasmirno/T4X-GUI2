@@ -58,6 +58,7 @@ bool GameManager::run()
 
 void GameManager::handleEvent(Event e)
 {
+
 	if (e.type == E_TYPE::SDL_EVENT)
 	{
 		switch (e.raw_event) {
