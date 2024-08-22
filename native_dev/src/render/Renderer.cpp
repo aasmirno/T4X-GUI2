@@ -174,10 +174,22 @@ bool Renderer::initialise(int screen_height, int screen_width)
 
 void Renderer::shutdown()
 {
-    for (int i = 0; i < texture_objects.size(); i++)
-    {
-        texture_objects[i].cleanup();
+    // call cleanup methods
+    for (auto& iterator : world_objects) {
+        iterator.second->cleanup();
     }
+    for (auto& iterator : world_objects) {
+        iterator.second->cleanup();
+    }
+
+    // clear vectors and maps
+    texture_objects.clear();
+    meshes.clear();
+    t_obj.clear();
+
+    world_objects.clear();
+    flat_objects.clear();
+
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();

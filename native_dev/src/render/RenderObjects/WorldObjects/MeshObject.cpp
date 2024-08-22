@@ -136,9 +136,22 @@ bool MeshObject::updateBuffers(int size, float* data)
 }
 
 void MeshObject::cleanup() {
+	// delete shaders
 	shader.deleteProgram();
 	mesh_texture.deleteTexture();
 	color_texture.deleteTexture();
+
+	//delete buffers
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDeleteBuffers(1, &vbo_id);
+	glDeleteVertexArrays(1, &vao_id);
+
+	if (!checkGLError())
+	{
+		printf("[ MESH ERROR ]: gl error in cleanup\n");
+		printDebug();
+	}
 }
 
 bool MeshObject::setMeshData(float* data, int data_width, int data_height) {

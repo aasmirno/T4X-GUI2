@@ -67,7 +67,7 @@ public:
 	virtual void draw() = 0;
 
 	/*
-		Free used memory
+		Free used assets
 	*/
 	virtual void cleanup() = 0;
 

@@ -51,7 +51,19 @@ public:
 	*/
 	virtual void cleanup()
 	{
+		glDisableVertexAttribArray(0);
+
 		shader.deleteProgram();  // delete shaders
 		texture.deleteTexture(); // delete texture
+
+		//delete buffers
+		glDeleteBuffers(1, &vbo_id);
+		glDeleteVertexArrays(1, &vao_id);
+
+		if (!checkGLError())
+		{
+			printf("[ MESH ERROR ]: gl error in cleanup\n");
+			printDebug();
+		}
 	}
 };

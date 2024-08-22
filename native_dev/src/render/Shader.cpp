@@ -100,7 +100,8 @@ bool Shader::deleteProgram(){
 	
 	//delete all shaders in program
 	for(int i = 0; i < shader_handles.size(); i++){
-		glDeleteShader(shader_handles[i]);
+		glDetachShader(program_id, shader_handles[i]);	// detach
+		glDeleteShader(shader_handles[i]);				// delete
 	}
 	shader_handles.clear();
 
