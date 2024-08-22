@@ -164,6 +164,10 @@ bool Renderer::initialise(int screen_height, int screen_width)
     //projection = glm::ortho(0.0f, (float)WINDOW_W, 0.0f, (float)WINDOW_H, 0.1f, 10.0f);
     //  toggle init flag
     initialised = true;
+
+    std::shared_ptr<Menu> menu = std::make_unique<MainMenu>();
+    menu_stack.push(menu);
+
     printf("Done\n");
     return true;
 }
@@ -279,7 +283,9 @@ void Renderer::render()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
-    ImGui::ShowDemoWindow(); // Show demo window! :)
+
+    // draw menus
+    menu_stack.top()->draw();
 
     if (!initialised)
     {

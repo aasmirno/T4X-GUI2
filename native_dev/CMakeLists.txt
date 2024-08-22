@@ -19,7 +19,7 @@ cmake_path(SET SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
 file(GLOB_RECURSE CPPS "${SOURCE_PATH}/*.cpp")
 add_executable(${TARGET} 
     ${CPPS}
-)
+ "include/T4X/render/Menus/Menus.h")
 
 # set compile options
 if(WIN32)   # windows target

@@ -5,6 +5,8 @@
 #include "T4X/render/RenderObjects/WorldObjects/TestObject.h"
 #include "T4X/render/RenderObjects/TexturedObject.h"
 
+#include "T4X/render/Menus/Menus.h"
+
 #include "T4X/render/Camera.h"
 #include "T4X/input/Event.h"
 
@@ -15,6 +17,7 @@
 #include <fstream>
 #include <vector>
 #include <unordered_map>
+#include <stack>
 
 // lib includes
 #include <SDL2/SDL.h>
@@ -74,9 +77,12 @@ private:
     std::vector<MeshObject> meshes;
     std::vector<TestObject> t_obj;
 
-    //TODO: switch to map
+    //object maps
     std::unordered_map<int, WorldObject*> world_objects;
     std::unordered_map<int, RenderObject*> flat_objects;
+
+    //menu stack
+    std::stack<std::shared_ptr<Menu>> menu_stack;
 
     /*
         transform matrix update methods
