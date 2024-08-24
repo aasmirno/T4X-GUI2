@@ -40,6 +40,7 @@ public:
         k.E = KEYS[SDLK_e];
         k.R = KEYS[SDLK_r];
         k.F = KEYS[SDLK_f];
+        k.P = KEYS[SDLK_p];
         return k;
     }
 

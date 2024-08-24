@@ -69,6 +69,7 @@ private:
     */
     bool initialised = false;   // initialisation flag
     bool vsync_enabled = false; // succesful vsync initialisation
+    bool wireframe = false;     // wireframe mode
 
     /*
         Render Objects

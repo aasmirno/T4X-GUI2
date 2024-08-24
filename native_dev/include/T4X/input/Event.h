@@ -30,6 +30,7 @@ struct RENDER_KEY_STATE
     bool E = false;
     bool R = false;
     bool F = false;
+    bool P = false;
 };
 
 /*

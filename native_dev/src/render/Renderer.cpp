@@ -1,6 +1,13 @@
 #include "T4X/render/Renderer.h"
 
 void Renderer::keyUpdate(RENDER_KEY_STATE state){
+    //wireframe
+    if (state.P && !wireframe) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 
     // move controls
     if (state.A) camera.left();
