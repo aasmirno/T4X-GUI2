@@ -1,4 +1,11 @@
 #pragma once
+#include <GL/glew.h>
+#include <glm/vec4.hpp>
+#include <glm/vec2.hpp>
+
+#include <stdio.h>
+#include <iostream>
+
 #include "T4X/render/Textures/ImageTexture.h"
 #include "T4X/render/Textures/DataTexture.h"
 #include "T4X/render/RenderObjects/WorldObjects/WorldObject.h"

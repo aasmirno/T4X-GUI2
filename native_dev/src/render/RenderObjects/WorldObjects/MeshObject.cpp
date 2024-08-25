@@ -111,6 +111,22 @@ bool MeshObject::loadShaders() {
 		}
 		view_location = ploc.second;
 
+		ploc = shader.getLocation("ambient_strength");
+		if (!ploc.first)
+		{
+			printf("[ MESH ERROR ] amb_str uniform\n");
+			return false;
+		}
+		ambient_level_location = ploc.second;
+
+		ploc = shader.getLocation("light_location");
+		if (!ploc.first)
+		{
+			printf("[ MESH ERROR ] l_loc uniform\n");
+			return false;
+		}
+		light_position = ploc.second;
+
 		if (!checkGLError())
 		{
 			printf("[ MESH ERROR ]: uniform assignment error\n");

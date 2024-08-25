@@ -243,6 +243,8 @@ WorldObject* Renderer::addMeshObject(uint id)
     //initialise a mesh object
     MeshObject obj;
     if (!obj.initialise(id)) return nullptr;
+    obj.setAmbient(1.0f);
+    obj.setLightPosition(20.0f, 20.0f, 20.0f);
 
     // add to ds and return
     meshes.push_back(obj);

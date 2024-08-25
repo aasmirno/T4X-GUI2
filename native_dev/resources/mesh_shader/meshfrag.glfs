@@ -3,11 +3,28 @@
 
 uniform sampler2D image_texture;
 
-in vec2 color_coord;
-in float height;
+// lighting
+uniform float ambient_strength;
+uniform vec3 light_location;
+
+uniform mat4 view;                  // variable view matrix
+uniform mat4 projection;            // variable projection matrix
+
+in vec2 color_coord;                // texture coord
+in vec3 patch_normal;               // patch face normal
+in vec4 FragPos;                    // frag position
+
 out vec4 frag_color;
 
 void main()
 {
-    frag_color = texture(image_texture, color_coord) - vec4(0.0, 0.0, 0.0, height);
+    vec4 light_pos = vec4(light_location, 1.0);
+    vec4 lightDir = normalize(light_pos - FragPos);  
+
+    float diff = max( dot(patch_normal, lightDir.xyz), 0.0 );
+    vec4 diffuse = diff * vec4(1.0, 1.0, 1.0, 1.0);
+
+    vec4 ambient = ambient_strength * vec4(1.0, 1.0, 1.0, 1.0);
+
+    frag_color = (ambient + diffuse) * texture(image_texture, color_coord);
 }

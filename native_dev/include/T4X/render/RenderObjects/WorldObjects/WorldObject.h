@@ -1,4 +1,11 @@
 #pragma once
+#include <GL/glew.h>
+#include <glm/vec4.hpp>
+#include <glm/vec2.hpp>
+
+#include <stdio.h>
+#include <iostream>
+
 #include "T4X/render/RenderObjects/RenderObject.h"
 
 /*
@@ -16,6 +23,7 @@ protected:
 		Lighting parameters
 	*/
 	GLint ambient_level_location = -1;
+	GLint light_position = -1;
 
 public:
 
@@ -27,6 +35,15 @@ public:
 			glUniform1f(ambient_level_location, level);
 		}
 	}
+
+	/*
+		Set light source position for lighting shaders
+	*/
+	void setLightPosition(float x, float y, float z) {
+		glm::vec3 light_pos(x,y,z);
+		glUniform3fv(light_position, 1, &light_pos[0]);
+	}
+
 
 	/*
 		Set transform matrix

@@ -14,7 +14,8 @@ uniform mat4 projection;            // variable projection matrix
 in vec2 TextureCoord[];
 
 out vec2 color_coord;
-out float height;
+out vec3 patch_normal;
+out vec4 FragPos;
 
 void main()
 {
@@ -35,7 +36,7 @@ void main()
     vec2 texCoord = (t1 - t0) * v + t0;
 
     // lookup texel at patch coordinate for height and scale + shift as desired
-    height = texture(data_texture, texCoord).r;
+    float height = texture(data_texture, texCoord).r;
 
     // ----------------------------------------------------------------------
     // retrieve initial patch vertex positions
@@ -48,6 +49,7 @@ void main()
     vec4 uVec = p01 - p00;
     vec4 vVec = p10 - p00;
     vec4 normal = normalize( vec4(cross(vVec.xyz, uVec.xyz), 0) );
+    patch_normal = normal.xyz;
 
     // bilinearly interpolate position coordinate across patch
     // generate position coordinate based on relative tesselated point coordinate
@@ -56,10 +58,11 @@ void main()
     vec4 p = (p1 - p0) * v + p0;
 
     // displace point along normal
-    p += normal * (height * 10);
+    p += normal * (height * 5.0);
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space
     color_coord = texCoord;
-    gl_Position = projection * view * p;
+    FragPos = projection * view * p;
+    gl_Position = FragPos;
 }
