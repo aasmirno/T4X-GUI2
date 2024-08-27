@@ -12,12 +12,12 @@ void Renderer::keyUpdate(RENDER_KEY_STATE state){
     // move controls
     if (state.A) camera.left();
     if (state.D) camera.right();
-    if (state.W) camera.top();
-    if (state.S) camera.bottom();
+    if (state.W) camera.in();
+    if (state.S) camera.out();
 
     // yaw controls
-    if (state.Q) camera.moveYaw(0.5f);
-    if (state.E) camera.moveYaw(-0.5f);
+    if (state.Q) camera.moveYaw(-0.5f);
+    if (state.E) camera.moveYaw(0.5f);
 
     // pitch controls
     if (state.R) camera.movePitch(0.5f);
@@ -36,11 +36,11 @@ void Renderer::eventUpdate(Event e)
     switch (e.render_data)
     {
     case MW_IN:
-        camera.in();
+        camera.up_z();
         updateView();
         break;
     case MW_OUT:
-        camera.out();
+        camera.down_z();
         updateView();
         break;
         

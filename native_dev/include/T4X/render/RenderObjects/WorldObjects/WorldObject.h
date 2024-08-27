@@ -44,7 +44,6 @@ public:
 		glUniform3fv(light_position, 1, &light_pos[0]);
 	}
 
-
 	/*
 		Set transform matrix
 			GLfloat *matrix: pointer to mat4 transform matrix

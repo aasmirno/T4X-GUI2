@@ -18,7 +18,7 @@ class Camera{
 private:
     // camera vectors
     glm::vec3 position = glm::vec3(0.0f, 0.0f, 4.0f);       // camera postion in world space
-    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);   // 
+    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);   // camera front vector
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);             // world space up
 
     float yaw = -90.0f; float pitch = 0.0f;
@@ -63,8 +63,9 @@ public:
 
     void movePitch(float delta) {
         pitch += delta;
-
-        if (pitch > 89.0f)
+        
+        // pitch limits
+        if (pitch > 89.0f)s
             pitch = 89.0f;
         if (pitch < -89.0f)
             pitch = -89.0f;
@@ -77,11 +78,11 @@ public:
     }
 
     void in() {
-        position -= glm::vec3(0.0, 0.0, 1.0) * speed_factors;
+        position += cameraFront * speed_factors;
     }
 
     void out() {
-        position += glm::vec3(0.0, 0.0, 1.0) * speed_factors;
+        position -= cameraFront * speed_factors;
     }
 
     void translate(glm::vec3 unit_vec) {
@@ -97,12 +98,18 @@ public:
         position += glm::normalize(glm::cross(cameraFront, up)) * speed_factors;
     }
 
-    void top() {
-        position -= glm::normalize(glm::cross(cameraFront, glm::vec3(1.0,0.0,0.0))) * speed_factors;
+    /*
+        move camera in the positive z direction (global)
+    */
+    void up_z() {
+        position -= glm::vec3(0.0, 0.0 ,1.0) * speed_factors;
     }
 
-    void bottom() {
-        position += glm::normalize(glm::cross(cameraFront, glm::vec3(1.0, 0.0, 0.0))) * speed_factors;
+    /*
+        move camera in the positive z direction (global)
+    */
+    void down_z() {
+        position += glm::vec3(0.0, 0.0, 1.0) * speed_factors;
     }
 
     void rotate(float angle, glm::vec3 unit_vec){
