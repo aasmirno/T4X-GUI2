@@ -65,7 +65,7 @@ public:
         pitch += delta;
         
         // pitch limits
-        if (pitch > 89.0f)s
+        if (pitch > 89.0f)
             pitch = 89.0f;
         if (pitch < -89.0f)
             pitch = -89.0f;
