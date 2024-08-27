@@ -49,6 +49,9 @@ private:
     Camera camera;
     float fov = 45.0f;
 
+    // lighting parameters
+    glm::vec3 light_source = glm::vec3(0.0, 0.0, 1.0);
+    float ambient_strength = 0.5;
 
     const float min_scale = 0.01f;    // minimum tranform value - controls max zoom out level
     const float max_scale = 1000.5f;  // max transform value - controls max zoom in
@@ -90,6 +93,9 @@ private:
     */
     void updateView();
     void updateProjection();
+
+    void updateLightLoc();
+    void updateAmbient();
 
 public:
 

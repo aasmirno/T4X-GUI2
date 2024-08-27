@@ -243,8 +243,8 @@ WorldObject* Renderer::addMeshObject(uint id)
     //initialise a mesh object
     MeshObject obj;
     if (!obj.initialise(id)) return nullptr;
-    obj.setAmbient(1.0f);
-    obj.setLightPosition(20.0f, 20.0f, 20.0f);
+    obj.setAmbient(0.6f);
+    obj.setLightPosition(light_source.x, light_source.y, light_source.z);
 
     // add to ds and return
     meshes.push_back(obj);
@@ -297,6 +297,19 @@ void Renderer::updateProjection()
     }
 }
 
+void Renderer::updateLightLoc() {
+    for (auto& iterator : world_objects) {
+        iterator.second->setLightPosition(light_source.x, light_source.y, light_source.z);
+    }
+}
+
+void Renderer::updateAmbient() {
+    for (auto& iterator : world_objects) {
+        iterator.second->setAmbient(ambient_strength);
+    }
+}
+
+
 void Renderer::render()
 {
 
@@ -306,6 +319,16 @@ void Renderer::render()
     ImGui::NewFrame();
 
     // draw menus
+
+    ImGui::Begin("l_source z");
+    ImGui::SliderFloat("z", &light_source[2], 0.0f, 200.0f);
+    ImGui::SliderFloat("ambient", &ambient_strength, 0.0f, 1.0f);
+    if (ImGui::Button("update")) {
+        updateLightLoc();
+        updateAmbient();
+    }
+    ImGui::End();
+
     menu_stack.top()->draw();
 
     if (!initialised)
