@@ -8,13 +8,22 @@ enum E_TYPE
     SDL_EVENT,
     RENDER_EVENT,
     SCREEN_SIZE_UPDATE,
-    GAME_EVENT
+    GAME_EVENT,
+    MENU_EVENT
 };
 
 enum RD_DATA
 {
     MW_IN,
     MW_OUT,
+};
+
+enum MN_DATA
+{
+    NEW_GAME,   // new game button pressed
+    LOAD,       // load game button pressed
+    EXIT,       // exit game button pressed
+    POP         // pop top menu event
 };
 
 /*
@@ -39,6 +48,9 @@ struct RENDER_KEY_STATE
 struct Event
 {
     E_TYPE type = E_TYPE::NONE;
+
+    // menu event data
+    MN_DATA menu_data;
 
     // Render event data
     RD_DATA render_data;

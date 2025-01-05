@@ -109,8 +109,8 @@ public:
         Menu calls
     */
     bool addMenu(std::shared_ptr<Menu> menu);
+    bool popMenu();
     bool menuActive();
-
 
     /*
         Mesh calls

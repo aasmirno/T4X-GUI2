@@ -1,5 +1,8 @@
 #include "T4X/render/Renderer.h"
 
+/*
+    Updates and keys
+*/
 void Renderer::keyUpdate(RENDER_KEY_STATE state){
     //wireframe
     if (state.P && !wireframe) {
@@ -173,9 +176,6 @@ bool Renderer::initialise(int screen_height, int screen_width)
     //  toggle init flag
     initialised = true;
 
-    std::shared_ptr<Menu> menu = std::make_unique<MainMenu>();
-    menu_stack.push(menu);
-
     printf("Done\n");
     return true;
 }
@@ -305,8 +305,20 @@ WorldObject* Renderer::addTestObject()
     return &t_obj.back();
 }
 
+/*
+    Menu methods
+*/
 bool Renderer::addMenu(std::shared_ptr<Menu> menu) {
     menu_stack.push(menu);
+    return true;
+}
+
+bool Renderer::popMenu() {
+    if (!menuActive()) {
+        return false;
+    }
+
+    menu_stack.pop();
     return true;
 }
 

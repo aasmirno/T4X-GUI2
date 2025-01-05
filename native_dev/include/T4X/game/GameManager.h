@@ -46,6 +46,10 @@ public:
     */
     void handleEvent(Event e);
 
+    //event sub functions
+    void new_game();
+    void load_game();
+
     /*
         get key data and send to renderer
     */

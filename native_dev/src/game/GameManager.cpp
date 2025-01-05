@@ -26,9 +26,10 @@ bool GameManager::initialise()
 	/*
 		Post init actions
 	*/
-	render_manager.addMenu(std::make_unique<MainMenu>());
-	render_manager.addTexturedObject(0, "Logo256.png");
-
+	render_manager.addMenu(
+		std::make_unique<MainMenu>(std::bind(&GameManager::handleEvent, this, std::placeholders::_1))
+	);	// add main menu to menu stack
+	render_manager.addTexturedObject(0, "Logo256.png");		// add logo to menu stack
 
 	// start the game
 	running = true;
@@ -52,6 +53,27 @@ bool GameManager::run()
 
 void GameManager::handleEvent(Event e)
 {
+	// menu event
+	if (e.type == E_TYPE::MENU_EVENT) {
+		switch (e.menu_data) {
+		case MN_DATA::EXIT:
+			running = false;
+			break;
+		case MN_DATA::LOAD:
+			load_game();
+			break;
+		case MN_DATA::NEW_GAME:
+			new_game();
+			break;
+		case MN_DATA::POP:
+			render_manager.popMenu();
+			break;
+		default:
+			break;
+		}
+	}
+
+	// sdl event
 	if (e.type == E_TYPE::SDL_EVENT)
 	{
 		switch (e.raw_event) {
@@ -62,16 +84,35 @@ void GameManager::handleEvent(Event e)
 			break;
 		}
 	}
-
+	// screen update
 	if (e.type == E_TYPE::SCREEN_SIZE_UPDATE) {
 		render_manager.setScreenSize(e.w, e.h);
 	}
-
+	// render passthrough
 	if (e.type == E_TYPE::RENDER_EVENT)
 	{
 		render_manager.eventUpdate(e);
 	}
 }
+
+void GameManager::new_game() {
+	// push new game menu
+	render_manager.addMenu(
+		std::make_unique<NewGameMenu>(std::bind(&GameManager::handleEvent, this, std::placeholders::_1))
+	);
+
+	//TODO prep game structures
+}
+
+void GameManager::load_game() {
+	// push load game menu
+	render_manager.addMenu(
+		std::make_unique<LoadGameMenu>(std::bind(&GameManager::handleEvent, this, std::placeholders::_1))
+	);
+
+	//TODO load game menu
+}
+
 
 bool GameManager::loop()
 {
@@ -79,9 +120,9 @@ bool GameManager::loop()
 	input_manager.pollEvent();
 	render_manager.keyUpdate(input_manager.getRenderKeys());
 
-	//only update game state if menus are closed
-	if (!render_manager.menuActive()) {
-
+	// menu specific draw commands
+	if (render_manager.menuActive()) {
+		
 	}
 
 	//render current graphics state
