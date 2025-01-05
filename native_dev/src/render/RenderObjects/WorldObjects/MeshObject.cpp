@@ -60,12 +60,11 @@ bool MeshObject::loadShaders() {
 		printf("Shader Failure\n");
 		return false;
 	}
-
-	// set textures
-	color_texture.setTexture("MeshTex.png", GL_TEXTURE0);
 	
 	// activate program
 	glUseProgram(shader.program_id);
+	// set textures
+	color_texture.setTexture("MeshTex.png", GL_TEXTURE0);
 
 	// assign texture units
 	{

@@ -86,7 +86,7 @@ void TexturedObject::draw()
 {
     glUseProgram(shader.program_id); // set shader program
     glBindVertexArray(vao_id);       // bind vertex array
-    glBindTexture(GL_TEXTURE_2D, texture.handle);
+    texture.activate();              // activate texture
 
     glDrawArrays(GL_POINTS, 0, 1); // draw the object
 }

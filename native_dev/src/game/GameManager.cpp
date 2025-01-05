@@ -18,7 +18,6 @@ bool GameManager::initialise()
 	}
 
 	// initialise the game map
-	//game_map.initialise(200, 200);
 
 	// set callback for event handler
 	input_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
@@ -101,7 +100,14 @@ void GameManager::new_game() {
 		std::make_unique<NewGameMenu>(std::bind(&GameManager::handleEvent, this, std::placeholders::_1))
 	);
 
+	// initialised map pair
+	game_map.initialise(200, 200);
+	render_manager.addMeshObject(1);
+	render_manager.setMeshData(1, game_map.getHeightData(), game_map.getWidth(), game_map.getHeight());
+
+
 	//TODO prep game structures
+
 }
 
 void GameManager::load_game() {

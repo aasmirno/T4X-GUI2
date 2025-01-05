@@ -380,8 +380,7 @@ void Renderer::render()
         glEnable(GL_STENCIL_TEST);
     }
 
-    // dont try to draw menus if none exist
-    if (!menu_stack.empty()) {
+    
         menu_stack.top()->draw();
 
         // draw flats
@@ -392,13 +391,12 @@ void Renderer::render()
         // draw imgui objects
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
-    else {
+    
         // Draw all active game renderables
         for (auto& iterator : world_objects) {
             iterator.second->draw();
         }
-    }
+    
 
     SDL_GL_SwapWindow(main_window);
 }
