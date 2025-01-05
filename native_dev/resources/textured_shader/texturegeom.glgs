@@ -1,5 +1,5 @@
 #version 420 core
-uniform vec2 dimensions;            // dimension matrix
+uniform vec2 dimensions = vec2(0.1,0.1);            // dimension matrix
 
 out vec2 texCoord;
 

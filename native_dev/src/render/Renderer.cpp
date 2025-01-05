@@ -51,6 +51,8 @@ void Renderer::eventUpdate(Event e)
 
 bool Renderer::initialise(int screen_height, int screen_width)
 {
+    WINDOW_W = screen_width;
+    WINDOW_H = screen_height;
     /*
         SDL setup
     */
@@ -125,13 +127,12 @@ bool Renderer::initialise(int screen_height, int screen_width)
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
-        //glCullFace(GL_FRONT_AND_BACK);
 
         // blending parameters
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        // z buffer parameters
+        // enable depth buffer
         glEnable(GL_DEPTH_TEST);
 
         WINDOW_H = screen_height;
@@ -203,6 +204,10 @@ void Renderer::shutdown()
     ImGui::DestroyContext();
 }
 
+/*
+    Meta methods
+*/
+
 void Renderer::setScreenSize(int width, int height)
 {
     WINDOW_W = width;
@@ -210,9 +215,19 @@ void Renderer::setScreenSize(int width, int height)
     glViewport(0, 0, WINDOW_W, WINDOW_H);
 }
 
+
+//wrapper method
+RenderObject* Renderer::addTexturedObject(uint id, const char* filename)
+{
+    RenderObject* obj = addTexturedObject(id);
+    if (!obj) return nullptr;
+    if (!setTexture(id, filename)) return nullptr;
+    return obj;
+}
+
 RenderObject* Renderer::addTexturedObject(uint id)
 {
-    if (world_objects.find(id) != world_objects.end()) {
+    if (flat_objects.find(id) != flat_objects.end()) {
         printf("[RENDERER ERROR] object with id %d already exists\n", id);
         return nullptr;
     }
@@ -228,10 +243,19 @@ RenderObject* Renderer::addTexturedObject(uint id)
 }
 
 bool Renderer::setTexture(uint id, const char* filename) {
-    for (int i = 0; i < texture_objects.size(); i++) {
-        if (texture_objects[i].object_id == id) texture_objects[i].loadTexture(filename);
+    if (flat_objects.find(id) == flat_objects.end()) {
+        printf("[R_MNGR ERROR] mesh object with id %d not found\n", id);
+        return false;
     }
-    return true;
+
+    //try to cast object at [id] to a texture object
+    auto object = dynamic_cast<TexturedObject*>(flat_objects[id]);
+    if (!object) {
+        printf("[R_MNGR ERROR] object with id %d is not a texture object\n", id);
+        return false;
+    }
+
+    return object->loadTexture(filename);
 }
 
 WorldObject* Renderer::addMeshObject(uint id)
@@ -269,7 +293,6 @@ bool Renderer::setMeshData(uint id, float* data, int width, int height) {
     return object->setMeshData(data, width, height);
 }
 
-
 WorldObject* Renderer::addTestObject()
 {
     TestObject obj;
@@ -281,6 +304,17 @@ WorldObject* Renderer::addTestObject()
 
     return &t_obj.back();
 }
+
+bool Renderer::addMenu(std::shared_ptr<Menu> menu) {
+    menu_stack.push(menu);
+    return true;
+}
+
+bool Renderer::menuActive() { return !menu_stack.empty(); }
+
+/*
+    Update methods
+*/
 
 void Renderer::updateView()
 {
@@ -312,45 +346,47 @@ void Renderer::updateAmbient() {
 
 void Renderer::render()
 {
-
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
-
-    // draw menus
-
-    ImGui::Begin("l_source z");
-    ImGui::SliderFloat("z", &light_source[2], 0.0f, 200.0f);
-    ImGui::SliderFloat("ambient", &ambient_strength, 0.0f, 1.0f);
-    if (ImGui::Button("update")) {
-        updateLightLoc();
-        updateAmbient();
-    }
-    ImGui::End();
-
-    menu_stack.top()->draw();
-
+    // check for initialisation
     if (!initialised)
     {
         printf("ERROR: render manager not initialised\n");
         return;
     }
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Draw all active objects
-    for (auto& iterator : world_objects) {
-        iterator.second->draw();
+    // imgui frame setup
+    {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame();  
+        ImGui::NewFrame();
     }
 
-    for (auto& iterator : flat_objects) {
-        iterator.second->draw();
+    // gl frame setup
+    {
+        // activate and clear buffers
+        glDepthMask(true);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glEnable(GL_STENCIL_TEST);
     }
 
-    // draw imgui objects
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    // dont try to draw menus if none exist
+    if (!menu_stack.empty()) {
+        menu_stack.top()->draw();
+
+        // draw flats
+        for (auto& iterator : flat_objects) {
+            iterator.second->draw();
+        }
+
+        // draw imgui objects
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+    else {
+        // Draw all active game renderables
+        for (auto& iterator : world_objects) {
+            iterator.second->draw();
+        }
+    }
 
     SDL_GL_SwapWindow(main_window);
 }

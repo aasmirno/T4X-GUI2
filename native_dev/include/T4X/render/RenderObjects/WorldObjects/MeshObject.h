@@ -7,7 +7,6 @@
 #include <iostream>
 
 #include "T4X/render/Textures/ImageTexture.h"
-#include "T4X/render/Textures/DataTexture.h"
 #include "T4X/render/RenderObjects/WorldObjects/WorldObject.h"
 
 /*

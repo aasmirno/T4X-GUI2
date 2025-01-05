@@ -18,7 +18,7 @@ class InputManager
 {
 private:
     std::function<void(Event)> event_handler;
-    bool KEYS[322]; //keyboard event state
+    bool KEYS[322] = {0}; //keyboard event state
 
     RENDER_KEY_STATE render_key_state;
 

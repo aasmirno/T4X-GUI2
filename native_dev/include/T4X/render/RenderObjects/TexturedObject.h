@@ -26,7 +26,6 @@ private:
 	*/
 	virtual bool setAttribs();
 	virtual bool loadShaders();
-	virtual bool loadUniforms();
 
 	virtual bool updateBuffers(int size, float* data);
 
@@ -35,6 +34,8 @@ public:
 		Set a texture for this object
 	*/
 	bool loadTexture(const char* filename);
+	bool setDimensions(int height, int width);
+	bool setOrigin(float x, float y);
 
 	/*
 		Print debug info for this object

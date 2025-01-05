@@ -28,6 +28,14 @@ protected:
 public:
 
 	/*
+		Render object into depth buffer only
+	*/
+	void renderDepth() {
+		glDrawBuffer(GL_NONE);
+		draw();
+	}
+
+	/*
 		Set ambient light level for lighting shaders
 	*/
 	void setAmbient(float level) {

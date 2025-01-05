@@ -39,10 +39,6 @@ bool TexturedObject::loadShaders() {
         return false;
     }
 
-    return true;
-}
-
-bool TexturedObject::loadUniforms() {
     dimension_location = glGetUniformLocation(shader.program_id, "dimensions");
     if (dimension_location == -1)
     {
@@ -51,8 +47,26 @@ bool TexturedObject::loadUniforms() {
         return false;
     }
 
+    setDimensions(10, 10);
     updateBuffers(2 * sizeof(float), &origin[0]);
     return true;
+}
+
+bool TexturedObject::setOrigin(float x, float y) {
+    origin[0] = x;
+    origin[1] = y;
+    return updateBuffers(2 * sizeof(float), &origin[0]);
+}
+
+bool TexturedObject::setDimensions(int height, int width) {
+    if (dimension_location == -1)
+    {
+        printf("dims not loaded render_obj=%d\n", object_id);
+        printDebug();
+        return false;
+    }
+    glUseProgram(shader.program_id); // set shader program
+    glUniform2f(dimension_location, 0.1, 0.1);
 }
 
 bool TexturedObject::updateBuffers(int size, float *data)
@@ -78,12 +92,10 @@ void TexturedObject::draw()
 }
 
 bool TexturedObject::loadTexture(const char* filename) {
+    glUseProgram(shader.program_id); // set shader program
     if (!texture.setTexture(filename, GL_TEXTURE0)) {
         return false;
     }
-    
-    glUseProgram(shader.program_id); // set shader program
-    glUniform2f(dimension_location, 100, 100);
-
+   
     return checkGLError();
 }

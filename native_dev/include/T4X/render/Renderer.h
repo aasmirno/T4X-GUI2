@@ -59,7 +59,7 @@ private:
     float adjustment_factor_H = 1.0f; // height ' '
     const float move_speed = 0.001f;  // base traversal speed
 
-    glm::vec4 clear_color = glm::vec4(0.0f, 0.0f, 0.0f, 1.00f); // background color
+    glm::vec4 clear_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.00f); // background color
 
     /*
         sdl pointers
@@ -106,6 +106,13 @@ public:
     bool initialise(int screen_height, int screen_width);
 
     /*
+        Menu calls
+    */
+    bool addMenu(std::shared_ptr<Menu> menu);
+    bool menuActive();
+
+
+    /*
         Mesh calls
     */
     WorldObject* addMeshObject(uint id);
@@ -119,6 +126,7 @@ public:
     /*
         Textured object calls
     */
+    RenderObject* addTexturedObject(uint id, const char* filename);
     RenderObject* addTexturedObject(uint id);
     bool setTexture(uint id, const char* filename);
 
@@ -137,6 +145,9 @@ public:
     */
     void shutdown();
 
+    /*
+        Input and event updaters
+    */
     void keyUpdate(RENDER_KEY_STATE state);
     void eventUpdate(Event e);
 
