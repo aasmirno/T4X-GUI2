@@ -26,6 +26,7 @@ protected:
 	GLint light_position = -1;
 
 public:
+	bool hidden = false;
 
 	/*
 		Render object into depth buffer only

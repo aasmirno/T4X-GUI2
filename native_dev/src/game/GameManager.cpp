@@ -100,6 +100,9 @@ void GameManager::new_game() {
 		std::make_unique<NewGameMenu>(std::bind(&GameManager::handleEvent, this, std::placeholders::_1))
 	);
 
+	// hide logo
+	render_manager.hideFlatObject(0);
+
 	// initialised map pair
 	game_map.initialise(200, 200);
 	render_manager.addMeshObject(1);

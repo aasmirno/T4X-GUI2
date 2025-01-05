@@ -113,6 +113,14 @@ public:
     bool menuActive();
 
     /*
+        Generic object calls
+    */
+    bool hideFlatObject(uint id);
+    bool hideWorldObject(uint id);
+    bool showFlatObject(uint id);
+    bool showWorldObject(uint id);
+
+    /*
         Mesh calls
     */
     WorldObject* addMeshObject(uint id);

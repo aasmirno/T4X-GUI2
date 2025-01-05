@@ -207,6 +207,41 @@ void Renderer::shutdown()
 /*
     Meta methods
 */
+bool Renderer::hideFlatObject(uint id) {
+    if (flat_objects.find(id) == flat_objects.end()) {
+        printf("[RENDERER ERROR] flat object with id %d does not exist\n", id);
+        return false;
+    }
+    (flat_objects.find(id)->second)->hidden = true;
+    return true;
+}
+
+bool Renderer::hideWorldObject(uint id) {
+    if (world_objects.find(id) == world_objects.end()) {
+        printf("[RENDERER ERROR] world object with id %d does not exist\n", id);
+        return false;
+    }
+    (world_objects.find(id)->second)->hidden = true;
+    return true;
+}
+
+bool Renderer::showFlatObject(uint id) {
+    if (flat_objects.find(id) == flat_objects.end()) {
+        printf("[RENDERER ERROR] flat object with id %d does not exist\n", id);
+        return false;
+    }
+    (flat_objects.find(id)->second)->hidden = false;
+    return true;
+}
+
+bool Renderer::showWorldObject(uint id) {
+    if (world_objects.find(id) == world_objects.end()) {
+        printf("[RENDERER ERROR] world object with id %d does not exist\n", id);
+        return false;
+    }
+    (world_objects.find(id)->second)->hidden = false;
+    return true;
+}
 
 void Renderer::setScreenSize(int width, int height)
 {
@@ -215,10 +250,10 @@ void Renderer::setScreenSize(int width, int height)
     glViewport(0, 0, WINDOW_W, WINDOW_H);
 }
 
-
 //wrapper method
 RenderObject* Renderer::addTexturedObject(uint id, const char* filename)
 {
+    // create textured object and set texture
     RenderObject* obj = addTexturedObject(id);
     if (!obj) return nullptr;
     if (!setTexture(id, filename)) return nullptr;
@@ -385,18 +420,17 @@ void Renderer::render()
 
         // draw flats
         for (auto& iterator : flat_objects) {
-            iterator.second->draw();
+            if (!iterator.second->hidden) iterator.second->draw();
         }
-
+ 
+        // Draw all active game renderables
+        for (auto& iterator : world_objects) {
+            if(!iterator.second->hidden) iterator.second->draw();
+        }
+    
         // draw imgui objects
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    
-        // Draw all active game renderables
-        for (auto& iterator : world_objects) {
-            iterator.second->draw();
-        }
-    
 
     SDL_GL_SwapWindow(main_window);
 }

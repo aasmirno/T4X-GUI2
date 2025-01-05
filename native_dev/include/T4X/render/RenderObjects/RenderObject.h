@@ -54,6 +54,7 @@ protected:
 	}
 
 public:
+	bool hidden = false;
 	uint object_id = 0; // render object id
 
 	/*
