@@ -11,7 +11,7 @@ if(WIN32)   # windows target
     cmake_path(SET SDL2_PATH "${LIB_PATH}/")
 else()      # linux target
     cmake_path(SET LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib/LINUX")
-    find_package(SDL2 REQUIRED)
+#    find_package(SDL2 REQUIRED)
 endif()
 
 # add cpp sources
@@ -19,7 +19,7 @@ cmake_path(SET SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
 file(GLOB_RECURSE CPPS "${SOURCE_PATH}/*.cpp")
 add_executable(${TARGET} 
     ${CPPS}
- "include/T4X/render/Menus/Menus.h")
+    )
 
 # set compile options
 if(WIN32)   # windows target
@@ -30,8 +30,9 @@ endif()
 
 
 # set include path
-target_include_directories(${TARGET} PUBLIC 
-    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+target_include_directories(${TARGET} PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/local"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/shared"
 )
 
 # link libraries
@@ -45,6 +46,11 @@ if(WIN32)   # windows target
         "${LIB_PATH}/SDL2/x64/SDL2.lib"
         "${OPENGL_gl_LIBRARY}"
     )
+
+    # windows includes
+    target_include_directories(${TARGET} PUBLIC 
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/win/"
+    )
 else()      # linux target
     target_link_libraries(${TARGET}
         "${LIB_PATH}/FastNoise2/libFastNoise.so"
@@ -52,10 +58,16 @@ else()      # linux target
         "${LIB_PATH}/glew/lib64/libGLEW.so"
         "${LIB_PATH}/glew/lib64/libGLEW.so.2.2"
         "${LIB_PATH}/glew/lib64/libGLEW.so.2.2.0"
-        "-lSDL2"
+        "${LIB_PATH}/SDL2/lib/libSDL2-2.0.so.0"
+        "${LIB_PATH}/SDL2/lib/libSDL2.so"
         "-lGLU"
         "-lGL"
+        "-ldl"
        )
+    # linux includes
+    target_include_directories(${TARGET} PUBLIC 
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/lin/"
+    )
 endif()
 
 message(${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
