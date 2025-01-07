@@ -16,8 +16,7 @@ bool GameManager::initialise()
 		printf("ERROR: render manager failed to initialise\n");
 		return false;
 	}
-
-	// initialise the game map
+	render_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
 
 	// set callback for event handler
 	input_manager.set_handler(std::bind(&GameManager::handleEvent, this, std::placeholders::_1));
@@ -25,10 +24,6 @@ bool GameManager::initialise()
 	/*
 		Post init actions
 	*/
-	render_manager.addMenu(
-		std::make_unique<MainMenu>(std::bind(&GameManager::handleEvent, this, std::placeholders::_1))
-	);	// add main menu to menu stack
-	render_manager.addTexturedObject(0, "Logo256.png");		// add logo to menu stack
 
 	// start the game
 	running = true;
@@ -58,15 +53,6 @@ void GameManager::handleEvent(Event e)
 		case MN_DATA::EXIT:
 			running = false;
 			break;
-		case MN_DATA::LOAD:
-			load_game();
-			break;
-		case MN_DATA::NEW_GAME:
-			new_game();
-			break;
-		case MN_DATA::POP:
-			render_manager.popMenu();
-			break;
 		default:
 			break;
 		}
@@ -95,14 +81,6 @@ void GameManager::handleEvent(Event e)
 }
 
 void GameManager::new_game() {
-	// push new game menu
-	render_manager.addMenu(
-		std::make_unique<NewGameMenu>(std::bind(&GameManager::handleEvent, this, std::placeholders::_1))
-	);
-
-	// hide logo
-	render_manager.hideFlatObject(0);
-
 	// initialised map pair
 	game_map.initialise(200, 200);
 	render_manager.addMeshObject(1);
@@ -115,11 +93,7 @@ void GameManager::new_game() {
 
 void GameManager::load_game() {
 	// push load game menu
-	render_manager.addMenu(
-		std::make_unique<LoadGameMenu>(std::bind(&GameManager::handleEvent, this, std::placeholders::_1))
-	);
-
-	//TODO load game menu
+	//TODO load game function
 }
 
 

@@ -21,7 +21,9 @@ struct Menu {
 };
 
 struct NewGameMenu : public Menu {
-	NewGameMenu(std::function<void(Event)> event_handle) : Menu(event_handle) {}
+	NewGameMenu(std::function<void(Event)> event_handle) : Menu(event_handle) {
+
+	}
 
 	Event engine_event;
 	virtual void draw() {
