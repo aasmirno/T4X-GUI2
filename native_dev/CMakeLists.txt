@@ -49,6 +49,8 @@ if(WIN32)   # windows target
 
     # windows includes
     target_include_directories(${TARGET} PUBLIC 
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/local"
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/shared"
         "${CMAKE_CURRENT_SOURCE_DIR}/include/win/"
     )
 else()      # linux target
@@ -66,6 +68,8 @@ else()      # linux target
        )
     # linux includes
     target_include_directories(${TARGET} PUBLIC 
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/local"
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/shared"
         "${CMAKE_CURRENT_SOURCE_DIR}/include/lin/"
     )
 endif()
